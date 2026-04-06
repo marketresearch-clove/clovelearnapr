@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin - Performance vs Potential</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#6D28D9",
+              "background-light": "#F9FAFB",
+              "background-dark": "#111827",
+            },
+            fontFamily: {
+              display: ["Inter", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+            },
+          },
+        },
+      };
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200">
+<div class="p-8 min-h-screen">
+<main class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+<header class="flex flex-wrap justify-between items-center gap-4 mb-6">
+<div class="flex items-center space-x-4">
+<div class="relative">
+<select class="pl-4 pr-10 py-2.5 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 focus:ring-primary focus:border-primary w-40 text-sm">
+<option>Product</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">expand_more</span>
+</div>
+<div class="relative">
+<select class="pl-4 pr-10 py-2.5 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 focus:ring-primary focus:border-primary w-48 text-sm">
+<option>All Designations</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">expand_more</span>
+</div>
+<div class="relative">
+<select class="pl-4 pr-10 py-2.5 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 focus:ring-primary focus:border-primary w-48 text-sm">
+<option>All Leadership Roles</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<span class="text-sm text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined align-middle text-base mr-1">schedule</span>
+                        Last Updated on 4th Sep 22', 12:00PM
+                    </span>
+<button class="bg-violet-100 dark:bg-violet-900/30 text-primary dark:text-violet-300 text-sm font-medium py-2 px-4 rounded-md flex items-center space-x-2">
+<span>Users Selected : 120</span>
+<span class="material-symbols-outlined text-base">close</span>
+</button>
+<button class="bg-primary text-white text-sm font-medium py-2.5 px-6 rounded-md flex items-center space-x-2">
+<span class="material-symbols-outlined text-base">ios_share</span>
+<span>Export</span>
+</button>
+</div>
+</header>
+<div class="grid grid-cols-[auto,1fr] gap-4">
+<div class="grid grid-rows-3 gap-4 font-medium text-gray-500 dark:text-gray-400 text-sm text-center">
+<div class="flex items-center justify-center">
+<div class="transform -rotate-90 whitespace-nowrap flex items-center">
+                            High (70-100)
+                        </div>
+</div>
+<div class="flex items-center justify-center">
+<div class="transform -rotate-90 whitespace-nowrap flex items-center">
+                            Moderate (30-70)
+                            <span class="material-symbols-outlined text-base ml-1">info</span>
+</div>
+</div>
+<div class="flex items-center justify-center">
+<div class="transform -rotate-90 whitespace-nowrap flex items-center">
+                            Low (0-30)
+                        </div>
+</div>
+<div class="text-center font-semibold text-gray-700 dark:text-gray-300">
+                        KPI Score (Performance) <span class="material-symbols-outlined text-base ml-1 align-middle">info</span>
+</div>
+</div>
+<div class="grid grid-cols-3 grid-rows-[repeat(3,_minmax(0,_1fr))_auto] gap-4">
+<div class="bg-violet-100 dark:bg-violet-900/40 rounded-lg p-4 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-semibold text-gray-800 dark:text-gray-200">Trusted Professionals</h3>
+<span class="text-xl font-bold text-gray-800 dark:text-gray-200">20%</span>
+</div>
+<div class="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+<p class="bg-violet-200 dark:bg-violet-800/50 inline-block px-2 py-0.5 rounded">Users : 20</p>
+<p>Perfomance : High</p>
+<p>Potential : Low</p>
+</div>
+</div>
+<div class="self-end">
+<img alt="Trusted Professionals icon" class="h-10 w-10 text-gray-600 dark:text-gray-400" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtqj21YAiEz72lftX87994_cD4dYUXVCd-jQA7cbYukpiFuI5GkmifgeZvoJcaep2I-AND5jB5X6V7BuO_ZtH_Pgqm04n1F5pnQejRP0XZRNpf6rLKp1t1mbN5_0vfXTWDCC6s0COqMrlnNeo17RL9NfwtYbLfGQqcpMAWv-6efm9xtgGetmDoMQUpySKSE1zOqT-eDQUu8uUL6pzTyAxAnuLJduDt8CMgdj06QhPBOYl2IKsD8EQ2X5DOp9S1xSyZsMtT8ZTD51s"/>
+</div>
+</div>
+<div class="bg-lime-100 dark:bg-lime-900/30 rounded-lg p-4 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-semibold text-gray-800 dark:text-gray-200">Impact Performers</h3>
+<span class="text-xl font-bold text-gray-800 dark:text-gray-200">9%</span>
+</div>
+<div class="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+<p class="bg-lime-200 dark:bg-lime-800/50 inline-block px-2 py-0.5 rounded">Users : 9</p>
+<p>Perfomance : High</p>
+<p>Potential : Moderate</p>
+</div>
+</div>
+<div class="self-end">
+<img alt="Impact Performers icon" class="h-10 w-10 text-gray-600 dark:text-gray-400" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCm7ATCBVxZJr3esnu2HeBu2EGWSU1zpPaGZ2ADZkXDcJ_UM_a81FMt4_nCpYxogLex8uoTvq35W3gPCUpnoxvEkxRVSWjsaK1l4zJ3Ya86ZR-40rKCzMfep1NJGCABniAw5S5lDT0b1t0CtnVCRRnkUb3UL8b5qscIYb-_NrhumCvjkgC-jUHazcYYLIwqV9A7mHqn7RqzmtjS20FzIVSCNZwuUPC1aAgvVpmQ3iYkqiW2vaBj5G1aBTttPgdEdctTk-pE6TcQujM"/>
+</div>
+</div>
+<div class="bg-green-100 dark:bg-green-900/30 rounded-lg p-4 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-semibold text-gray-800 dark:text-gray-200">Future Leaders</h3>
+<span class="text-xl font-bold text-gray-800 dark:text-gray-200">21%</span>
+</div>
+<div class="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+<p class="bg-green-200 dark:bg-green-800/50 inline-block px-2 py-0.5 rounded">Users : 21</p>
+<p>Potential : High</p>
+<p>Perfomance : High</p>
+</div>
+</div>
+<div class="self-end">
+<img alt="Future Leaders icon" class="h-10 w-10 text-gray-600 dark:text-gray-400" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmCStSYY0BtxEjeTvT36yachnAfR6bORQTrxI55LYzFOW2gNOjg0u_sqVLI2DFcAk9WU1BfLtjLGNzSmwGcTCwkzvrJbTmwUXv-dVGlxq7ZLC3A0wbALuT6PhsVUCFTBMaTiYPqFJjG-uteoNj6lbC8MraXRjhe_Qqhn0BmE2ZHPD33DUoMRim_CnbD62OmqFCkrzAtKSbshBZoeNe7neRSzCUfOBbnMQnWdeQnJpnTqOk_SAtllH3JV8tdd4tFbydaMgkqDjdUyA"/>
+</div>
+</div>
+<div class="bg-violet-100 dark:bg-violet-900/40 rounded-lg p-4 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-semibold text-gray-800 dark:text-gray-200">Effective Professionals</h3>
+<span class="text-xl font-bold text-gray-800 dark:text-gray-200">3%</span>
+</div>
+<div class="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+<p class="bg-violet-200 dark:bg-violet-800/50 inline-block px-2 py-0.5 rounded">Users : 3</p>
+<p>Perfomance : Moderate</p>
+<p>Potential : Low</p>
+</div>
+</div>
+<div class="self-end">
+<img alt="Effective Professionals icon" class="h-10 w-10 text-gray-600 dark:text-gray-400" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcNOydHGw0688puha2jnzUKq5SchGN6ENLesIzT29e6ytCDgeMrONcpJw6KzmrFeHhF7MCY1bYo4XuC7dVpkcVKWWb2P4H-dQi12a4lc44JXpxyNw-Nz-hNf-6imVCWgyuQHZ4bw9aKUNJCiPuFuMsMsx0pBkBalqF3TW-X1WVJfHl2FRjH2CBKQx48-zq7CKYEYQTqXeOGFOyxXcz5D64DNleLHflEtmR1Uj8eh-rp3bWkxvkeNK2ElA4OY2vDhb73iI_XwCd-zY"/>
+</div>
+</div>
+<div class="bg-blue-100 dark:bg-blue-900/30 rounded-lg p-4 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-semibold text-gray-800 dark:text-gray-200">Core Employees</h3>
+<span class="text-xl font-bold text-gray-800 dark:text-gray-200">11%</span>
+</div>
+<div class="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+<p class="bg-blue-200 dark:bg-blue-800/50 inline-block px-2 py-0.5 rounded">Users : 11</p>
+<p>Potential : Moderate</p>
+<p>Perfomance : Moderate</p>
+</div>
+</div>
+<div class="self-end">
+<img alt="Core Employees icon" class="h-10 w-10 text-gray-600 dark:text-gray-400" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCluvOmanAfHyNOeVHvEZWGa5A_IqElVClltRIn9lRsal5fDdcnVGRmIrcT7j2I2rssVTAE5a1Q_AnoXBjzT5DlcpLCoWvMcdTzSypyuC1JyVmTF7IQA4G0GvmYhuALVx_PN9v5QB-mu2WHU73GLKlSygBPsuqyfKf5SYdz7086K_U21Ma6gRpZhJi89u2FCrCyoz2W9zqm54cT9hoR0ud72DPFPXZJaPlmMxVo9i1dm0dGISOdqATGBtPtXKNPruqmqHtLYZpSMVw"/>
+</div>
+</div>
+<div class="bg-lime-100 dark:bg-lime-900/30 rounded-lg p-4 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-semibold text-gray-800 dark:text-gray-200">Budding Employees</h3>
+<span class="text-xl font-bold text-gray-800 dark:text-gray-200">10%</span>
+</div>
+<div class="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+<p class="bg-lime-200 dark:bg-lime-800/50 inline-block px-2 py-0.5 rounded">Users : 10</p>
+<p>Perfomance : Moderate</p>
+<p>Potential : High</p>
+</div>
+</div>
+<div class="self-end">
+<img alt="Budding Employees icon" class="h-10 w-10 text-gray-600 dark:text-gray-400" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGY7xmWgWeJ60grPBY-Uzg_OUFvu1ul8yP-fOpTKn-hU-7lQBAkpe1vXgcFJlQEseMRS3cF1RObmpuhL99FK7yXnj2v3XnCRqsApizSQyTiWbfABL5UyHsKGlaX2XCF4IZHIiPzPF9yqeFgI50thUd_KcnnPLNZHsxmXeEs2X24YJEzkqiENSjFcF-r9kg4-CRfoobFPv_QqPv1z7m2-WWC_R5WOnHzrnRRMhHkMXkkmPWarbKoWCFs7B9ZYXTgyrhyyJWOqkTYr8"/>
+</div>
+</div>
+<div class="bg-red-100 dark:bg-red-900/30 rounded-lg p-4 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-semibold text-gray-800 dark:text-gray-200">Talent Risks</h3>
+<span class="text-xl font-bold text-gray-800 dark:text-gray-200">6%</span>
+</div>
+<div class="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+<p class="bg-red-200 dark:bg-red-800/50 inline-block px-2 py-0.5 rounded">Users : 6</p>
+<p>Potential : Low</p>
+<p>Perfomance : Low</p>
+</div>
+</div>
+<div class="self-end">
+<img alt="Talent Risks icon" class="h-10 w-10 text-gray-600 dark:text-gray-400" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6Gnstl_7ZjCCG3NIJDF2ro0Pgn4kFJz262zITyxLcnutq0JsQ7LtK30qBnelsqSNHqzC7vfTDFUgtrJHCaU-Y7zIzAcB81z8Adl3CcD-8B3yzrvgkCs5gU1cJMK4zxKh8W-65kPPotwSy_36fQKi_6bUN1sZgvy-HW9tjAo9NbV2W9DGgCE64uNFXMwgIElbrnJ1W5F-myOQKIyu9wo_UdtBpvpn2JQhJHUDXie0Aq6fMChWQ-qPrDSp4zeRkROci4Avi3EDpP8A"/>
+</div>
+</div>
+<div class="bg-yellow-100 dark:bg-yellow-900/30 rounded-lg p-4 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-semibold text-gray-800 dark:text-gray-200">Fence Sitters</h3>
+<span class="text-xl font-bold text-gray-800 dark:text-gray-200">2%</span>
+</div>
+<div class="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+<p class="bg-yellow-200 dark:bg-yellow-800/50 inline-block px-2 py-0.5 rounded">Users : 2</p>
+<p>Perfomance : Low</p>
+<p>Potential : Moderate</p>
+</div>
+</div>
+<div class="self-end">
+<img alt="Fence Sitters icon" class="h-10 w-10 text-gray-600 dark:text-gray-400" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvq5dKXsLKOPP1CpN4WjXboCVVjtc0qAQBZPPg0hm8ryc9L2hERN_-0oJwNlBHZ8uEdUwIxIQz4LnJHom0XpGkQoZBi71TlCTiEmhsKzyHLxd5sv10TepRU8A0gtHAqh7pZ-hrg9JFppzR9C4bCKVC8WVClVKXfrz-Qngsz9Wav2x0f62QP2l_pWjRAGoOU-MaKYHaJbjy5Aejms_jNqP9vNHK6Bd5Fd1zkGhQSlRz1QMhFawybrhApRtmoKQAsfKotdNYiR-RCO0"/>
+</div>
+</div>
+<div class="bg-violet-100 dark:bg-violet-900/40 rounded-lg p-4 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-semibold text-gray-800 dark:text-gray-200">Potential Gems</h3>
+<span class="text-xl font-bold text-gray-800 dark:text-gray-200">18%</span>
+</div>
+<div class="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+<p class="bg-violet-200 dark:bg-violet-800/50 inline-block px-2 py-0.5 rounded">Users : 18 <span class="material-symbols-outlined text-base ml-1 align-middle">info</span></p>
+<p>Perfomance : Low</p>
+<p>Potential : High</p>
+</div>
+</div>
+<div class="self-end">
+<img alt="Potential Gems icon" class="h-10 w-10 text-gray-600 dark:text-gray-400" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQHgkF5c4l6y3ShKA2U31ZWIqcX1xZUx2gntzEB46bZ9UXPOAXoVQmQxv9adeFU-LQ2BgvOd6win3zjp9lDwKMQa47NN9ZG5QfPPtAxvCauc_SHbT2hQB22fKfXLqCElc28aVZiFSvqjRRyRxC57vbKq0uopnAzVm1fi73nRp5vSx_Mey9Yq7Ic65j9BOpw5gknJHBPjAjZ8xePJQk1foWRWJ3YEvA-YbV2QQyDAWJSYyKHo6Cwn3hRCZx5Fv7yQfk2Df2fYjvXvk"/>
+</div>
+</div>
+<div class="text-center text-sm font-medium text-gray-500 dark:text-gray-400 py-2">Low (0-30)</div>
+<div class="text-center text-sm font-medium text-gray-500 dark:text-gray-400 py-2">Moderate (30-70)</div>
+<div class="text-center text-sm font-medium text-gray-500 dark:text-gray-400 py-2">High (70-100)</div>
+</div>
+</div>
+<div class="text-center mt-4 font-semibold text-gray-700 dark:text-gray-300">
+                Role Score (Potential) <span class="material-symbols-outlined text-base ml-1 align-middle">info</span>
+</div>
+</main>
+</div>
+
+</body></html>

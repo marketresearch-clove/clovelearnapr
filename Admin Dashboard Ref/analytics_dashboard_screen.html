@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin - Journey Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#D946EF", // Fuchsia-500 from Tailwind's palette, similar to the pink/purple in the screenshot
+                        "background-light": "#F8FAFC", // Slate-50
+                        "background-dark": "#1E293B",  // Slate-800
+                    },
+                    fontFamily: {
+                        display: ["Roboto", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem", // 8px
+                    },
+                },
+            },
+        };
+    </script>
+<style>
+        .material-icons {
+            font-size: inherit;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-700 dark:text-gray-300">
+<div class="p-8 min-h-screen">
+<header class="mb-8">
+<h1 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">Dashboard</h1>
+</header>
+<div class="border-b border-gray-200 dark:border-gray-700">
+<nav class="flex space-x-8 -mb-px">
+<a class="py-4 px-1 border-b-2 border-primary text-primary font-semibold" href="#">Journey Analytics</a>
+<a class="py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600" href="#">Completion Overview</a>
+</nav>
+</div>
+<main class="mt-8">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+<div class="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+<div class="flex justify-between items-center mb-4">
+<h2 class="text-lg font-medium text-gray-800 dark:text-gray-100">User stats</h2>
+<span class="material-icons text-gray-400 dark:text-gray-500 text-base">info_outline</span>
+</div>
+<div class="flex items-center space-x-6">
+<div class="w-1/2">
+<p class="text-sm text-gray-500 dark:text-gray-400">by journey status</p>
+<p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">10,266</p>
+<p class="text-sm text-gray-500 dark:text-gray-400">Total no of users</p>
+<div class="mt-6 space-y-3">
+<div class="flex items-center text-sm">
+<span class="w-3 h-3 rounded-full bg-green-500 mr-2"></span>
+<span class="text-gray-600 dark:text-gray-300 flex-1">Completed</span>
+<span class="font-medium text-gray-700 dark:text-gray-200">20%</span>
+</div>
+<div class="flex items-center text-sm">
+<span class="w-3 h-3 rounded-full bg-orange-400 mr-2"></span>
+<span class="text-gray-600 dark:text-gray-300 flex-1">In Progress</span>
+<span class="font-medium text-gray-700 dark:text-gray-200">30%</span>
+</div>
+<div class="flex items-center text-sm">
+<span class="w-3 h-3 rounded-full bg-gray-300 dark:bg-gray-600 mr-2"></span>
+<span class="text-gray-600 dark:text-gray-300 flex-1">Not to start</span>
+<span class="font-medium text-gray-700 dark:text-gray-200">50%</span>
+</div>
+</div>
+</div>
+<div class="w-1/2 flex justify-center items-center">
+<div class="relative w-28 h-28">
+<svg class="w-full h-full" viewBox="0 0 36 36">
+<path class="stroke-current text-gray-300 dark:text-gray-600" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
+<path class="stroke-current text-green-500" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="20, 100" stroke-linecap="round" stroke-width="3"></path>
+<path class="stroke-current text-orange-400" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="30, 100" stroke-dashoffset="-20" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+<div class="flex justify-between items-center mb-4">
+<h2 class="text-lg font-medium text-gray-800 dark:text-gray-100">Completed Learning hrs</h2>
+<span class="material-icons text-gray-400 dark:text-gray-500 text-base">info_outline</span>
+</div>
+<div class="flex items-center space-x-6">
+<div class="w-1/2">
+<p class="text-sm text-gray-500 dark:text-gray-400">by module</p>
+<p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">14,255 hrs</p>
+<p class="text-sm text-gray-500 dark:text-gray-400">total of all skills</p>
+<div class="mt-6 space-y-3">
+<div class="flex items-center text-sm">
+<span class="w-3 h-3 rounded-full bg-purple-500 mr-2"></span>
+<span class="text-gray-600 dark:text-gray-300 flex-1">Introduction</span>
+<span class="font-medium text-gray-700 dark:text-gray-200">25%</span>
+</div>
+<div class="flex items-center text-sm">
+<span class="w-3 h-3 rounded-full bg-orange-400 mr-2"></span>
+<span class="text-gray-600 dark:text-gray-300 flex-1">Delivery procedure</span>
+<span class="font-medium text-gray-700 dark:text-gray-200">25%</span>
+</div>
+<div class="flex items-center text-sm">
+<span class="w-3 h-3 rounded-full bg-teal-400 mr-2"></span>
+<span class="text-gray-600 dark:text-gray-300 flex-1">The process</span>
+<span class="font-medium text-gray-700 dark:text-gray-200">25%</span>
+</div>
+<div class="flex items-center text-sm">
+<span class="w-3 h-3 rounded-full bg-yellow-400 mr-2"></span>
+<span class="text-gray-600 dark:text-gray-300 flex-1">Approval &amp; Checks</span>
+<span class="font-medium text-gray-700 dark:text-gray-200">20%</span>
+</div>
+<div class="flex items-center text-sm">
+<span class="w-3 h-3 rounded-full bg-blue-500 mr-2"></span>
+<span class="text-gray-600 dark:text-gray-300 flex-1">Live session</span>
+<span class="font-medium text-gray-700 dark:text-gray-200">5%</span>
+</div>
+</div>
+</div>
+<div class="w-1/2 flex justify-center items-center">
+<div class="relative w-28 h-28">
+<svg class="w-full h-full" viewBox="0 0 36 36">
+<path class="stroke-current text-gray-200 dark:text-gray-700" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
+<path class="stroke-current text-purple-500" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="25, 100" stroke-linecap="round" stroke-width="3"></path>
+<path class="stroke-current text-orange-400" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="25, 100" stroke-dashoffset="-25" stroke-linecap="round" stroke-width="3"></path>
+<path class="stroke-current text-teal-400" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="25, 100" stroke-dashoffset="-50" stroke-linecap="round" stroke-width="3"></path>
+<path class="stroke-current text-yellow-400" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="20, 100" stroke-dashoffset="-75" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+</div>
+</div>
+</div>
+<div class="flex space-x-6 text-xs text-gray-500 dark:text-gray-400 mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+<p>Overall time was spent:</p>
+<div class="flex items-center">
+<span class="w-2 h-2 rounded-full bg-gray-400 mr-2"></span>
+<span>40% on modules</span>
+</div>
+<div class="flex items-center">
+<span class="w-2 h-2 rounded-full bg-gray-400 mr-2"></span>
+<span>60% on artefacts</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+<div class="p-6">
+<div class="flex items-center border-b border-gray-200 dark:border-gray-700">
+<button class="py-2 px-4 -mb-px border-b-2 border-primary text-primary font-medium text-sm">By users</button>
+<button class="py-2 px-4 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-sm">By modules</button>
+</div>
+<div class="flex flex-wrap justify-between items-center mt-6 gap-4">
+<div class="relative">
+<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">search</span>
+<input class="w-64 pl-10 pr-4 py-2 bg-gray-100 dark:bg-slate-800 border-gray-200 dark:border-gray-700 rounded-md focus:ring-primary focus:border-primary text-sm" placeholder="Search" type="text"/>
+</div>
+<div class="flex items-center space-x-4">
+<button class="text-sm font-medium text-white">Advanced search</button>
+<button class="bg-primary text-white px-4 py-2 rounded-md flex items-center text-sm font-medium hover:opacity-90">
+                                Export
+                                <span class="material-icons text-base ml-2">download</span>
+</button>
+</div>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-sm text-left">
+<thead class="bg-gray-50 dark:bg-slate-800 text-xs text-gray-500 dark:text-gray-400 uppercase">
+<tr>
+<th class="px-6 py-3 font-medium" scope="col">
+<div class="flex items-center">User name <span class="material-icons text-base ml-1">arrow_upward</span></div>
+</th>
+<th class="px-6 py-3 font-medium" scope="col">
+<div class="flex items-center">Total score <span class="material-icons text-base ml-1">arrow_upward</span></div>
+</th>
+<th class="px-6 py-3 font-medium" scope="col">
+<div class="flex items-center">% Overall Completion</div>
+</th>
+<th class="px-6 py-3 font-medium" scope="col">
+<div class="flex items-center">Learning hrs <span class="material-icons text-base ml-1">arrow_upward</span></div>
+</th>
+<th class="px-6 py-3 font-medium" scope="col">
+<div class="flex items-center">Mandatory Modules Completed <span class="material-icons text-base ml-1">arrow_upward</span></div>
+</th>
+<th class="px-6 py-3 font-medium" scope="col">
+<div class="flex items-center">Employee code <span class="material-icons text-base ml-1">arrow_upward</span></div>
+</th>
+<th class="px-6 py-3 font-medium" scope="col">
+<div class="flex items-center">Designation <span class="material-icons text-base ml-1">arrow_upward</span></div>
+</th>
+<th class="px-6 py-3 font-medium" scope="col">
+<div class="flex items-center">Zone <span class="material-icons text-base ml-1">arrow_upward</span></div>
+</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50">
+<td class="px-6 py-4 font-medium text-blue-600 dark:text-blue-400 whitespace-nowrap">Chris</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center text-xs">
+<span class="text-green-600 dark:text-green-400 mr-1">64 <span class="material-icons" style="font-size: 1em; vertical-align: text-bottom;">arrow_upward</span></span>
+<span class="text-red-600 dark:text-red-400">15 <span class="material-icons" style="font-size: 1em; vertical-align: text-bottom;">arrow_downward</span></span>
+</div>
+<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1 mt-1">
+<div class="bg-gray-400 h-1 rounded-full" style="width: 50%"></div>
+</div>
+<div class="flex justify-between text-xs text-gray-400 mt-1"><span>0</span><span>100+</span></div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center space-x-2">
+<span class="inline-block bg-yellow-400 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">50%</span>
+<div class="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5"><div class="bg-yellow-400 h-1.5 rounded-full" style="width: 50%"></div></div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap"><span class="font-semibold text-gray-800 dark:text-gray-100">5 hrs</span> <span class="text-gray-500 dark:text-gray-400">/ 150 Hrs</span></td>
+<td class="px-6 py-4 whitespace-nowrap"><div class="relative w-10 h-10"><svg class="w-full h-full" viewBox="0 0 36 36"><path class="stroke-current text-gray-200 dark:text-gray-700" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="4"></path><path class="stroke-current text-yellow-400" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="50, 100" stroke-width="4"></path></svg><span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-gray-800 dark:text-gray-100">2/4</span></div></td>
+<td class="px-6 py-4 whitespace-nowrap">145069</td>
+<td class="px-6 py-4 whitespace-nowrap">Trainee</td>
+<td class="px-6 py-4 whitespace-nowrap">Singapore</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50">
+<td class="px-6 py-4 font-medium text-blue-600 dark:text-blue-400 whitespace-nowrap">Maya</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center text-xs">
+<span class="text-green-600 dark:text-green-400 mr-1">24 <span class="material-icons" style="font-size: 1em; vertical-align: text-bottom;">arrow_upward</span></span>
+<span class="text-red-600 dark:text-red-400">0 <span class="material-icons" style="font-size: 1em; vertical-align: text-bottom;">arrow_downward</span></span>
+</div>
+<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1 mt-1">
+<div class="bg-gray-400 h-1 rounded-full" style="width: 40%"></div>
+</div>
+<div class="flex justify-between text-xs text-gray-400 mt-1"><span>0</span><span>100+</span></div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center space-x-2">
+<span class="inline-block bg-yellow-400 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">40%</span>
+<div class="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5"><div class="bg-yellow-400 h-1.5 rounded-full" style="width: 40%"></div></div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap"><span class="font-semibold text-gray-800 dark:text-gray-100">105 hrs</span> <span class="text-gray-500 dark:text-gray-400">/ 150 Hrs</span></td>
+<td class="px-6 py-4 whitespace-nowrap"><div class="relative w-10 h-10"><svg class="w-full h-full" viewBox="0 0 36 36"><path class="stroke-current text-gray-200 dark:text-gray-700" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="4"></path><path class="stroke-current text-yellow-400" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="50, 100" stroke-width="4"></path></svg><span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-gray-800 dark:text-gray-100">2/4</span></div></td>
+<td class="px-6 py-4 whitespace-nowrap">145058</td>
+<td class="px-6 py-4 whitespace-nowrap">Trainee</td>
+<td class="px-6 py-4 whitespace-nowrap">Indonesia</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50">
+<td class="px-6 py-4 font-medium text-blue-600 dark:text-blue-400 whitespace-nowrap">Helene</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center text-xs">
+<span class="text-green-600 dark:text-green-400 mr-1">89 <span class="material-icons" style="font-size: 1em; vertical-align: text-bottom;">arrow_upward</span></span>
+<span class="text-red-600 dark:text-red-400">15 <span class="material-icons" style="font-size: 1em; vertical-align: text-bottom;">arrow_downward</span></span>
+</div>
+<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1 mt-1">
+<div class="bg-gray-400 h-1 rounded-full" style="width: 15%"></div>
+</div>
+<div class="flex justify-between text-xs text-gray-400 mt-1"><span>0</span><span>100+</span></div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center space-x-2">
+<span class="text-gray-500 dark:text-gray-400">-</span>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap"><span class="font-semibold text-gray-800 dark:text-gray-100">15 hrs</span> <span class="text-gray-500 dark:text-gray-400">/ 195 Hrs</span></td>
+<td class="px-6 py-4 whitespace-nowrap text-gray-500 dark:text-gray-400">-</td>
+<td class="px-6 py-4 whitespace-nowrap">138396</td>
+<td class="px-6 py-4 whitespace-nowrap">Assistant Manager</td>
+<td class="px-6 py-4 whitespace-nowrap">Singapore</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50">
+<td class="px-6 py-4 font-medium text-blue-600 dark:text-blue-400 whitespace-nowrap">Alexander</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center text-xs">
+<span class="text-green-600 dark:text-green-400 mr-1">34 <span class="material-icons" style="font-size: 1em; vertical-align: text-bottom;">arrow_upward</span></span>
+<span class="text-red-600 dark:text-red-400">15 <span class="material-icons" style="font-size: 1em; vertical-align: text-bottom;">arrow_downward</span></span>
+</div>
+<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1 mt-1">
+<div class="bg-gray-400 h-1 rounded-full" style="width: 80%"></div>
+</div>
+<div class="flex justify-between text-xs text-gray-400 mt-1"><span>0</span><span>100+</span></div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center space-x-2">
+<span class="inline-block bg-green-500 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">80%</span>
+<div class="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5"><div class="bg-green-500 h-1.5 rounded-full" style="width: 80%"></div></div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap"><span class="font-semibold text-gray-800 dark:text-gray-100">85 hrs</span> <span class="text-gray-500 dark:text-gray-400">/ 155 Hrs</span></td>
+<td class="px-6 py-4 whitespace-nowrap"><div class="relative w-10 h-10"><svg class="w-full h-full" viewBox="0 0 36 36"><path class="stroke-current text-gray-200 dark:text-gray-700" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="4"></path><path class="stroke-current text-green-500" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="75, 100" stroke-width="4"></path></svg><span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-gray-800 dark:text-gray-100">3/4</span></div></td>
+<td class="px-6 py-4 whitespace-nowrap">137642</td>
+<td class="px-6 py-4 whitespace-nowrap">Skillmaster</td>
+<td class="px-6 py-4 whitespace-nowrap">Australia</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50">
+<td class="px-6 py-4 font-medium text-blue-600 dark:text-blue-400 whitespace-nowrap">Aman</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center text-xs">
+<span class="text-green-600 dark:text-green-400 mr-1">34 <span class="material-icons" style="font-size: 1em; vertical-align: text-bottom;">arrow_upward</span></span>
+<span class="text-red-600 dark:text-red-400">15 <span class="material-icons" style="font-size: 1em; vertical-align: text-bottom;">arrow_downward</span></span>
+</div>
+<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1 mt-1">
+<div class="bg-gray-400 h-1 rounded-full" style="width: 12%"></div>
+</div>
+<div class="flex justify-between text-xs text-gray-400 mt-1"><span>0</span><span>100+</span></div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center space-x-2">
+<span class="inline-block bg-red-400 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">12%</span>
+<div class="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5"><div class="bg-red-400 h-1.5 rounded-full" style="width: 12%"></div></div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap"><span class="font-semibold text-gray-800 dark:text-gray-100">85 hrs</span> <span class="text-gray-500 dark:text-gray-400">/ 155 Hrs</span></td>
+<td class="px-6 py-4 whitespace-nowrap"><div class="relative w-10 h-10"><svg class="w-full h-full" viewBox="0 0 36 36"><path class="stroke-current text-gray-200 dark:text-gray-700" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="4"></path><path class="stroke-current text-red-400" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="25, 100" stroke-width="4"></path></svg><span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-gray-800 dark:text-gray-100">1/4</span></div></td>
+<td class="px-6 py-4 whitespace-nowrap">145081</td>
+<td class="px-6 py-4 whitespace-nowrap">Trainee</td>
+<td class="px-6 py-4 whitespace-nowrap">Middle East</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+</div>
+
+</body></html>

@@ -1,0 +1,327 @@
+
+const AssessmentsTab: React.FC<{ onSelectAssessment: (a: UserExternalAssessment) => void }> = ({ onSelectAssessment }) => {
+  const { user } = useAuth();
+  const [assignments, setAssignments] = useState<UserExternalAssessment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user?.id) {
+      loadAssignments();
+    }
+  }, [user?.id]);
+
+  const loadAssignments = async () => {
+    try {
+      setLoading(true);
+      const data = await externalAssessmentService.getUserAssignments(user!.id);
+      setAssignments(data);
+    } catch (err) {
+      console.error('Error loading assessments:', err);
+      setError('Failed to load assessments.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="text-center p-8 text-red-500">{error}</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      {assignments.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {assignments.map((assignment) => (
+            <AssessmentCard 
+              key={assignment.id} 
+              assignment={assignment} 
+              onClick={() => onSelectAssessment(assignment)} 
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12 px-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+          <span className="material-symbols-rounded text-5xl text-slate-400 block mb-4">assignment_turned_in</span>
+          <h3 className="font-semibold text-slate-800 mb-1">No Assessments Assigned</h3>
+          <p className="text-sm text-slate-500">You currently have no external assessments assigned to you.</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const AssessmentCard: React.FC<{ assignment: UserExternalAssessment; onClick: () => void }> = ({ assignment, onClick }) => {
+  const { assessment } = assignment;
+  if (!assessment) return null;
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'assigned': return 'bg-blue-100 text-blue-700';
+      case 'in_progress': return 'bg-yellow-100 text-yellow-700';
+      case 'submitted': return 'bg-orange-100 text-orange-700';
+      case 'evaluated': return 'bg-green-100 text-green-700';
+      default: return 'bg-slate-100 text-slate-700';
+    }
+  };
+
+  return (
+    <div 
+      className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-lg transition-all cursor-pointer flex flex-col"
+      onClick={onClick}
+    >
+      <div className="aspect-video relative bg-slate-100">
+        <img 
+          src={assessment.thumbnail_url || 'https://picsum.photos/400/225?random=' + assessment.id} 
+          alt={assessment.title} 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute top-3 right-3">
+          <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${getStatusColor(assignment.status)}`}>
+            {assignment.status}
+          </span>
+        </div>
+      </div>
+      <div className="p-5 flex-1 flex flex-col">
+        <div className="flex justify-between items-start mb-2">
+          <span className="text-[10px] font-bold text-primary-600 uppercase tracking-widest">{assessment.provider}</span>
+          <div className="flex items-center gap-1 text-slate-500 text-xs">
+            <span className="material-symbols-rounded text-sm">schedule</span>
+            {assessment.duration} min
+          </div>
+        </div>
+        <h3 className="font-bold text-slate-900 mb-2 line-clamp-2 leading-snug">{assessment.title}</h3>
+        
+        <div className="mt-auto pt-4 flex items-center justify-between border-t border-slate-50">
+           <div className="text-[10px] text-slate-400">
+             {assignment.attempt_count > 0 ? `${assignment.attempt_count} attempts` : 'No attempts yet'}
+           </div>
+           <button className="text-primary-600 text-xs font-bold flex items-center gap-1 hover:underline">
+             Details <span className="material-symbols-rounded text-xs">arrow_forward</span>
+           </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const AssessmentLaunchModal: React.FC<{ 
+  assignment: UserExternalAssessment; 
+  onClose: () => void;
+  onRefresh: () => void;
+}> = ({ assignment, onClose, onRefresh }) => {
+  const { assessment } = assignment;
+  const [submitting, setSubmitting] = useState(false);
+  const [showSubmitForm, setShowSubmitForm] = useState(assignment.status === 'in_progress');
+  const [score, setScore] = useState('');
+  const [cefrLevel, setCefrLevel] = useState('');
+  const [certUrl, setCertUrl] = useState('');
+  const [resultUrl, setResultUrl] = useState('');
+
+  if (!assessment) return null;
+
+  const handleStart = async () => {
+    try {
+      setSubmitting(true);
+      await externalAssessmentService.startAssessment(assignment.id, assessment.duration);
+      window.open(assessment.external_url, '_blank');
+      setShowSubmitForm(true);
+      // We should ideally refresh the state here but for now just show the form
+    } catch (err) {
+      console.error('Error starting assessment:', err);
+      alert('Failed to start assessment');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setSubmitting(true);
+      await externalAssessmentService.submitResult({
+        assignment_id: assignment.id,
+        user_id: assignment.user_id,
+        assessment_id: assessment.id,
+        score: score ? parseFloat(score) : undefined,
+        cefr_level: cefrLevel || undefined,
+        certificate_url: certUrl || undefined,
+        result_url: resultUrl || undefined
+      });
+      alert('Assessment submitted successfully! Waiting for verification.');
+      onRefresh();
+      onClose();
+    } catch (err) {
+      console.error('Error submitting result:', err);
+      alert('Failed to submit assessment results');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+      <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300">
+        <div className="relative h-48 bg-slate-100">
+          <img 
+            src={assessment.thumbnail_url || 'https://picsum.photos/800/400?random=' + assessment.id} 
+            alt={assessment.title} 
+            className="w-full h-full object-cover"
+          />
+          <button 
+            onClick={onClose}
+            className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 backdrop-blur-md text-white rounded-full p-2 transition-colors"
+          >
+            <span className="material-symbols-rounded">close</span>
+          </button>
+          <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+             <span className="text-white/70 text-xs font-bold uppercase tracking-widest">{assessment.provider}</span>
+             <h2 className="text-white text-2xl font-bold">{assessment.title}</h2>
+          </div>
+        </div>
+
+        <div className="p-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
+          {!showSubmitForm ? (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+                  <span className="material-symbols-rounded text-primary-600">info</span>
+                  Instructions
+                </h3>
+                <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap">
+                  {assessment.instructions || 'No specific instructions provided.'}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Duration</span>
+                  <div className="flex items-center gap-2 text-slate-700 font-bold">
+                    <span className="material-symbols-rounded text-lg text-primary-600">timer</span>
+                    {assessment.duration} Minutes
+                  </div>
+                </div>
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Attempts</span>
+                  <div className="flex items-center gap-2 text-slate-700 font-bold">
+                    <span className="material-symbols-rounded text-lg text-primary-600">history</span>
+                    {assignment.attempt_count} / {assessment.attempt_limit}
+                  </div>
+                </div>
+              </div>
+
+              {assignment.status === 'submitted' || assignment.status === 'evaluated' ? (
+                <div className="bg-green-50 border border-green-100 p-4 rounded-2xl text-green-700 text-sm flex items-start gap-3">
+                  <span className="material-symbols-rounded">check_circle</span>
+                  <div>
+                    <p className="font-bold">Assessment Submitted</p>
+                    <p className="opacity-80">You have already submitted this assessment. Status: <span className="capitalize font-bold">{assignment.status}</span></p>
+                  </div>
+                </div>
+              ) : (
+                <div className="pt-4">
+                  <button 
+                    onClick={handleStart}
+                    disabled={submitting || (assessment.attempt_limit > 0 && assignment.attempt_count >= assessment.attempt_limit)}
+                    className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-slate-300 text-white py-4 rounded-2xl font-bold transition-all shadow-lg shadow-primary-200 flex items-center justify-center gap-2"
+                  >
+                    <span className="material-symbols-rounded">rocket_launch</span>
+                    Start Assessment
+                  </button>
+                  <p className="text-center text-[10px] text-slate-400 mt-3">
+                    Clicking "Start" will open the assessment in a new tab.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-5">
+               <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl text-blue-700 text-xs flex items-start gap-3 mb-2">
+                  <span className="material-symbols-rounded">info</span>
+                  <p>Please enter your results below after completing the external assessment. You may also need to upload your certificate.</p>
+               </div>
+
+               <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 ml-1">Score (optional)</label>
+                    <input 
+                      type="number" 
+                      value={score} 
+                      onChange={(e) => setScore(e.target.value)}
+                      placeholder="e.g. 85"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 ml-1">CEFR Level (optional)</label>
+                    <select 
+                      value={cefrLevel} 
+                      onChange={(e) => setCefrLevel(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                    >
+                      <option value="">Select Level</option>
+                      <option value="A1">A1 - Beginner</option>
+                      <option value="A2">A2 - Elementary</option>
+                      <option value="B1">B1 - Intermediate</option>
+                      <option value="B2">B2 - Upper Intermediate</option>
+                      <option value="C1">C1 - Advanced</option>
+                      <option value="C2">C2 - Proficient</option>
+                    </select>
+                  </div>
+               </div>
+
+               <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5 ml-1">Result URL</label>
+                  <input 
+                    type="url" 
+                    value={resultUrl} 
+                    onChange={(e) => setResultUrl(e.target.value)}
+                    placeholder="https://..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                  />
+               </div>
+
+               <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5 ml-1">Certificate URL / Link</label>
+                  <input 
+                    type="url" 
+                    value={certUrl} 
+                    onChange={(e) => setCertUrl(e.target.value)}
+                    placeholder="Link to your certificate PDF"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                  />
+               </div>
+
+               <div className="pt-2 flex gap-3">
+                  <button 
+                    type="button"
+                    onClick={() => setShowSubmitForm(false)}
+                    className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-bold transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit"
+                    disabled={submitting}
+                    className="flex-1 bg-primary-600 hover:bg-primary-700 text-white py-3 rounded-xl font-bold transition-all shadow-lg shadow-primary-200"
+                  >
+                    Submit Results
+                  </button>
+               </div>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MyLearningPage;

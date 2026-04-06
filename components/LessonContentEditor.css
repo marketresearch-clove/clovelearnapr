@@ -1,0 +1,117 @@
+.ql-toolbar {
+  border-color: #e5e7eb !important;
+  background-color: #f9fafb !important;
+}
+
+.ql-container {
+  border-color: #e5e7eb !important;
+  border-top: none !important;
+  font-family: inherit;
+  font-size: 16px;
+}
+
+.ql-editor {
+  min-height: 200px;
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+}
+
+.ql-editor.ql-blank::before {
+  color: #9ca3af !important;
+}
+
+.ql-editor::placeholder {
+  color: #9ca3af;
+}
+
+.ql-snow .ql-fill,
+.ql-snow .ql-stroke.ql-fill {
+  fill: #374151;
+}
+
+.ql-snow .ql-stroke {
+  stroke: #374151;
+}
+
+.ql-snow .ql-picker-label {
+  color: #374151;
+}
+
+.ql-snow .ql-picker-item {
+  color: #374151;
+}
+
+.ql-snow .ql-picker-item.ql-selected,
+.ql-snow .ql-picker-label.ql-active,
+.ql-snow .ql-picker-label:hover,
+.ql-snow .ql-picker-item:hover,
+.ql-snow .ql-picker-item.ql-selected:hover {
+  color: #4f46e5;
+}
+
+.ql-snow a {
+  color: #3b82f6;
+}
+
+.dark .ql-toolbar {
+  border-color: #374151 !important;
+  background-color: #1f2937 !important;
+}
+
+.dark .ql-container {
+  border-color: #374151 !important;
+}
+
+.dark .ql-editor {
+  color: #f3f4f6 !important;
+  background-color: #111827 !important;
+}
+
+.dark .ql-editor.ql-blank::before {
+  color: #6b7280 !important;
+}
+
+.dark .ql-snow .ql-fill,
+.dark .ql-snow .ql-stroke.ql-fill {
+  fill: #d1d5db;
+}
+
+.dark .ql-snow .ql-stroke {
+  stroke: #d1d5db;
+}
+
+.dark .ql-snow .ql-picker-label {
+  color: #d1d5db;
+}
+
+.dark .ql-snow .ql-picker-item {
+  color: #d1d5db;
+}
+
+.dark .ql-snow .ql-picker-item.ql-selected,
+.dark .ql-snow .ql-picker-label.ql-active,
+.dark .ql-snow .ql-picker-label:hover,
+.dark .ql-snow .ql-picker-item:hover,
+.dark .ql-snow .ql-picker-item.ql-selected:hover {
+  color: #818cf8;
+}
+
+.dark .ql-snow a {
+  color: #60a5fa;
+}
+
+.ql-snow .ql-picker-item:not(.ql-selected) {
+  color: #6b7280;
+}
+
+.dark .ql-snow .ql-picker-item:not(.ql-selected) {
+  color: #9ca3af;
+}
+
+.ql-toolbar.ql-snow .ql-formats {
+  margin-right: 15px;
+}
+
+.ql-toolbar.ql-snow .ql-picker-item {
+  font-size: 14px;
+}

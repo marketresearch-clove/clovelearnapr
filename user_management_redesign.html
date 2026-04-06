@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <title>Clove Learning Portal - User Management (Redesigned)</title>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f0f4f7",
+                        "primary-container": "#dbe1ff",
+                        "on-surface": "#2a3439",
+                        "on-secondary-fixed": "#314055",
+                        "tertiary-fixed": "#dfd5f7",
+                        "primary-fixed-dim": "#c7d3ff",
+                        "on-tertiary-fixed-variant": "#59526e",
+                        "primary-dim": "#0048c1",
+                        "on-secondary-container": "#435368",
+                        "surface-tint": "#0053db",
+                        "secondary-container": "#d3e4fe",
+                        "background": "#f7f9fb",
+                        "on-primary-fixed-variant": "#0050d4",
+                        "error-container": "#fe8983",
+                        "surface": "#f7f9fb",
+                        "on-primary-container": "#0048bf",
+                        "secondary": "#506076",
+                        "on-background": "#2a3439",
+                        "on-primary-fixed": "#003798",
+                        "surface-variant": "#d9e4ea",
+                        "primary-fixed": "#dbe1ff",
+                        "inverse-primary": "#618bff",
+                        "error": "#9f403d",
+                        "tertiary-fixed-dim": "#d0c7e8",
+                        "secondary-fixed": "#d3e4fe",
+                        "surface-container-high": "#e1e9ee",
+                        "outline-variant": "#a9b4b9",
+                        "on-error-container": "#752121",
+                        "on-primary": "#f8f7ff",
+                        "outline": "#717c82",
+                        "tertiary-container": "#dfd5f7",
+                        "secondary-dim": "#44546a",
+                        "on-tertiary-fixed": "#3c3650",
+                        "error-dim": "#4e0309",
+                        "tertiary": "#625b77",
+                        "inverse-on-surface": "#9a9d9f",
+                        "tertiary-dim": "#564f6b",
+                        "on-tertiary": "#fdf7ff",
+                        "surface-dim": "#cfdce3",
+                        "surface-container-highest": "#d9e4ea",
+                        "on-surface-variant": "#566166",
+                        "inverse-surface": "#0b0f10",
+                        "on-tertiary-container": "#4f4964",
+                        "on-secondary": "#f7f9ff",
+                        "surface-bright": "#f7f9fb",
+                        "surface-container": "#e8eff3",
+                        "primary": "#0053db",
+                        "secondary-fixed-dim": "#c5d6f0",
+                        "on-error": "#fff7f6",
+                        "on-secondary-fixed-variant": "#4d5d73"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .tab-active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(to right, #0053db, #0048c1);
+            border-radius: 2px 2px 0 0;
+        }
+
+        .modal-hidden {
+            display: none;
+        }
+
+        .modal-visible {
+            display: flex;
+        }
+    </style>
+</head>
+
+<body class="bg-background text-on-surface overflow-hidden">
+
+    <!-- SideNavBar -->
+    <aside
+        class="h-screen w-64 fixed left-0 top-0 bg-slate-100 dark:bg-slate-900 flex flex-col py-6 border-r border-transparent">
+        <div class="px-6 mb-10 flex items-center gap-3">
+            <div
+                class="w-10 h-10 bg-surface-container-lowest rounded-xl flex items-center justify-center overflow-hidden">
+                <span class="text-lg font-bold text-primary">C</span>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-slate-900 dark:text-white leading-tight">Clove</h1>
+                <p class="text-xs text-on-surface-variant font-medium">Learning Portal</p>
+            </div>
+        </div>
+        <nav class="flex-1 space-y-1">
+            <a class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors font-inter text-sm font-medium"
+                href="#">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span>Dashboard</span>
+            </a>
+            <a class="flex items-center gap-3 px-6 py-3 bg-slate-200 dark:bg-slate-800 text-blue-700 dark:text-blue-400 border-l-4 border-blue-700 font-inter text-sm font-medium"
+                href="#">
+                <span class="material-symbols-outlined">group</span>
+                <span>User Management</span>
+            </a>
+            <a class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors font-inter text-sm font-medium"
+                href="#">
+                <span class="material-symbols-outlined">upload_file</span>
+                <span>Bulk Updates</span>
+            </a>
+            <a class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors font-inter text-sm font-medium"
+                href="#">
+                <span class="material-symbols-outlined">account_tree</span>
+                <span>Manager Mapping</span>
+            </a>
+            <a class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors font-inter text-sm font-medium"
+                href="#">
+                <span class="material-symbols-outlined">ios_share</span>
+                <span>Data Exports</span>
+            </a>
+        </nav>
+        <div class="mt-auto px-6">
+            <div class="p-4 bg-primary-container rounded-xl">
+                <p class="text-xs font-bold text-on-primary-container mb-2">PRO PLAN</p>
+                <div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+                    <div class="h-full bg-primary" style="width: 75%"></div>
+                </div>
+                <p class="text-[10px] mt-2 text-on-primary-container">750/1000 Users Enrolled</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- TopNavBar -->
+    <header
+        class="fixed top-0 right-0 w-[calc(100%-16rem)] flex justify-between items-center h-16 px-8 ml-64 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-20">
+        <div class="flex items-center gap-6">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">User Management</h2>
+            <div class="relative w-96">
+                <span
+                    class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+                <input
+                    class="w-full bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20"
+                    placeholder="Search by name, email, or employee ID..." type="text" />
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <button
+                class="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 transition-all">
+                <span class="material-symbols-outlined">notifications</span>
+            </button>
+            <button
+                class="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 transition-all">
+                <span class="material-symbols-outlined">settings</span>
+            </button>
+            <button
+                class="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 transition-all">
+                <span class="material-symbols-outlined">help_outline</span>
+            </button>
+            <div class="h-8 w-[1px] bg-outline-variant/30 mx-2"></div>
+            <div class="flex items-center gap-3">
+                <div class="text-right">
+                    <p class="text-sm font-semibold leading-none">Admin Portal</p>
+                    <p class="text-[10px] text-on-surface-variant mt-1">Super Admin</p>
+                </div>
+                <div
+                    class="w-9 h-9 rounded-full bg-surface-container-highest overflow-hidden flex items-center justify-center text-xs font-bold text-primary">
+                    AP</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Workspace -->
+    <main class="ml-64 pt-24 px-8 pb-12 bg-background min-h-screen">
+        <!-- Tab Navigation -->
+        <div class="flex gap-8 border-b border-outline-variant/20 mb-8">
+            <button onclick="switchTab('users')"
+                class="tab-active relative px-4 py-4 text-primary font-semibold text-sm flex items-center gap-2 transition-colors">
+                <span class="material-symbols-outlined">group</span>
+                <span>Users</span>
+            </button>
+            <button onclick="switchTab('add-user')"
+                class="relative px-4 py-4 text-on-surface-variant font-medium text-sm flex items-center gap-2 hover:text-on-surface transition-colors"
+                id="add-user-tab">
+                <span class="material-symbols-outlined">person_add</span>
+                <span>Add New User</span>
+            </button>
+            <button onclick="switchTab('bulk-import')"
+                class="relative px-4 py-4 text-on-surface-variant font-medium text-sm flex items-center gap-2 hover:text-on-surface transition-colors"
+                id="bulk-import-tab">
+                <span class="material-symbols-outlined">cloud_upload</span>
+                <span>Bulk Import</span>
+            </button>
+        </div>
+
+        <!-- TAB 1: Users Table -->
+        <div id="tab-users" class="tab-content">
+            <!-- Action Toolbar -->
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex gap-2">
+                    <button
+                        class="flex items-center gap-2 px-4 py-2 bg-secondary-container text-on-secondary-container rounded-xl text-sm font-medium hover:bg-secondary-fixed transition-colors">
+                        <span class="material-symbols-outlined text-sm">filter_list</span>
+                        Advanced Filters
+                    </button>
+                    <div class="h-8 w-[1px] bg-outline-variant/30 mx-2 self-center"></div>
+                    <button
+                        class="flex items-center gap-2 px-4 py-2 text-primary font-medium text-sm hover:bg-primary-container rounded-xl transition-colors">
+                        <span class="material-symbols-outlined text-sm">cloud_download</span>
+                        Export CSV
+                    </button>
+                    <button
+                        class="flex items-center gap-2 px-4 py-2 text-primary font-medium text-sm hover:bg-primary-container rounded-xl transition-colors">
+                        <span class="material-symbols-outlined text-sm">history</span>
+                        Audit Log
+                    </button>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="switchTab('bulk-import')"
+                        class="flex items-center gap-2 px-5 py-2 bg-surface-container-highest text-on-surface font-medium rounded-xl text-sm hover:bg-slate-200 transition-colors">
+                        <span class="material-symbols-outlined text-sm">upload_file</span>
+                        Bulk Action
+                    </button>
+                    <button onclick="openAddUserModal()"
+                        class="flex items-center gap-2 px-5 py-2 bg-gradient-to-br from-primary to-primary-dim text-white font-medium rounded-xl text-sm shadow-lg shadow-primary/20 active:scale-95 transition-all hover:shadow-xl">
+                        <span class="material-symbols-outlined text-sm">add</span>
+                        Add New User
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Stats -->
+            <div class="grid grid-cols-4 gap-6 mb-10">
+                <div class="bg-surface-container-lowest p-6 rounded-xl border-b-2 border-primary/10">
+                    <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Total Users
+                    </p>
+                    <h3 class="text-3xl font-bold">12,482</h3>
+                    <p class="text-xs text-green-600 mt-2 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs">trending_up</span>
+                        +12% this month
+                    </p>
+                </div>
+                <div class="bg-surface-container-lowest p-6 rounded-xl border-b-2 border-primary/10">
+                    <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Active Now
+                    </p>
+                    <h3 class="text-3xl font-bold">1,102</h3>
+                    <p class="text-xs text-on-surface-variant mt-2">Currently engaged</p>
+                </div>
+                <div class="bg-surface-container-lowest p-6 rounded-xl border-b-2 border-primary/10">
+                    <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Avg.
+                        Completion</p>
+                    <h3 class="text-3xl font-bold">68.4%</h3>
+                    <div class="w-full bg-surface-container mt-3 h-1 rounded-full">
+                        <div class="bg-primary h-full rounded-full" style="width: 68%"></div>
+                    </div>
+                </div>
+                <div class="bg-surface-container-lowest p-6 rounded-xl border-b-2 border-primary/10">
+                    <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">System Health
+                    </p>
+                    <div class="flex items-center gap-2 mt-2">
+                        <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                        <span class="text-lg font-bold">Stable</span>
+                    </div>
+                    <p class="text-xs text-on-surface-variant mt-1">Uptime 99.98%</p>
+                </div>
+            </div>
+
+            <!-- User Table -->
+            <div class="bg-surface-container-lowest rounded-xl overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-surface-container-low">
+                                <th
+                                    class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
+                                    <div class="flex items-center gap-2">
+                                        <input class="rounded border-outline-variant text-primary focus:ring-primary"
+                                            type="checkbox" />
+                                        Name & Employee ID
+                                    </div>
+                                </th>
+                                <th
+                                    class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
+                                    Email Address</th>
+                                <th
+                                    class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
+                                    Role Type</th>
+                                <th
+                                    class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
+                                    Enrollment Status</th>
+                                <th
+                                    class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
+                                    Last Activity</th>
+                                <th
+                                    class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest text-right">
+                                    Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-container">
+                            <tr class="hover:bg-surface-container-low/50 transition-colors">
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-3">
+                                        <input class="rounded border-outline-variant text-primary focus:ring-primary"
+                                            type="checkbox" />
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                                            JD</div>
+                                        <div>
+                                            <p class="text-sm font-semibold">Jane Doe</p>
+                                            <p class="text-[11px] text-on-surface-variant">ID: CL-29401</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5 text-sm">jane.doe@clove-learning.com</td>
+                                <td class="px-6 py-5">
+                                    <span
+                                        class="px-2.5 py-1 bg-tertiary-container text-on-tertiary-container text-[11px] font-bold rounded-full">Manager</span>
+                                </td>
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                        <span class="text-sm font-medium">Active</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5 text-sm text-on-surface-variant font-medium">2 hours ago</td>
+                                <td class="px-6 py-5 text-right">
+                                    <button class="p-2 hover:bg-surface-container rounded-lg transition-colors">
+                                        <span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-surface-container-low/50 transition-colors">
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-3">
+                                        <input class="rounded border-outline-variant text-primary focus:ring-primary"
+                                            type="checkbox" />
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                                            SM</div>
+                                        <div>
+                                            <p class="text-sm font-semibold">Samuel Miller</p>
+                                            <p class="text-[11px] text-on-surface-variant">ID: CL-29402</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5 text-sm">s.miller@clove-learning.com</td>
+                                <td class="px-6 py-5">
+                                    <span
+                                        class="px-2.5 py-1 bg-secondary-container text-on-secondary-container text-[11px] font-bold rounded-full">Learner</span>
+                                </td>
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                        <span class="text-sm font-medium">Active</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5 text-sm text-on-surface-variant font-medium">Yesterday</td>
+                                <td class="px-6 py-5 text-right">
+                                    <button class="p-2 hover:bg-surface-container rounded-lg transition-colors">
+                                        <span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-surface-container-low/50 transition-colors">
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-3">
+                                        <input class="rounded border-outline-variant text-primary focus:ring-primary"
+                                            type="checkbox" />
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                                            AR</div>
+                                        <div>
+                                            <p class="text-sm font-semibold">Alicia Rodriguez</p>
+                                            <p class="text-[11px] text-on-surface-variant">ID: CL-29403</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5 text-sm">a.rodriguez@clove-learning.com</td>
+                                <td class="px-6 py-5">
+                                    <span
+                                        class="px-2.5 py-1 bg-tertiary-container text-on-tertiary-container text-[11px] font-bold rounded-full">Admin</span>
+                                </td>
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full bg-outline"></span>
+                                        <span class="text-sm font-medium">Inactive</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5 text-sm text-on-surface-variant font-medium">5 days ago</td>
+                                <td class="px-6 py-5 text-right">
+                                    <button class="p-2 hover:bg-surface-container rounded-lg transition-colors">
+                                        <span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-surface-container-low/50 transition-colors">
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-3">
+                                        <input class="rounded border-outline-variant text-primary focus:ring-primary"
+                                            type="checkbox" />
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                                            KT</div>
+                                        <div>
+                                            <p class="text-sm font-semibold">Kevin Thompson</p>
+                                            <p class="text-[11px] text-on-surface-variant">ID: CL-29404</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5 text-sm">k.thompson@clove-learning.com</td>
+                                <td class="px-6 py-5">
+                                    <span
+                                        class="px-2.5 py-1 bg-secondary-container text-on-secondary-container text-[11px] font-bold rounded-full">Learner</span>
+                                </td>
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full bg-error"></span>
+                                        <span class="text-sm font-medium">Suspended</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5 text-sm text-on-surface-variant font-medium">1 month ago</td>
+                                <td class="px-6 py-5 text-right">
+                                    <button class="p-2 hover:bg-surface-container rounded-lg transition-colors">
+                                        <span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-surface-container-low/50 transition-colors">
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-3">
+                                        <input class="rounded border-outline-variant text-primary focus:ring-primary"
+                                            type="checkbox" />
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                                            LY</div>
+                                        <div>
+                                            <p class="text-sm font-semibold">Lisa Yang</p>
+                                            <p class="text-[11px] text-on-surface-variant">ID: CL-29405</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5 text-sm">l.yang@clove-learning.com</td>
+                                <td class="px-6 py-5">
+                                    <span
+                                        class="px-2.5 py-1 bg-secondary-container text-on-secondary-container text-[11px] font-bold rounded-full">Learner</span>
+                                </td>
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                        <span class="text-sm font-medium">Active</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5 text-sm text-on-surface-variant font-medium">Just now</td>
+                                <td class="px-6 py-5 text-right">
+                                    <button class="p-2 hover:bg-surface-container rounded-lg transition-colors">
+                                        <span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                <div class="px-6 py-4 flex items-center justify-between border-t border-surface-container">
+                    <p class="text-sm text-on-surface-variant">Showing <span class="font-bold text-on-surface">1 -
+                            5</span> of 12,482 users</p>
+                    <div class="flex gap-1">
+                        <button
+                            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-surface-container-low text-on-surface-variant">
+                            <span class="material-symbols-outlined">chevron_left</span>
+                        </button>
+                        <button
+                            class="w-10 h-10 flex items-center justify-center rounded-xl bg-primary text-white font-bold text-sm">1</button>
+                        <button
+                            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-surface-container-low text-sm font-bold">2</button>
+                        <button
+                            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-surface-container-low text-sm font-bold">3</button>
+                        <button
+                            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-surface-container-low text-sm font-bold">4</button>
+                        <button
+                            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-surface-container-low text-on-surface-variant">
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Modules -->
+            <div class="grid grid-cols-3 gap-8 mt-12">
+                <div class="col-span-2 bg-surface-container-low p-8 rounded-xl relative overflow-hidden group">
+                    <div class="relative z-10">
+                        <h4 class="text-xl font-bold mb-2">New: AI Manager Mapping</h4>
+                        <p class="text-on-surface-variant text-sm max-w-md mb-6 leading-relaxed">
+                            Our new organizational intelligence tool automatically suggests manager assignments based on
+                            department hierarchy.
+                        </p>
+                        <button
+                            class="px-6 py-2.5 bg-primary text-white rounded-xl font-semibold text-sm hover:shadow-xl hover:shadow-primary/20 transition-all active:scale-95">
+                            Try Smart Mapping
+                        </button>
+                    </div>
+                    <div
+                        class="absolute -right-16 -bottom-16 w-64 h-64 bg-primary/5 rounded-full group-hover:scale-110 transition-transform duration-700">
+                    </div>
+                </div>
+                <div class="bg-inverse-surface text-on-primary p-8 rounded-xl flex flex-col justify-between">
+                    <div>
+                        <h4 class="text-lg font-bold mb-4">Quick Batch Update</h4>
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-primary-fixed-dim">cloud_upload</span>
+                                <p class="text-sm">Drag CSV here to sync users</p>
+                            </div>
+                            <div class="h-[1px] bg-white/10 w-full"></div>
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-primary-fixed-dim">sync</span>
+                                <p class="text-sm">Last sync: 12m ago</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button
+                        class="w-full mt-8 py-3 bg-white/10 border border-white/20 rounded-xl text-sm font-bold hover:bg-white/20 transition-all">
+                        Download Template
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: Add New User (Now as inline form instead of modal) -->
+        <div id="tab-add-user" class="tab-content modal-hidden">
+            <div class="max-w-4xl mx-auto">
+                <!-- Header -->
+                <div class="mb-10">
+                    <h3 class="text-3xl font-bold mb-2">Create New User Profile</h3>
+                    <p class="text-on-surface-variant text-lg">Add a learner account to your organization in a few
+                        simple steps</p>
+                </div>
+
+                <!-- Form Container -->
+                <div class="bg-surface-container-lowest rounded-xl p-10 shadow-lg">
+                    <form class="space-y-12">
+                        <!-- Section 1: Basic Information -->
+                        <section>
+                            <div class="flex items-center gap-3 mb-8">
+                                <div class="w-1 h-6 bg-primary rounded-full"></div>
+                                <h4 class="font-semibold text-on-surface tracking-tight uppercase text-sm opacity-70">
+                                    Basic Information</h4>
+                            </div>
+                            <div class="grid grid-cols-2 gap-6">
+                                <div class="col-span-2">
+                                    <label class="block text-xs font-medium text-on-surface-variant mb-2 ml-0.5">Full
+                                        Name *</label>
+                                    <input
+                                        class="w-full bg-surface-container-highest border-0 border-b-2 border-transparent focus:border-primary focus:ring-0 rounded-t-lg px-4 py-3 text-sm transition-all placeholder:text-slate-400"
+                                        placeholder="e.g. Julianne Sterling" type="text" required />
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-medium text-on-surface-variant mb-2 ml-0.5">Email
+                                        Address *</label>
+                                    <input
+                                        class="w-full bg-surface-container-highest border-0 border-b-2 border-transparent focus:border-primary focus:ring-0 rounded-t-lg px-4 py-3 text-sm transition-all placeholder:text-slate-400"
+                                        placeholder="j.sterling@company.com" type="email" required />
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-medium text-on-surface-variant mb-2 ml-0.5">Phone
+                                        Number</label>
+                                    <input
+                                        class="w-full bg-surface-container-highest border-0 border-b-2 border-transparent focus:border-primary focus:ring-0 rounded-t-lg px-4 py-3 text-sm transition-all placeholder:text-slate-400"
+                                        placeholder="+1 (555) 000-0000" type="tel" />
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Section 2: Role & Permissions -->
+                        <section>
+                            <div class="flex items-center gap-3 mb-8">
+                                <div class="w-1 h-6 bg-primary rounded-full"></div>
+                                <h4 class="font-semibold text-on-surface tracking-tight uppercase text-sm opacity-70">
+                                    Role & Permissions</h4>
+                            </div>
+                            <div class="grid grid-cols-2 gap-6">
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-medium text-on-surface-variant mb-2 ml-0.5">User
+                                        Role *</label>
+                                    <select
+                                        class="w-full bg-surface-container-highest border-0 border-b-2 border-transparent focus:border-primary focus:ring-0 rounded-t-lg px-4 py-3 text-sm transition-all appearance-none cursor-pointer"
+                                        required>
+                                        <option value="">Select a role</option>
+                                        <option>Standard Learner</option>
+                                        <option>Content Creator</option>
+                                        <option>Department Manager</option>
+                                        <option>System Administrator</option>
+                                    </select>
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-medium text-on-surface-variant mb-2 ml-0.5">Account
+                                        Status</label>
+                                    <div class="flex items-center gap-4 h-[46px] px-4">
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input checked="" class="text-primary focus:ring-primary h-4 w-4"
+                                                name="status" type="radio" />
+                                            <span class="text-sm text-on-surface">Active</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input class="text-primary focus:ring-primary h-4 w-4" name="status"
+                                                type="radio" />
+                                            <span class="text-sm text-on-surface">Pending</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Section 3: Organizational Mapping -->
+                        <section>
+                            <div class="flex items-center gap-3 mb-8">
+                                <div class="w-1 h-6 bg-primary rounded-full"></div>
+                                <h4 class="font-semibold text-on-surface tracking-tight uppercase text-sm opacity-70">
+                                    Organizational Mapping</h4>
+                            </div>
+                            <div class="grid grid-cols-3 gap-6">
+                                <div class="col-span-1">
+                                    <label
+                                        class="block text-xs font-medium text-on-surface-variant mb-2 ml-0.5">Department</label>
+                                    <input
+                                        class="w-full bg-surface-container-highest border-0 border-b-2 border-transparent focus:border-primary focus:ring-0 rounded-t-lg px-4 py-3 text-sm transition-all placeholder:text-slate-400"
+                                        placeholder="Engineering" type="text" />
+                                </div>
+                                <div class="col-span-1">
+                                    <label
+                                        class="block text-xs font-medium text-on-surface-variant mb-2 ml-0.5">Designation</label>
+                                    <input
+                                        class="w-full bg-surface-container-highest border-0 border-b-2 border-transparent focus:border-primary focus:ring-0 rounded-t-lg px-4 py-3 text-sm transition-all placeholder:text-slate-400"
+                                        placeholder="Senior Architect" type="text" />
+                                </div>
+                                <div class="col-span-1">
+                                    <label
+                                        class="block text-xs font-medium text-on-surface-variant mb-2 ml-0.5">Reporting
+                                        Manager</label>
+                                    <select
+                                        class="w-full bg-surface-container-highest border-0 border-b-2 border-transparent focus:border-primary focus:ring-0 rounded-t-lg px-4 py-3 text-sm transition-all appearance-none cursor-pointer">
+                                        <option>Marcus Thorne</option>
+                                        <option>Elena Rodriguez</option>
+                                        <option>Sarah Jenkins</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Action Buttons -->
+                        <div class="flex justify-between items-center pt-8 border-t border-outline-variant/20">
+                            <button onclick="switchTab('users')"
+                                class="px-6 py-2.5 text-sm font-medium text-primary hover:bg-surface-container-highest rounded-xl transition-all">
+                                Cancel
+                            </button>
+                            <div class="flex gap-3">
+                                <button type="submit"
+                                    class="px-6 py-2.5 text-sm font-medium text-on-secondary-container bg-secondary-container hover:bg-secondary-fixed-dim rounded-xl transition-all">
+                                    Save as Draft
+                                </button>
+                                <button type="submit"
+                                    class="px-8 py-2.5 text-sm font-bold text-on-primary bg-gradient-to-br from-primary to-primary-dim rounded-xl shadow-lg shadow-primary/20 active:scale-95 transition-all hover:shadow-xl">
+                                    Save & Add User
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: Bulk Import -->
+        <div id="tab-bulk-import" class="tab-content modal-hidden">
+            <div class="max-w-6xl mx-auto">
+                <!-- Step Progress Indicator -->
+                <div class="flex justify-between items-center mb-16 px-12">
+                    <div class="flex flex-col items-center gap-3 relative z-[1]">
+                        <div
+                            class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold shadow-lg shadow-primary/20">
+                            1</div>
+                        <span class="text-xs font-bold text-on-surface tracking-tight uppercase">Upload File</span>
+                    </div>
+                    <div class="flex-1 h-[2px] bg-surface-container-highest mx-[-10px] mb-7"></div>
+                    <div class="flex flex-col items-center gap-3 relative z-[1]">
+                        <div
+                            class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant font-bold">
+                            2</div>
+                        <span class="text-xs font-medium text-on-surface-variant tracking-tight uppercase">Map
+                            Columns</span>
+                    </div>
+                    <div class="flex-1 h-[2px] bg-surface-container-highest mx-[-10px] mb-7"></div>
+                    <div class="flex flex-col items-center gap-3 relative z-[1]">
+                        <div
+                            class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant font-bold">
+                            3</div>
+                        <span class="text-xs font-medium text-on-surface-variant tracking-tight uppercase">Review &
+                            Import</span>
+                    </div>
+                </div>
+
+                <!-- Content Grid -->
+                <div class="grid grid-cols-12 gap-8">
+                    <!-- Main Upload Panel -->
+                    <div class="col-span-12 lg:col-span-8">
+                        <div
+                            class="bg-surface-container-lowest rounded-xl p-8 border border-outline-variant/10 shadow-sm transition-all duration-300 hover:shadow-md">
+                            <div
+                                class="flex flex-col items-center justify-center border-2 border-dashed border-outline-variant/40 rounded-xl py-24 px-12 bg-surface/50 group cursor-pointer hover:border-primary/50 hover:bg-primary-container/5 transition-all">
+                                <div
+                                    class="w-16 h-16 rounded-full bg-primary/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                    <span class="material-symbols-outlined text-primary text-4xl"
+                                        style="font-variation-settings: 'wght' 300;">cloud_upload</span>
+                                </div>
+                                <h3 class="text-xl font-semibold mb-2">Drag and drop your file</h3>
+                                <p class="text-sm text-on-surface-variant mb-8 text-center max-w-xs">Supported formats:
+                                    .csv, .xlsx, .xls. Maximum file size is 25MB.</p>
+                                <button
+                                    class="px-8 py-3 bg-gradient-to-br from-primary to-primary-dim text-on-primary rounded-xl font-medium text-sm shadow-lg shadow-primary/15 active:scale-95 transition-all">
+                                    Choose File
+                                </button>
+                            </div>
+                            <div class="mt-8 p-4 bg-surface-container-low rounded-xl flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="material-symbols-outlined text-on-surface-variant">info</span>
+                                    <span class="text-sm text-on-surface-variant">Confused about the format?</span>
+                                </div>
+                                <a class="text-sm font-bold text-primary flex items-center gap-1 hover:underline">
+                                    <span class="material-symbols-outlined text-[18px]">download</span>
+                                    Download Sample Template
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Secondary Guidance Column -->
+                    <div class="col-span-12 lg:col-span-4 space-y-8">
+                        <!-- Guidelines Card -->
+                        <div class="bg-surface-container-low rounded-xl p-6">
+                            <h4 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant mb-6">Import
+                                Guidelines</h4>
+                            <ul class="space-y-4">
+                                <li class="flex gap-4">
+                                    <div
+                                        class="w-5 h-5 rounded-full bg-primary-container text-primary flex items-center justify-center shrink-0">
+                                        <span class="material-symbols-outlined text-[14px]"
+                                            style="font-variation-settings: 'wght' 700;">check</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold">Unique Identifiers</p>
+                                        <p class="text-xs text-on-surface-variant mt-1 leading-relaxed">Ensure every row
+                                            has a unique email or ID.</p>
+                                    </div>
+                                </li>
+                                <li class="flex gap-4">
+                                    <div
+                                        class="w-5 h-5 rounded-full bg-primary-container text-primary flex items-center justify-center shrink-0">
+                                        <span class="material-symbols-outlined text-[14px]"
+                                            style="font-variation-settings: 'wght' 700;">check</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold">Date Format</p>
+                                        <p class="text-xs text-on-surface-variant mt-1 leading-relaxed">Use YYYY-MM-DD
+                                            for all dates.</p>
+                                    </div>
+                                </li>
+                                <li class="flex gap-4">
+                                    <div
+                                        class="w-5 h-5 rounded-full bg-primary-container text-primary flex items-center justify-center shrink-0">
+                                        <span class="material-symbols-outlined text-[14px]"
+                                            style="font-variation-settings: 'wght' 700;">check</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold">Mandatory Fields</p>
+                                        <p class="text-xs text-on-surface-variant mt-1 leading-relaxed">First, Last
+                                            Name, and Email required.</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Help Module -->
+                        <div
+                            class="relative overflow-hidden rounded-xl p-6 bg-slate-900 text-white shadow-xl shadow-slate-900/10">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-primary/20 blur-3xl -mr-16 -mt-16"></div>
+                            <h4 class="text-lg font-bold mb-2">Need Help?</h4>
+                            <p class="text-sm text-slate-300 mb-6 leading-relaxed">Having issues? Our support team is
+                                available 24/7.</p>
+                            <button
+                                class="text-sm font-bold border-b border-white/30 pb-1 hover:border-white transition-all">
+                                Talk to Support
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Bar -->
+                <div class="mt-12 flex items-center justify-between border-t border-outline-variant/10 pt-8">
+                    <button onclick="switchTab('users')"
+                        class="px-6 py-2 text-on-surface-variant font-bold text-sm hover:text-on-surface transition-colors">
+                        Cancel
+                    </button>
+                    <div class="flex gap-4">
+                        <button
+                            class="px-8 py-3 bg-secondary-container text-on-secondary-container rounded-xl font-bold text-sm hover:brightness-95 transition-all">
+                            Save as Draft
+                        </button>
+                        <button
+                            class="px-8 py-3 bg-gradient-to-br from-primary to-primary-dim text-on-primary rounded-xl font-bold text-sm shadow-lg shadow-primary/20 opacity-50 cursor-not-allowed">
+                            Continue to Mapping
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- JavaScript for Tab Switching -->
+    <script>
+        function switchTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.add('modal-hidden'));
+
+            // Remove active state from all tab buttons
+            const tabButtons = document.querySelectorAll('[id*="tab"]');
+            tabButtons.forEach(btn => btn.classList.remove('tab-active'));
+
+            // Show selected tab
+            const selectedTab = document.getElementById(`tab-${tabName}`);
+            if (selectedTab) {
+                selectedTab.classList.remove('modal-hidden');
+            }
+
+            // Add active state to clicked button
+            const activeButton = document.getElementById(`${tabName}-tab`);
+            if (activeButton) {
+                activeButton.classList.add('tab-active');
+            }
+        }
+
+        function openAddUserModal() {
+            switchTab('add-user');
+        }
+
+        // Set initial active tab (users tab)
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('[id="users-tab"]')?.classList.add('tab-active');
+        });
+    </script>
+
+</body>
+
+</html>

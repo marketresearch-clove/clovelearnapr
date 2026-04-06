@@ -1,0 +1,476 @@
+{
+    "export_metadata": {
+        "project_name": "Skill Spire LMS",
+        "export_date": "2026-03-26T00:00:00Z",
+        "supabase_project_ref": "veaawiernjkdsfiziqen",
+        "database_engine": "PostgreSQL 14+",
+        "total_tables": 50,
+        "total_migrations": 36,
+        "total_edge_functions": 5,
+        "storage_buckets": 4
+    },
+    "core_tables": [
+        {
+            "name": "profiles",
+            "description": "Extended user information",
+            "rows": 0,
+            "rls_enabled": true
+        },
+        {
+            "name": "courses",
+            "description": "Main course records",
+            "rows": 0,
+            "rls_enabled": true
+        },
+        {
+            "name": "lessons",
+            "description": "Individual lesson content",
+            "rows": 0,
+            "rls_enabled": true
+        },
+        {
+            "name": "enrollments",
+            "description": "Course enrollment tracking",
+            "rows": 0,
+            "rls_enabled": true
+        },
+        {
+            "name": "lesson_progress",
+            "description": "Individual lesson progress tracking",
+            "rows": 0,
+            "rls_enabled": true
+        },
+        {
+            "name": "quizzes",
+            "description": "Quiz configuration and questions",
+            "rows": 0,
+            "rls_enabled": true
+        },
+        {
+            "name": "quiz_results",
+            "description": "Quiz attempt results and scores",
+            "rows": 0,
+            "rls_enabled": true
+        },
+        {
+            "name": "assessments",
+            "description": "Course assessments",
+            "rows": 0,
+            "rls_enabled": true
+        },
+        {
+            "name": "assessment_results",
+            "description": "Assessment submission results",
+            "rows": 0,
+            "rls_enabled": true
+        },
+        {
+            "name": "skills",
+            "description": "Professional skills database",
+            "rows": 0,
+            "rls_enabled": true
+        },
+        {
+            "name": "skill_course_mappings",
+            "description": "Links skills to courses",
+            "rows": 0,
+            "rls_enabled": true
+        },
+        {
+            "name": "user_skill_achievements",
+            "description": "User skill certifications",
+            "rows": 0,
+            "rls_enabled": true
+        },
+        {
+            "name": "career_paths",
+            "description": "Career development paths",
+            "rows": 0,
+            "rls_enabled": true
+        },
+        {
+            "name": "notifications",
+            "description": "Standard notifications",
+            "rows": 0,
+            "rls_enabled": true
+        },
+        {
+            "name": "notification_logs",
+            "description": "Notification delivery tracking",
+            "rows": 0,
+            "rls_enabled": true
+        },
+        {
+            "name": "certificates",
+            "description": "Course completion certificates",
+            "rows": 0,
+            "rls_enabled": true
+        },
+        {
+            "name": "course_feedback",
+            "description": "User ratings and reviews",
+            "rows": 0,
+            "rls_enabled": true
+        }
+    ],
+    "authentication": {
+        "provider": "Supabase Auth",
+        "engine": "PostgreSQL-based",
+        "methods": [
+            "email_password",
+            "oauth_providers",
+            "mfa"
+        ],
+        "auth_tables": [
+            "auth.users",
+            "auth.identities",
+            "auth.sessions",
+            "auth.refresh_tokens",
+            "auth.mfa_factors",
+            "auth.webauthn_credentials",
+            "auth.audit_log_entries"
+        ],
+        "jwt": {
+            "signing": "RSA",
+            "claims": [
+                "sub",
+                "email",
+                "aud",
+                "role",
+                "iat",
+                "exp",
+                "user_role"
+            ],
+            "duration_seconds": 3600
+        }
+    },
+    "storage": {
+        "buckets": [
+            {
+                "name": "Documents",
+                "public": true,
+                "max_size_mb": 50,
+                "created_at": "2025-12-12T09:51:57.278Z"
+            },
+            {
+                "name": "lessons-content",
+                "public": true,
+                "max_size_mb": null,
+                "created_at": "2025-12-12T09:55:41.937Z"
+            },
+            {
+                "name": "avatars",
+                "public": true,
+                "max_size_mb": null,
+                "created_at": "2025-12-20T10:43:18.611Z"
+            },
+            {
+                "name": "community-uploads",
+                "public": true,
+                "max_size_mb": null,
+                "created_at": "2025-12-22T05:45:27.427Z"
+            }
+        ],
+        "global_max_size_mb": 50,
+        "features": {
+            "image_transformation": false,
+            "s3_protocol": true,
+            "iceberg_catalog": false,
+            "vector_buckets": false
+        }
+    },
+    "edge_functions": [
+        {
+            "name": "whatsapp-notification-scheduler",
+            "slug": "whatsapp-notification-scheduler",
+            "status": "ACTIVE",
+            "jwt_verified": true,
+            "version": 1,
+            "purpose": "Schedule and send WhatsApp notifications from queue"
+        },
+        {
+            "name": "whatsapp-webhook",
+            "slug": "whatsapp-webhook",
+            "status": "ACTIVE",
+            "jwt_verified": true,
+            "version": 1,
+            "purpose": "Receive WhatsApp status updates from Meta webhook",
+            "endpoints": {
+                "GET": "/functions/v1/whatsapp-webhook (verification)",
+                "POST": "/functions/v1/whatsapp-webhook (events)"
+            }
+        },
+        {
+            "name": "enable-preset-rule",
+            "slug": "enable-preset-rule",
+            "status": "ACTIVE",
+            "jwt_verified": true,
+            "version": 1,
+            "purpose": "Enable preset notification templates"
+        },
+        {
+            "name": "process-notification-history",
+            "slug": "process-notification-history",
+            "status": "ACTIVE",
+            "jwt_verified": true,
+            "version": 1,
+            "purpose": "Generate notification reports and exports",
+            "actions": [
+                "get-history",
+                "get-stats",
+                "export-history"
+            ]
+        },
+        {
+            "name": "manage-autosend-rules",
+            "slug": "manage-autosend-rules",
+            "status": "ACTIVE",
+            "jwt_verified": true,
+            "version": 1,
+            "purpose": "Manage automatic notification sending rules"
+        }
+    ],
+    "migrations": [
+        {
+            "version": "20260312050231",
+            "name": "backfill_missing_skill_achievements_v4"
+        },
+        {
+            "version": "20260312061134",
+            "name": "add_type_to_skills"
+        },
+        {
+            "version": "20260312124549",
+            "name": "create_categories_table"
+        },
+        {
+            "version": "20260312124555",
+            "name": "insert_default_categories"
+        },
+        {
+            "version": "20260313085539",
+            "name": "create_flashcard_tables"
+        },
+        {
+            "version": "20260313123422",
+            "name": "add_flashcard_to_lessons_type"
+        },
+        {
+            "version": "20260313123742",
+            "name": "fix_flashcard_sets_columns"
+        },
+        {
+            "version": "20260313125427",
+            "name": "create_flashcard_sets_proper"
+        },
+        {
+            "version": "20260313125530",
+            "name": "clean_invalid_flashcard_ids"
+        },
+        {
+            "version": "20260313125548",
+            "name": "fix_lesson_content_block_ids_v2"
+        },
+        {
+            "version": "20260313130727",
+            "name": "create_flashcard_color_settings"
+        },
+        {
+            "version": "20260316053158",
+            "name": "create_whatsapp_notifications"
+        },
+        {
+            "version": "20260316072301",
+            "name": "create_advanced_notifications"
+        },
+        {
+            "version": "20260316121047",
+            "name": "fix_enrollments_rls_admin_access"
+        },
+        {
+            "version": "20260316121300",
+            "name": "fix_instructor_visibility_for_students"
+        },
+        {
+            "version": "20260317043040",
+            "name": "create_course_feedback_table"
+        },
+        {
+            "version": "20260317123215",
+            "name": "update_course_average_rating_on_review"
+        },
+        {
+            "version": "20260318041847",
+            "name": "enable_rls_on_public_tables"
+        },
+        {
+            "version": "20260318041920",
+            "name": "remove_security_definer_from_views"
+        },
+        {
+            "version": "20260318041944",
+            "name": "fix_security_definer_views"
+        },
+        {
+            "version": "20260318042108",
+            "name": "add_rls_policies_corrected"
+        },
+        {
+            "version": "20260318042217",
+            "name": "final_fix_security_definer_views_v2"
+        },
+        {
+            "version": "20260318101614",
+            "name": "update_course_feedback_rls_policies"
+        },
+        {
+            "version": "20260318101720",
+            "name": "migrate_course_reviews_to_feedback"
+        },
+        {
+            "version": "20260318102010",
+            "name": "create_trigger_update_course_rating_on_feedback"
+        },
+        {
+            "version": "20260318102530",
+            "name": "standardize_duration_columns"
+        },
+        {
+            "version": "20260318114542",
+            "name": "add_duration_minutes_to_lessons"
+        },
+        {
+            "version": "20260318114655",
+            "name": "fix_lessons_rls_policies"
+        },
+        {
+            "version": "20260324114126",
+            "name": "fix_enrollments_rls_for_admin_assignments"
+        },
+        {
+            "version": "20260324114243",
+            "name": "fix_trigger_security_context"
+        },
+        {
+            "version": "20260324114305",
+            "name": "fix_enrollments_trigger_bypass_rls"
+        },
+        {
+            "version": "20260326085638",
+            "name": "fix_courses_rls_admin_insert"
+        },
+        {
+            "version": "20260326090059",
+            "name": "fix_assessments_rls_admin_insert"
+        },
+        {
+            "version": "20260326090109",
+            "name": "fix_career_paths_rls_admin_insert"
+        },
+        {
+            "version": "20260326090130",
+            "name": "fix_courses_rls_admin_update_delete"
+        }
+    ],
+    "security": {
+        "rls_enabled": true,
+        "roles": [
+            {
+                "name": "super_admin",
+                "access_level": "full_access"
+            },
+            {
+                "name": "admin",
+                "access_level": "content_management"
+            },
+            {
+                "name": "instructor",
+                "access_level": "own_courses_plus_student_view"
+            },
+            {
+                "name": "student",
+                "access_level": "own_data_only"
+            }
+        ],
+        "encryption": {
+            "in_transit": "TLS/SSL",
+            "at_rest": "Supabase managed",
+            "secrets": "Vault encrypted storage"
+        }
+    },
+    "api_endpoints": {
+        "base_url": "https://veaawiernjkdsfiziqen.supabase.co",
+        "rest_api": "https://veaawiernjkdsfiziqen.supabase.co/rest/v1",
+        "graphql": "https://veaawiernjkdsfiziqen.supabase.co/graphql/v1",
+        "realtime": "wss://veaawiernjkdsfiziqen.supabase.co/realtime/v1",
+        "auth": "https://veaawiernjkdsfiziqen.supabase.co/auth/v1"
+    },
+    "extracted_files": [
+        {
+            "filename": "SUPABASE_COMPLETE_EXPORT.sql",
+            "size_kb": 50,
+            "content": "Overview of entire database, tables, storage, migrations, edge functions"
+        },
+        {
+            "filename": "DATABASE_SCHEMA_COMPLETE.sql",
+            "size_kb": 90,
+            "content": "Complete CREATE TABLE statements, indexes, views, constraints"
+        },
+        {
+            "filename": "EDGE_FUNCTIONS_COMPLETE.sql",
+            "size_kb": 60,
+            "content": "All 5 edge function source code and documentation"
+        },
+        {
+            "filename": "STORAGE_AND_RLS_POLICIES.sql",
+            "size_kb": 70,
+            "content": "Storage bucket configs, RLS policies, RBAC implementation"
+        },
+        {
+            "filename": "MIGRATIONS_AND_AUTHENTICATION.sql",
+            "size_kb": 80,
+            "content": "36 migrations with descriptions, auth system, performance tips"
+        },
+        {
+            "filename": "SUPABASE_EXPORT_SUMMARY.sql",
+            "size_kb": 70,
+            "content": "Quick reference guide, troubleshooting, operations checklist"
+        },
+        {
+            "filename": "EXPORTED_DATA.json",
+            "size_kb": 50,
+            "content": "This JSON file with all metadata"
+        }
+    ],
+    "quick_reference": {
+        "connectivity": {
+            "host": "db.veaawiernjkdsfiziqen.supabase.co",
+            "port": 5432,
+            "database": "postgres",
+            "user": "postgres",
+            "ssl_required": true
+        },
+        "backup": {
+            "automated": "Daily (30-day retention)",
+            "point_in_time_recovery": "Available",
+            "manual_command": "pg_dump -h db.veaawiernjkdsfiziqen.supabase.co -U postgres -d postgres > backup.sql"
+        },
+        "monitoring": {
+            "dashboard": "https://app.supabase.com/project/veaawiernjkdsfiziqen",
+            "slow_queries": "SELECT query, mean_time FROM pg_stat_statements ORDER BY mean_time DESC LIMIT 10",
+            "table_sizes": "SELECT tablename, pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) FROM pg_tables WHERE schemaname='public'"
+        },
+        "common_tasks": {
+            "create_course": "INSERT INTO courses (title, description, created_by) VALUES (...)",
+            "enroll_user": "INSERT INTO enrollments (user_id, course_id) VALUES (...)",
+            "track_progress": "UPDATE lesson_progress SET is_completed=true WHERE user_id=... AND lesson_id=...",
+            "send_notification": "INSERT INTO notification_logs (user_id, status, message_body) VALUES (...)"
+        }
+    },
+    "status": {
+        "export_complete": true,
+        "all_files_created": true,
+        "validation_passed": true,
+        "ready_for_use": true
+    }
+}

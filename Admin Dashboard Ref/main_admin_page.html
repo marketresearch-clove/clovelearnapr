@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin Overview Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4a6df7",
+                        "background-light": "#f5f6f8",
+                        "background-dark": "#101322",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden group/design-root">
+<div class="flex h-full w-full grow">
+<!-- SideNavBar -->
+<aside class="flex w-64 flex-col gap-y-6 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-background-dark p-4">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="Skill Spire company logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAmTuJ2n-ZYRITuAB2JJ4d0V5ZnjrsCoD6RoJst0okSmS9bxeaOW90HcIO2oy5h40ye3HPeiIMZbnwV3BtKCTcpPM1Cm2-V9PoR9k3hNKUJbi89zqvwThw3gmMePVIfNWWJeK6it6lWMCZ9mRkiClAYNSXQUzXfyAZz6R57jHIbnlZvNs8Ce048k7tH1qiYoTkj6fjccTfFLuSy0gDRYiuxFQh9D7GMG3AsVuZFjiYGorDyPes2YhYSLY02w1qp8_gP6Q8x4QfyRgc");'></div>
+<div class="flex flex-col">
+<h1 class="text-gray-900 dark:text-white text-base font-semibold leading-normal">Clove Learning Portal</h1>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">LMS</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2 flex-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/20 dark:bg-primary/30 text-primary dark:text-white" href="#">
+<span class="material-symbols-outlined text-primary dark:text-white">dashboard</span>
+<p class="text-sm font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" href="#">
+<span class="material-symbols-outlined">group</span>
+<p class="text-sm font-medium leading-normal">Users</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" href="#">
+<span class="material-symbols-outlined">school</span>
+<p class="text-sm font-medium leading-normal">Courses</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<p class="text-sm font-medium leading-normal">Reports</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<p class="text-sm font-medium leading-normal">Notifications</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<p class="text-sm font-medium leading-normal">System Settings</p>
+</a>
+</nav>
+<div class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" href="#">
+<span class="material-symbols-outlined">logout</span>
+<p class="text-sm font-medium leading-normal">Logout</p>
+</a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex flex-1 flex-col">
+<!-- TopNavBar -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-200 dark:border-gray-800 px-10 py-4 bg-white dark:bg-background-dark">
+<div class="flex items-center gap-4 text-gray-900 dark:text-white">
+<h2 class="text-lg font-semibold leading-tight">Admin Overview</h2>
+</div>
+<div class="flex flex-1 justify-end gap-4 items-center">
+<label class="relative flex flex-col min-w-40 max-w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">search</span>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border-none bg-background-light dark:bg-gray-800 h-10 placeholder:text-gray-500 dark:placeholder:text-gray-400 px-4 pl-10 text-sm font-normal leading-normal" placeholder="Search..." value=""/>
+</label>
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-background-light dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC-397qK2P-G-pZ3ASed9MiG9VtTUI5GsTwVdyv2fbgKT9jduyjxHHXIjE34xf8eOua0JBmRNDr6IsKQjqObVmhDWtJjlFPOcXYZuPhqSxEL2ocGoGblES5RGYpV8xjdSU9jGrwxNpTXneuvB_u5nvA9DNHB_47GyYyM016vQZdCyeDj49t56849GeZyDNgdfFWD93pexEA3TzVRljhSjWV0zc8muP4FnwlTvsHtG6r_R_34VHsbZlfO1r3mka0EWihlo-w6PfSr_Q");'></div>
+</div>
+</header>
+<div class="flex-1 p-6 lg:p-10 space-y-6">
+<!-- Stats -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+<p class="text-gray-600 dark:text-gray-400 text-sm font-medium leading-normal">Total Employees</p>
+<p class="text-gray-900 dark:text-white tracking-tight text-3xl font-bold leading-tight">1,240</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+<p class="text-gray-600 dark:text-gray-400 text-sm font-medium leading-normal">Total Learning Hours</p>
+<p class="text-gray-900 dark:text-white tracking-tight text-3xl font-bold leading-tight">8,920</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+<p class="text-gray-600 dark:text-gray-400 text-sm font-medium leading-normal">Active Courses</p>
+<p class="text-gray-900 dark:text-white tracking-tight text-3xl font-bold leading-tight">150</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+<p class="text-gray-600 dark:text-gray-400 text-sm font-medium leading-normal">Completion Rate</p>
+<p class="text-gray-900 dark:text-white tracking-tight text-3xl font-bold leading-tight">88%</p>
+</div>
+</div>
+<!-- Charts -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="flex min-w-72 flex-col gap-4 rounded-xl border border-gray-200 dark:border-gray-800 p-6 bg-white dark:bg-gray-900">
+<div class="flex flex-col">
+<p class="text-gray-900 dark:text-white text-base font-semibold leading-normal">Monthly Learning Hours</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm">Last 30 days</p>
+</div>
+<div class="h-64">
+<svg fill="none" height="100%" preserveaspectratio="none" viewbox="0 0 472 150" width="100%" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25" stroke="#4a6df7" stroke-linecap="round" stroke-width="3"></path>
+<path d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25V149H0V109Z" fill="url(#linechart-gradient)"></path>
+<defs>
+<lineargradient gradientunits="userSpaceOnUse" id="linechart-gradient" x1="236" x2="236" y1="1" y2="149">
+<stop stop-color="#4a6df7" stop-opacity="0.2"></stop>
+<stop offset="1" stop-color="#4a6df7" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+</svg>
+</div>
+</div>
+<div class="flex min-w-72 flex-col gap-4 rounded-xl border border-gray-200 dark:border-gray-800 p-6 bg-white dark:bg-gray-900">
+<div class="flex flex-col">
+<p class="text-gray-900 dark:text-white text-base font-semibold leading-normal">Course Popularity</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm">Top 5 this month</p>
+</div>
+<div class="grid gap-x-4 gap-y-4 grid-cols-[auto_1fr_auto] items-center py-3 flex-1">
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal">Leadership 101</p>
+<div class="h-2 rounded-full bg-gray-200 dark:bg-gray-700"><div class="h-2 rounded-full bg-primary" style="width: 90%;"></div></div>
+<p class="text-gray-800 dark:text-gray-200 text-sm font-semibold">90%</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal">Project Mgmt.</p>
+<div class="h-2 rounded-full bg-gray-200 dark:bg-gray-700"><div class="h-2 rounded-full bg-primary" style="width: 75%;"></div></div>
+<p class="text-gray-800 dark:text-gray-200 text-sm font-semibold">75%</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal">Data Security</p>
+<div class="h-2 rounded-full bg-gray-200 dark:bg-gray-700"><div class="h-2 rounded-full bg-primary" style="width: 72%;"></div></div>
+<p class="text-gray-800 dark:text-gray-200 text-sm font-semibold">72%</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal">Sales Training</p>
+<div class="h-2 rounded-full bg-gray-200 dark:bg-gray-700"><div class="h-2 rounded-full bg-primary" style="width: 60%;"></div></div>
+<p class="text-gray-800 dark:text-gray-200 text-sm font-semibold">60%</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal">Intro to Python</p>
+<div class="h-2 rounded-full bg-gray-200 dark:bg-gray-700"><div class="h-2 rounded-full bg-primary" style="width: 45%;"></div></div>
+<p class="text-gray-800 dark:text-gray-200 text-sm font-semibold">45%</p>
+</div>
+</div>
+</div>
+<!-- Table -->
+<div class="flex flex-col gap-4 rounded-xl border border-gray-200 dark:border-gray-800 p-6 bg-white dark:bg-gray-900">
+<p class="text-gray-900 dark:text-white text-base font-semibold leading-normal">Department-wise Completion</p>
+<div class="overflow-x-auto">
+<table class="w-full">
+<thead>
+<tr class="border-b border-gray-200 dark:border-gray-800">
+<th class="px-4 py-3 text-left text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider">Department</th>
+<th class="px-4 py-3 text-left text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider">Completion Rate</th>
+<th class="px-4 py-3 text-left text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider">Courses Enrolled</th>
+<th class="px-4 py-3 text-left text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider">Avg. Score</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-b border-gray-200 dark:border-gray-800">
+<td class="px-4 py-4 text-gray-800 dark:text-gray-200 text-sm font-medium leading-normal">Engineering</td>
+<td class="px-4 py-4 text-sm font-normal leading-normal">
+<div class="flex items-center gap-3">
+<div class="w-24 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700"><div class="h-2 rounded-full bg-primary" style="width: 85%;"></div></div>
+<p class="text-gray-800 dark:text-gray-200 text-sm font-medium">85%</p>
+</div>
+</td>
+<td class="px-4 py-4 text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">24</td>
+<td class="px-4 py-4 text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">92%</td>
+</tr>
+<tr class="border-b border-gray-200 dark:border-gray-800">
+<td class="px-4 py-4 text-gray-800 dark:text-gray-200 text-sm font-medium leading-normal">Sales</td>
+<td class="px-4 py-4 text-sm font-normal leading-normal">
+<div class="flex items-center gap-3">
+<div class="w-24 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700"><div class="h-2 rounded-full bg-primary" style="width: 92%;"></div></div>
+<p class="text-gray-800 dark:text-gray-200 text-sm font-medium">92%</p>
+</div>
+</td>
+<td class="px-4 py-4 text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">18</td>
+<td class="px-4 py-4 text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">88%</td>
+</tr>
+<tr class="border-b border-gray-200 dark:border-gray-800">
+<td class="px-4 py-4 text-gray-800 dark:text-gray-200 text-sm font-medium leading-normal">Marketing</td>
+<td class="px-4 py-4 text-sm font-normal leading-normal">
+<div class="flex items-center gap-3">
+<div class="w-24 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700"><div class="h-2 rounded-full bg-primary" style="width: 76%;"></div></div>
+<p class="text-gray-800 dark:text-gray-200 text-sm font-medium">76%</p>
+</div>
+</td>
+<td class="px-4 py-4 text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">31</td>
+<td class="px-4 py-4 text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">81%</td>
+</tr>
+<tr class="border-b border-gray-200 dark:border-gray-800">
+<td class="px-4 py-4 text-gray-800 dark:text-gray-200 text-sm font-medium leading-normal">Human Resources</td>
+<td class="px-4 py-4 text-sm font-normal leading-normal">
+<div class="flex items-center gap-3">
+<div class="w-24 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700"><div class="h-2 rounded-full bg-primary" style="width: 95%;"></div></div>
+<p class="text-gray-800 dark:text-gray-200 text-sm font-medium">95%</p>
+</div>
+</td>
+<td class="px-4 py-4 text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">12</td>
+<td class="px-4 py-4 text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">94%</td>
+</tr>
+<tr>
+<td class="px-4 py-4 text-gray-800 dark:text-gray-200 text-sm font-medium leading-normal">Customer Support</td>
+<td class="px-4 py-4 text-sm font-normal leading-normal">
+<div class="flex items-center gap-3">
+<div class="w-24 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700"><div class="h-2 rounded-full bg-primary" style="width: 81%;"></div></div>
+<p class="text-gray-800 dark:text-gray-200 text-sm font-medium">81%</p>
+</div>
+</td>
+<td class="px-4 py-4 text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">28</td>
+<td class="px-4 py-4 text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">85%</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

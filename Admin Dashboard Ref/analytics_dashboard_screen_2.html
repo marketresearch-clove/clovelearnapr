@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin - Completion Overview</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#6D28D9",
+              "background-light": "#F9FAFB",
+              "background-dark": "#111827",
+            },
+            fontFamily: {
+              display: ["Inter", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+            },
+          },
+        },
+      };
+    </script>
+<style>
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200">
+<div class="min-h-screen p-4 sm:p-6 md:p-8">
+<header class="mb-6">
+<h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Dashboard</h1>
+</header>
+<nav class="border-b border-gray-200 dark:border-gray-700">
+<div class="flex items-center space-x-8">
+<a class="py-3 px-1 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" href="#">Journey Analytics</a>
+<a class="py-3 px-1 text-sm font-medium text-primary border-b-2 border-primary" href="#">Completion Overview</a>
+</div>
+</nav>
+<div class="mt-6">
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+<div class="p-4 border-b border-gray-200 dark:border-gray-700">
+<div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+<a class="text-gray-600 dark:text-gray-300 hover:text-primary" href="#">By Learner Attributes</a>
+<a class="text-gray-600 dark:text-gray-300 hover:text-primary" href="#">By Programs</a>
+<a class="text-gray-600 dark:text-gray-300 hover:text-primary" href="#">By Learner</a>
+<a class="text-gray-600 dark:text-gray-300 hover:text-primary" href="#">By Modules</a>
+<a class="text-gray-600 dark:text-gray-300 hover:text-primary" href="#">By CLP Journeys</a>
+</div>
+</div>
+<main class="p-6 space-y-8">
+<section class="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-lg">
+<h2 class="text-lg font-semibold mb-6 text-gray-900 dark:text-white">Completion Ratio</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 items-center">
+<div class="flex flex-col items-center justify-center col-span-1 md:col-span-3 lg:col-span-1">
+<div class="relative w-36 h-36">
+<svg class="w-full h-full" viewBox="0 0 120 120">
+<circle class="text-gray-200 dark:text-gray-700" cx="60" cy="60" fill="transparent" r="54" stroke="currentColor" stroke-width="12"></circle>
+<circle class="progress-ring__circle text-green-500" cx="60" cy="60" fill="transparent" r="54" stroke="currentColor" stroke-dasharray="339.292" stroke-dashoffset="132.324" stroke-width="12"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-3xl font-bold text-green-600 dark:text-green-500">61%</span>
+<span class="text-sm text-gray-500 dark:text-gray-400">overall</span>
+</div>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<div class="relative w-20 h-20 flex-shrink-0">
+<svg class="w-full h-full" viewBox="0 0 120 120">
+<circle class="text-gray-200 dark:text-gray-700" cx="60" cy="60" fill="transparent" r="53" stroke="currentColor" stroke-width="14"></circle>
+<circle class="progress-ring__circle text-indigo-500" cx="60" cy="60" fill="transparent" r="53" stroke="currentColor" stroke-dasharray="333.008" stroke-dashoffset="79.922" stroke-width="14"></circle>
+</svg>
+<span class="absolute inset-0 flex items-center justify-center text-lg font-bold">76%</span>
+</div>
+<span class="text-sm font-medium text-indigo-600 dark:text-indigo-400">Self-paced Modules</span>
+</div>
+<div class="flex items-center space-x-4">
+<div class="relative w-20 h-20 flex-shrink-0">
+<svg class="w-full h-full" viewBox="0 0 120 120">
+<circle class="text-gray-200 dark:text-gray-700" cx="60" cy="60" fill="transparent" r="53" stroke="currentColor" stroke-width="14"></circle>
+<circle class="progress-ring__circle text-pink-500" cx="60" cy="60" fill="transparent" r="53" stroke="currentColor" stroke-dasharray="333.008" stroke-dashoffset="29.971" stroke-width="14"></circle>
+</svg>
+<span class="absolute inset-0 flex items-center justify-center text-lg font-bold">91%</span>
+</div>
+<span class="text-sm font-medium text-pink-600 dark:text-pink-400">Live Modules</span>
+</div>
+<div class="flex items-center space-x-4">
+<div class="relative w-20 h-20 flex-shrink-0">
+<svg class="w-full h-full" viewBox="0 0 120 120">
+<circle class="text-gray-200 dark:text-gray-700" cx="60" cy="60" fill="transparent" r="53" stroke="currentColor" stroke-width="14"></circle>
+<circle class="progress-ring__circle text-purple-500" cx="60" cy="60" fill="transparent" r="53" stroke="currentColor" stroke-dasharray="333.008" stroke-dashoffset="153.184" stroke-width="14"></circle>
+</svg>
+<span class="absolute inset-0 flex items-center justify-center text-lg font-bold">54%</span>
+</div>
+<span class="text-sm font-medium text-purple-600 dark:text-purple-400">MOOC Modules</span>
+</div>
+<div class="flex items-center space-x-4">
+<div class="relative w-20 h-20 flex-shrink-0">
+<svg class="w-full h-full" viewBox="0 0 120 120">
+<circle class="text-gray-200 dark:text-gray-700" cx="60" cy="60" fill="transparent" r="53" stroke="currentColor" stroke-width="14"></circle>
+<circle class="progress-ring__circle text-blue-500" cx="60" cy="60" fill="transparent" r="53" stroke="currentColor" stroke-dasharray="333.008" stroke-dashoffset="276.397" stroke-width="14"></circle>
+</svg>
+<span class="absolute inset-0 flex items-center justify-center text-lg font-bold">17%</span>
+</div>
+<span class="text-sm font-medium text-blue-600 dark:text-blue-400">Classroom Modules</span>
+</div>
+</div>
+</section>
+<section>
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+<h2 class="text-lg font-semibold text-gray-900 dark:text-white">Completion Funnels</h2>
+<div class="flex items-center space-x-4">
+<button class="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-600">
+<span>Filter</span>
+<span class="material-icons-outlined text-base">filter_list</span>
+</button>
+<button class="flex items-center space-x-2 text-sm font-medium text-white bg-primary rounded-lg px-4 py-2 hover:bg-violet-700">
+<span>Export Detailed Report</span>
+<span class="material-icons-outlined text-base">expand_more</span>
+</button>
+</div>
+</div>
+<div class="flex items-center justify-center space-x-6 mb-6 text-xs text-gray-500 dark:text-gray-400">
+<div class="flex items-center space-x-2">
+<span class="w-3 h-3 rounded-full bg-red-400"></span>
+<span>Not Started Report</span>
+</div>
+<div class="flex items-center space-x-2">
+<span class="w-3 h-3 rounded-full bg-orange-400"></span>
+<span>In Progress Report</span>
+</div>
+<div class="flex items-center space-x-2">
+<span class="w-3 h-3 rounded-full bg-green-500"></span>
+<span>Completed Report</span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-sm text-left">
+<thead class="text-xs text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700/50">
+<tr>
+<th class="px-6 py-3" scope="col">Module Type</th>
+<th class="px-6 py-3" scope="col">Learner Progress Level</th>
+<th class="px-6 py-3 text-right" scope="col">Total Modules</th>
+<th class="px-6 py-3 text-right" scope="col">Total Enrolled Modules</th>
+<th class="px-6 py-3 text-right" scope="col">Module Enrollment</th>
+</tr>
+</thead>
+<tbody>
+<tr class="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
+<th class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap" scope="row">
+                                            Live module
+                                        </th>
+<td class="px-6 py-4">
+<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+<div class="bg-green-500 h-2 rounded-full" style="width: 85%"></div>
+</div>
+</td>
+<td class="px-6 py-4 text-right">125</td>
+<td class="px-6 py-4 text-right">123</td>
+<td class="px-6 py-4 text-right">21905</td>
+</tr>
+<tr class="bg-white dark:bg-gray-800">
+<th class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap" scope="row">
+                                            MOOC module
+                                        </th>
+<td class="px-6 py-4">
+<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 flex">
+<div class="bg-red-400 h-2" style="width: 25%"></div>
+<div class="bg-orange-400 h-2" style="width: 50%"></div>
+<div class="bg-green-500 h-2" style="width: 25%"></div>
+</div>
+</td>
+<td class="px-6 py-4 text-right">2161</td>
+<td class="px-6 py-4 text-right">2024</td>
+<td class="px-6 py-4 text-right">38423</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</main>
+</div>
+</div>
+</div>
+
+</body></html>

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#5f557f",
+                        "on-background": "#32294f",
+                        "tertiary-container": "#fe8bca",
+                        "inverse-surface": "#11062d",
+                        "tertiary-fixed-dim": "#ee7ebc",
+                        "on-primary": "#f4f1ff",
+                        "inverse-primary": "#8681ff",
+                        "on-secondary-fixed-variant": "#006a35",
+                        "tertiary-fixed": "#fe8bca",
+                        "surface-container-low": "#f5eeff",
+                        "primary-fixed": "#9895ff",
+                        "secondary-dim": "#005c2d",
+                        "on-secondary": "#cdffd4",
+                        "on-tertiary-fixed-variant": "#6d104d",
+                        "primary-container": "#9895ff",
+                        "tertiary": "#983771",
+                        "surface-container-highest": "#e2d7ff",
+                        "secondary": "#006a35",
+                        "secondary-fixed-dim": "#5bef90",
+                        "error-container": "#f74b6d",
+                        "on-tertiary-container": "#610244",
+                        "surface-bright": "#fbf4ff",
+                        "error": "#b41340",
+                        "surface-tint": "#4e46d1",
+                        "secondary-fixed": "#6bfe9c",
+                        "inverse-on-surface": "#a296c4",
+                        "primary": "#4e46d1",
+                        "outline-variant": "#b3a6d5",
+                        "surface-variant": "#e2d7ff",
+                        "on-primary-fixed": "#000000",
+                        "on-primary-container": "#15007e",
+                        "primary-dim": "#4138c4",
+                        "background": "#fbf4ff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffefef",
+                        "surface-dim": "#dbcdff",
+                        "on-primary-fixed-variant": "#1b0099",
+                        "surface": "#fbf4ff",
+                        "primary-fixed-dim": "#8985ff",
+                        "surface-container-high": "#e8ddff",
+                        "surface-container": "#ede4ff",
+                        "tertiary-dim": "#892a65",
+                        "secondary-container": "#6bfe9c",
+                        "outline": "#7b709c",
+                        "on-tertiary-fixed": "#360024",
+                        "on-surface": "#32294f",
+                        "on-tertiary": "#ffeff4",
+                        "on-error-container": "#510017",
+                        "error-dim": "#a70138",
+                        "on-secondary-container": "#005f2f",
+                        "on-secondary-fixed": "#004a23"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-surface text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+    <!-- TopNavBar Navigation Shell -->
+    <nav
+        class="fixed top-0 w-full z-50 bg-[#fbf4ff]/80 dark:bg-slate-950/80 backdrop-blur-xl shadow-[0px_20px_40px_rgba(50,41,79,0.06)]">
+        <div class="flex justify-between items-center px-12 py-6 max-w-[1440px] mx-auto">
+            <div class="text-2xl font-bold tracking-tighter text-[#4e46d1] dark:text-[#9895ff]">
+                Clove LP
+            </div>
+            <div class="flex items-center gap-6">
+                <button
+                    class="font-['Inter'] tracking-tight font-medium text-slate-600 dark:text-slate-400 hover:text-[#4e46d1] transition-all duration-300 ease-in-out active:scale-95">Log
+                    In</button>
+                <button
+                    class="bg-primary text-on-primary px-6 py-2.5 rounded-xl font-bold transition-all duration-300 ease-in-out hover:opacity-90 active:scale-95 shadow-lg shadow-primary/20">
+                    Get Started
+                </button>
+            </div>
+        </div>
+    </nav>
+    <main class="pt-32">
+        <!-- Hero Section -->
+        <section class="max-w-[1440px] mx-auto px-12 pb-24 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <!-- Hero Content -->
+            <div class="lg:col-span-6 flex flex-col items-start text-left z-10">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 bg-surface-container-highest text-primary rounded-full mb-8">
+                    <span class="material-symbols-outlined text-[18px]">verified</span>
+                    <span class="font-label text-sm font-bold uppercase tracking-widest">Enterprise BIM & CAD
+                        Learning</span>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-black text-on-background leading-[0.9] tracking-tighter mb-8">
+                    Master BIM. <br />
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-tertiary">Transform Your
+                        Practice.</span>
+                </h1>
+                <p class="text-base md:text-lg text-on-surface-variant max-w-[540px] leading-relaxed mb-12">
+                    Elevate your AEC team with structured BIM, CAD, and scan-to-model workflows. Our platform transforms
+                    complex architectural knowledge into intuitive, scalable learning pathways.
+                </p>
+                <div class="flex flex-wrap gap-4">
+                    <button
+                        class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-8 py-5 rounded-xl font-bold text-lg transition-all hover:shadow-xl hover:shadow-primary/30 active:scale-95">
+                        Explore Courses
+                    </button>
+                    <button
+                        class="bg-surface-container-highest text-primary px-8 py-5 rounded-xl font-bold text-lg transition-all hover:bg-surface-variant active:scale-95">
+                        View Demo
+                    </button>
+                </div>
+                <div class="mt-16 flex items-center gap-8">
+                    <div class="flex -space-x-4">
+                        <div
+                            class="w-12 h-12 rounded-full border-4 border-surface overflow-hidden bg-surface-container">
+                            <img alt="professional 1"
+                                data-alt="close-up portrait of a diverse female architect smiling with soft natural lighting and blurred office background"
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-mkN-VvMA922kQj2LymHtZz4fOHSNYJlTkHxYTUps5LeqoldS1OZbQ-9xfTD4uag1D9NXEKMDJwHJ0Adaap-or7Ya_k85xafn1ByAavFskgW4wQYvlL28hoK2Rcc7k8f-F_c3EW8WxjH9yymm2DCffGOmKq0RVGqgqCliIAt8YNjccyn1jQZ2nj7lKWeklgJPhSFzBwlBT19fP31h3fBq2mpMTtQO4Z_n1zqgdhle75KL4SatdyFVUZp97Vhgf9nxZ35MKY6DOAlg" />
+                        </div>
+                        <div
+                            class="w-12 h-12 rounded-full border-4 border-surface overflow-hidden bg-surface-container">
+                            <img alt="professional 2"
+                                data-alt="close-up portrait of a professional engineer in a workspace setting with warm ambient lighting and modern office background"
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_IQ1UGmP8VYxLvU9RLoDaYwO9xEo8lBPmFGmuOLMP0fmBRX8KG1vF3v7hu2KSobLcIS4czarOoNtRfg8q3d17bH-mOWxDVpFE5_VdBJcxliJVNgttMcs58gfS1MOpIFboee9uNmVGMOlSH4jse17t1gW6K-oJ48_56Sgl3Dq30xA3R8DdHTHpKL9Q4M8g5GtjQefBd4W3EECfAeePPIBYwagqn32cbKlpDcidb-JHt1itGif07yVL8RHlN-IYTnC4bDUmW6sUlj53" />
+                        </div>
+                        <div
+                            class="w-12 h-12 rounded-full border-4 border-surface overflow-hidden bg-surface-container">
+                            <img alt="professional 3"
+                                data-alt="close-up portrait of a construction professional woman looking thoughtfully away from the camera in a modern office space"
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuACz-URdWudj6yaCI9p5Aa65U0oecZ_sGPNzdiuYEfMlr2dXG3iIO6jayuMYwKrGH_THIRKsUaBZUr9FAhzULZ3KhRQvUpCaEEuGKIAMOJINxWvdPSunUkk0-IX1OWvxzTUOnbJtNh_BXcS-oC2Ho8z8TyGoeHzYQNZJnKNHXCJL_pNWY9TzL5jyrtQnXjkY2TzB1I7danS4VC27i_4W4TNQ3GVGsD0ngOmcqlriiGbtZotHIZiLtesp-PniL4XBNA1VeaYH6TevGsl" />
+                        </div>
+                    </div>
+                    <div>
+                        <div class="font-bold text-on-surface">500+ Professionals</div>
+                        <div class="text-sm text-on-surface-variant">Building the future in AEC</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Striking Visual -->
+            <div class="lg:col-span-6 relative">
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="space-y-6 pt-12">
+                        <div
+                            class="bg-surface-container-lowest rounded-lg overflow-hidden shadow-[0px_20px_40px_rgba(50,41,79,0.06)] aspect-[4/5] relative group">
+                            <img class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                                data-alt="modern BIM workstation with architect workspace, large monitors showing 3D models, and technical design environment"
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTmCbUrqSnTgdFdYJb8CDJspZWKyoZQufK2jVLEEcIhlWZ6h3keQ2a2thQ9o467jt_YfsZ4VLirRWRsoBlppEwB3rqT1gQyRNc_QgbwAkU1Hd0x100gcwAJNM8AQl_4JdEjeESHmee0IH_5WGT6JbVaHV9oauY4aH2duUO5mNwMs_UTnSnyOcyfFZCCAHjwjElZsKUW9JvZlGRCutdnkEh0-fmIhsRjcbdJKrJfPtWS-hwD1fgsUYxzXXn1e3saK-JrHdHTjHYM8gQ" />
+                            <div
+                                class="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            </div>
+                        </div>
+                        <div class="bg-primary p-8 rounded-lg aspect-square flex flex-col justify-end">
+                            <span class="material-symbols-outlined text-on-primary text-4xl mb-4">build</span>
+                            <h3 class="text-2xl font-bold text-on-primary tracking-tight">Structured BIM Workflows</h3>
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="bg-surface-container-low rounded-lg p-1 aspect-square">
+                            <div class="bg-surface-container-lowest w-full h-full rounded-lg overflow-hidden relative">
+                                <img class="w-full h-full object-cover"
+                                    data-alt="collaborative AEC team working together in a bright modern design studio with CAD workstations"
+                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrcXCMcfj9iKGnnUgCvecD3CqPgyaRDMi0r5wz85yK54Vle8imNyyzTnLZFo3eqyKOyTN9pmXoSj5hNRogWXQZwy0Zi47D6uRCC22NHHanD_K74hH3ilISynvhwTu93gqdDYjvtXTsUEfPLL6kWa5XvyVATV-3nI1HGDYpn45-A1nCTB_Pe3LVdMkQ0z8XzGSxsrljGmQ0YkRMrD0zPEr-nBHuntGV9ZqdUm_opGfVlMLBRL68MW0Gf2Rx-Bf9Od3tc2EaXuvvxeId" />
+                            </div>
+                        </div>
+                        <div
+                            class="bg-surface-container-highest rounded-lg overflow-hidden shadow-[0px_20px_40px_rgba(50,41,79,0.06)] aspect-[4/5]">
+                            <div class="p-8 h-full flex flex-col justify-between">
+                                <div class="flex justify-between items-start">
+                                    <div
+                                        class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-primary">
+                                        <span class="material-symbols-outlined">auto_awesome</span>
+                                    </div>
+                                    <span
+                                        class="text-xs font-black uppercase tracking-widest text-primary/40">Certified</span>
+                                </div>
+                                <div>
+                                    <div class="text-4xl font-black text-primary mb-2">94%</div>
+                                    <div class="text-sm font-medium text-on-surface-variant leading-tight">Completion
+                                        rate across BIM masterclasses</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Decorative Elements -->
+                <div
+                    class="absolute -top-12 -right-12 w-64 h-64 bg-secondary-container rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10">
+                </div>
+                <div
+                    class="absolute -bottom-12 -left-12 w-64 h-64 bg-tertiary-container rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10">
+                </div>
+            </div>
+        </section>
+        <!-- Editorial Features Grid -->
+        <section class="bg-surface-container-low py-24 mt-24">
+            <div class="max-w-[1440px] mx-auto px-12">
+                <div class="mb-16">
+                    <h2 class="text-4xl font-black text-on-background tracking-tighter mb-4">Engineered for Excellence.
+                    </h2>
+                    <p class="text-on-surface-variant max-w-xl">We've streamlined the chaos to create a focused learning
+                        environment where complex BIM workflows and technical skills actually stick.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+                    <div class="flex flex-col">
+                        <span class="text-primary font-black text-sm uppercase tracking-[0.2em] mb-4">01.
+                            Industry-Grade</span>
+                        <h4 class="text-2xl font-bold text-on-surface mb-4">Industry-Grade Modules</h4>
+                        <p class="text-on-surface-variant leading-relaxed">Lessons designed by BIM experts, broken into
+                            practical units for immediate application on real projects and workflows.</p>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-primary font-black text-sm uppercase tracking-[0.2em] mb-4">02.
+                            AI-Powered</span>
+                        <h4 class="text-2xl font-bold text-on-surface mb-4">AI Course Builder</h4>
+                        <p class="text-on-surface-variant leading-relaxed">Intelligent content generation powered by AI.
+                            Create personalized learning paths and adapt courses in real-time.</p>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-primary font-black text-sm uppercase tracking-[0.2em] mb-4">03.
+                            Interactive</span>
+                        <h4 class="text-2xl font-bold text-on-surface mb-4">Quiz & Assessments</h4>
+                        <p class="text-on-surface-variant leading-relaxed">Dynamic quiz modules with instant feedback.
+                            Track comprehension and identify knowledge gaps in real-time.</p>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-primary font-black text-sm uppercase tracking-[0.2em] mb-4">04.
+                            Analytics</span>
+                        <h4 class="text-2xl font-bold text-on-surface mb-4">Skill Matrix & Reports</h4>
+                        <p class="text-on-surface-variant leading-relaxed">Track competencies with advanced skill
+                            matrix. Generate comprehensive reports on team performance and progress.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Pathways to Mastery Section -->
+        <section class="py-32 px-12 max-w-[1440px] mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-4 block">Curated
+                        Pathways</span>
+                    <h2 class="text-4xl md:text-5xl font-black tracking-tighter text-on-background">Upskilling Pathways
+                    </h2>
+                </div>
+                <a class="text-primary font-bold flex items-center gap-2 hover:opacity-80 transition-opacity" href="#">
+                    Browse All Courses
+                    <span class="material-symbols-outlined">north_east</span>
+                </a>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <!-- Pathway Card 1 -->
+                <div
+                    class="bg-surface-container-lowest rounded-xl p-10 flex flex-col gap-10 hover:shadow-2xl transition-all border border-outline-variant/30 group">
+                    <div class="w-full h-56 rounded-xl overflow-hidden flex-shrink-0 relative">
+                        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            data-alt="advanced BIM modeling visualization showing complex 3D architectural structures and technical details"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8YtwR4W5YNs0wfs6tC6J_5sSWNwaf6txNmHap0T5S2ddTAzyHee5LNdmiyjdxFLgI0GRT8F1waKL7v_k4zyjRFLut2wIY258OmbU1n6WlT1StL-KMas9FLQEiy81RJm8oLu-ajgXSCWhZHiUmTVafhMYzjAXv_JZp1TREuaLERACoB9VTfYi_0GD_tuBlQYu0sa2u96Ixu-nF16jdhZL7ZLKK42Ylz_AhYzDolQD08QIXGhzNWgOsuCujFrOk6q1bZ7XyolEg5uPf" />
+                        <div class="absolute inset-0 bg-primary/10 group-hover:bg-transparent transition-colors"></div>
+                    </div>
+                    <div class="flex flex-col justify-between flex-grow">
+                        <div>
+                            <div class="flex justify-between items-start mb-4">
+                                <h4 class="text-2xl font-bold text-on-background tracking-tight">Advanced BIM Manager
+                                </h4>
+                                <span
+                                    class="bg-primary/10 text-primary text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-wider">Advanced</span>
+                            </div>
+                            <p class="text-on-surface-variant mb-8 line-clamp-2">Master Revit coordination, scan-to-BIM
+                                workflows, and enterprise project delivery at scale.</p>
+                        </div>
+                        <div class="space-y-5">
+                            <div
+                                class="flex justify-between items-center text-xs text-on-surface-variant font-bold uppercase tracking-widest">
+                                <span>28 Modules</span>
+                                <span>72% Progress</span>
+                            </div>
+                            <div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+                                <div class="bg-primary w-[72%] h-full rounded-full"></div>
+                            </div>
+                            <button
+                                class="w-full bg-on-background text-surface py-4 rounded-xl font-bold hover:bg-primary transition-colors active:scale-95">Join
+                                Pathway</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Pathway Card 2 -->
+                <div
+                    class="bg-surface-container-lowest rounded-xl p-10 flex flex-col gap-10 hover:shadow-2xl transition-all border border-outline-variant/30 group">
+                    <div class="w-full h-56 rounded-xl overflow-hidden flex-shrink-0 relative">
+                        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            data-alt="clean scan data processing interface showing point cloud visualization and CAD conversion workflow"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGcqgiTURhOmWXxsXIU1Nv-zyake-sVpGrkc0N-eG3WRP1ALrtk5nDFnOiLNCEaPCsnHx-mCfKTRg12UzRXxfh_GfycQriOyvGl8Ka_i2GHJvznqt5LBmJmhU2Yl3A49_89Y_2ZPdCUlfoL2EbocTY_NLS_dAslRM6iYROveKdjkDUMbkMtlVq2bzWoQvhH5WgxPcvw0vEMDX5YvM6QOA3FjRtmasBQQ_0vEgWrb35lUdKyPXI4mAPseswxvhRyP73N_ycG2LprxKt" />
+                        <div class="absolute inset-0 bg-primary/10 group-hover:bg-transparent transition-colors"></div>
+                    </div>
+                    <div class="flex flex-col justify-between flex-grow">
+                        <div>
+                            <div class="flex justify-between items-start mb-4">
+                                <h4 class="text-2xl font-bold text-on-background tracking-tight">Scan-to-CAD Essentials
+                                </h4>
+                                <span
+                                    class="bg-tertiary-container text-on-tertiary-container text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-wider">Intermediate</span>
+                            </div>
+                            <p class="text-on-surface-variant mb-8 line-clamp-2">From point cloud to production-ready
+                                CAD. Process lidar data and create accurate as-built documentation.</p>
+                        </div>
+                        <div class="space-y-5">
+                            <div
+                                class="flex justify-between items-center text-xs text-on-surface-variant font-bold uppercase tracking-widest">
+                                <span>20 Modules</span>
+                                <span>45% Progress</span>
+                            </div>
+                            <div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+                                <div class="bg-primary w-[45%] h-full rounded-full"></div>
+                            </div>
+                            <button
+                                class="w-full bg-on-background text-surface py-4 rounded-xl font-bold hover:bg-primary transition-colors active:scale-95">Join
+                                Pathway</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- AI-Powered Skill Assessment Section -->
+        <section class="py-32 bg-surface-container-highest px-12">
+            <div class="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                <div class="order-2 lg:order-1">
+                    <div
+                        class="relative bg-surface-container-lowest p-12 rounded-lg shadow-[0px_40px_80px_rgba(50,41,79,0.1)] overflow-hidden">
+                        <!-- Simulated Skill Matrix -->
+                        <div class="flex justify-between items-center mb-12">
+                            <h5 class="font-black text-xl tracking-tight text-on-background">Skill Assessment v3.1</h5>
+                            <span class="material-symbols-outlined text-primary text-3xl">auto_awesome</span>
+                        </div>
+                        <div class="space-y-8">
+                            <div class="flex items-center gap-6">
+                                <span class="w-24 text-xs font-black text-primary uppercase tracking-[0.2em]">BIM
+                                    Mgmt</span>
+                                <div class="flex-grow flex gap-1.5">
+                                    <div class="h-8 flex-grow bg-primary rounded-sm"></div>
+                                    <div class="h-8 flex-grow bg-primary rounded-sm"></div>
+                                    <div class="h-8 flex-grow bg-primary rounded-sm"></div>
+                                    <div class="h-8 flex-grow bg-primary rounded-sm"></div>
+                                    <div class="h-8 flex-grow bg-surface-container-highest rounded-sm"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-6">
+                                <span class="w-24 text-xs font-black text-primary uppercase tracking-[0.2em]">Revit
+                                    Exp</span>
+                                <div class="flex-grow flex gap-1.5">
+                                    <div class="h-8 flex-grow bg-primary rounded-sm"></div>
+                                    <div class="h-8 flex-grow bg-primary rounded-sm"></div>
+                                    <div class="h-8 flex-grow bg-primary rounded-sm"></div>
+                                    <div class="h-8 flex-grow bg-surface-container-highest rounded-sm"></div>
+                                    <div class="h-8 flex-grow bg-surface-container-highest rounded-sm"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-6">
+                                <span class="w-24 text-xs font-black text-primary uppercase tracking-[0.2em]">Scan
+                                    Data</span>
+                                <div class="flex-grow flex gap-1.5">
+                                    <div class="h-8 flex-grow bg-primary rounded-sm"></div>
+                                    <div class="h-8 flex-grow bg-primary rounded-sm"></div>
+                                    <div class="h-8 flex-grow bg-surface-container-highest rounded-sm"></div>
+                                    <div class="h-8 flex-grow bg-surface-container-highest rounded-sm"></div>
+                                    <div class="h-8 flex-grow bg-surface-container-highest rounded-sm"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-12 pt-8 border-t border-outline-variant/30">
+                            <p class="text-sm text-on-surface-variant italic font-medium leading-relaxed">"Your team
+                                improved BIM coordination efficiency by 31% in Q1 after completing the master pathway."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="order-1 lg:order-2">
+                    <h2 class="text-4xl md:text-5xl font-black tracking-tighter text-on-background mb-8 leading-[1.1]">
+                        Intelligent Skill Discovery</h2>
+                    <p class="text-lg md:text-xl text-on-surface-variant mb-12 leading-relaxed">
+                        Track your team's real competencies with our AI-powered skill matrix. Identify expertise gaps,
+                        certifications needed, and emerging talent within your organization.
+                    </p>
+                    <ul class="space-y-8">
+                        <li class="flex items-start gap-5">
+                            <span class="material-symbols-outlined text-primary text-3xl mt-1">check_circle</span>
+                            <div>
+                                <span class="font-bold text-xl text-on-background block mb-2">Competency Mapping</span>
+                                <p class="text-on-surface-variant leading-relaxed">Identify skill gaps before they
+                                    impact project delivery, ensuring your team stays ahead of industry demands.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-5">
+                            <span class="material-symbols-outlined text-primary text-3xl mt-1">check_circle</span>
+                            <div>
+                                <span class="font-bold text-xl text-on-background block mb-2">Performance
+                                    Analytics</span>
+                                <p class="text-on-surface-variant leading-relaxed">Real-time insights into your team's
+                                    technical proficiency and certification status across all BIM disciplines.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <!-- Start Your Upskilling Journey Today (CTA Section) -->
+        <section class="py-32 px-12">
+            <div
+                class="max-w-[1440px] mx-auto bg-on-background rounded-lg p-16 md:p-24 relative overflow-hidden text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-16">
+                <div class="absolute top-0 right-0 w-96 h-96 bg-primary/30 blur-[120px] rounded-full"></div>
+                <div class="absolute bottom-0 left-0 w-96 h-96 bg-tertiary-container/20 blur-[120px] rounded-full">
+                </div>
+                <div class="relative z-10 max-w-2xl">
+                    <h2 class="text-4xl md:text-6xl font-black tracking-tighter text-on-primary mb-8 leading-[1.1]">
+                        Start Your Upskilling Journey Today</h2>
+                    <p class="text-on-primary/70 text-xl leading-relaxed">Join 500+ AEC professionals mastering BIM,
+                        CAD, and modern construction workflows with Clove LP.</p>
+                </div>
+                <div class="relative z-10 flex flex-col gap-6 w-full md:w-auto">
+                    <button
+                        class="bg-primary text-on-primary px-12 py-6 rounded-xl font-black text-xl hover:scale-105 transition-transform shadow-[0px_20px_40px_rgba(78,70,209,0.3)]">Schedule
+                        a Demo</button>
+                    <button
+                        class="text-on-primary/60 hover:text-on-primary font-bold transition-colors uppercase tracking-[0.2em] text-sm">Start
+                        Learning Today</button>
+                </div>
+            </div>
+        </section>
+    </main>
+    <!-- Footer Shell -->
+    <footer class="w-full border-t border-[#b3a6d5]/20 bg-[#f5eeff] dark:bg-slate-900 mt-24">
+        <div class="flex flex-col md:flex-row justify-between items-center px-12 py-16 w-full max-w-[1440px] mx-auto">
+            <div class="text-lg font-black text-[#4e46d1] mb-8 md:mb-0">
+                Clove Learning Platform
+            </div>
+            <div
+                class="flex flex-wrap justify-center gap-10 mb-8 md:mb-0 font-['Inter'] text-sm tracking-wide uppercase">
+                <a class="text-slate-500 dark:text-slate-400 hover:text-[#4e46d1] transition-colors focus:ring-2 focus:ring-[#4e46d1]/20"
+                    href="#">Privacy Policy</a>
+                <a class="text-slate-500 dark:text-slate-400 hover:text-[#4e46d1] transition-colors focus:ring-2 focus:ring-[#4e46d1]/20"
+                    href="#">Terms of Service</a>
+                <a class="text-slate-500 dark:text-slate-400 hover:text-[#4e46d1] transition-colors focus:ring-2 focus:ring-[#4e46d1]/20"
+                    href="#">Accessibility</a>
+            </div>
+            <div class="flex flex-col items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
+                <div>© 2026 Clove Learning Platform. All rights reserved.</div>
+                <div class="text-xs">Developed by Yuva Subharam Vasamsetti</div>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

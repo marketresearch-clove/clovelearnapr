@@ -1,0 +1,50 @@
+.btn-create-course {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #4f46e5!important;
+  color: rgb(255, 255, 255) !important;
+  border: none;
+  border-radius: 9px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 90ms;
+}
+
+.btn-create-course:hover {
+  opacity: 0.9;
+}
+
+.btn-create-course:focus {
+  outline: none;
+}
+
+/* Styles for Rich Text Editor */
+.rich-text-editor .ql-container {
+  border: 1px solid #e5e7eb !important;
+  border-top: none !important;
+  border-radius: 0 0 0.5rem 0.5rem;
+  font-size: 16px;
+}
+.dark .rich-text-editor .ql-container {
+  border-color: #374151 !important;
+}
+
+.rich-text-editor .ql-editor {
+  min-height: 200px;
+  padding: 16px;
+}
+
+.rich-text-editor .ql-toolbar {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.5rem 0.5rem 0 0;
+  background-color: #f9fafb;
+}
+.dark .rich-text-editor .ql-toolbar {
+  background-color: #1f2937;
+  border-color: #374151 !important;
+}
+.dark .rich-text-editor .ql-stroke { stroke: #d1d5db; }
+.dark .rich-text-editor .ql-fill { fill: #d1d5db; }
+.dark .rich-text-editor .ql-picker-label { color: #d1d5db; }

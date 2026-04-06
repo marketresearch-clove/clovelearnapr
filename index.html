@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skill Spire - Master Your Skills</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+  <!-- Material Symbols Outlined -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL,GRAD@100..700,0..1,-50..200"
+    rel="stylesheet" />
+  <!-- Material Symbols Rounded -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght,FILL,GRAD@100..700,0..1,-50..200"
+    rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-surface-variant": "#5f557f",
+            "on-background": "#32294f",
+            "tertiary-container": "#fe8bca",
+            "inverse-surface": "#11062d",
+            "tertiary-fixed-dim": "#ee7ebc",
+            "on-primary": "#f4f1ff",
+            "inverse-primary": "#8681ff",
+            "on-secondary-fixed-variant": "#006a35",
+            "tertiary-fixed": "#fe8bca",
+            "surface-container-low": "#f5eeff",
+            "primary-fixed": "#9895ff",
+            "secondary-dim": "#005c2d",
+            "on-secondary": "#cdffd4",
+            "on-tertiary-fixed-variant": "#6d104d",
+            "primary-container": "#9895ff",
+            "tertiary": "#983771",
+            "surface-container-highest": "#e2d7ff",
+            "secondary": "#006a35",
+            "secondary-fixed-dim": "#5bef90",
+            "error-container": "#f74b6d",
+            "on-tertiary-container": "#610244",
+            "surface-bright": "#fbf4ff",
+            "error": "#b41340",
+            "surface-tint": "#4e46d1",
+            "secondary-fixed": "#6bfe9c",
+            "inverse-on-surface": "#a296c4",
+            "primary": "#4e46d1",
+            "outline-variant": "#b3a6d5",
+            "surface-variant": "#e2d7ff",
+            "on-primary-fixed": "#000000",
+            "on-primary-container": "#15007e",
+            "primary-dim": "#4138c4",
+            "background": "#fbf4ff",
+            "surface-container-lowest": "#ffffff",
+            "on-error": "#ffefef",
+            "surface-dim": "#dbcdff",
+            "on-primary-fixed-variant": "#1b0099",
+            "surface": "#fbf4ff",
+            "primary-fixed-dim": "#8985ff",
+            "surface-container-high": "#e8ddff",
+            "surface-container": "#ede4ff",
+            "tertiary-dim": "#892a65",
+            "secondary-container": "#6bfe9c",
+            "outline": "#7b709c",
+            "on-tertiary-fixed": "#360024",
+            "on-surface": "#32294f",
+            "on-tertiary": "#ffeff4",
+            "on-error-container": "#510017",
+            "error-dim": "#a70138",
+            "on-secondary-container": "#005f2f",
+            "on-secondary-fixed": "#004a23"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.8rem",
+            "lg": "1.6rem",
+            "xl": "2.4rem",
+            "full": "9999px"
+          },
+          "fontFamily": {
+            "headline": ["Inter"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          }
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 24px;
+      display: inline-block;
+      line-height: 1;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .material-symbols-rounded {
+      font-family: 'Material Symbols Rounded';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 24px;
+      display: inline-block;
+      line-height: 1;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+
+<body class="bg-surface text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+  <div id="root"></div>
+  <script type="module" src="/src/index.tsx"></script>
+</body>
+
+</html>

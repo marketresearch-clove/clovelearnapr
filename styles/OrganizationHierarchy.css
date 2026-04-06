@@ -1,0 +1,433 @@
+.organization-hierarchy {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Loading State */
+.hierarchy-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 16px;
+}
+
+.hierarchy-loading .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e5e7eb;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Error State */
+.hierarchy-error {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px;
+    background-color: #fee2e2;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    color: #991b1b;
+    margin: 20px 0;
+}
+
+.hierarchy-error .material-symbols-rounded {
+    font-size: 24px;
+}
+
+/* Empty State */
+.hierarchy-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 12px;
+    text-align: center;
+    color: #6b7280;
+}
+
+.hierarchy-empty .material-symbols-rounded {
+    font-size: 64px;
+    color: #d1d5db;
+}
+
+.hierarchy-empty p {
+    font-size: 16px;
+    margin: 0;
+}
+
+.hierarchy-empty .text-muted {
+    font-size: 14px;
+    color: #9ca3af;
+}
+
+/* Organization Path */
+.org-path {
+    margin-bottom: 40px;
+}
+
+.org-path-cards {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.path-arrow {
+    font-size: 28px;
+    color: #9ca3af;
+    font-weight: bold;
+}
+
+.org-path-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f9fafb;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    position: relative;
+    min-width: 250px;
+}
+
+.org-path-card.current {
+    background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+    border: 2px solid #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.path-card-avatar {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+}
+
+.path-card-avatar img,
+.path-card-avatar .avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.path-card-content {
+    flex: 1;
+}
+
+.path-card-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1f2937;
+    margin: 0 0 4px 0;
+}
+
+.path-card-title {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 0 0 2px 0;
+}
+
+.path-card-grade {
+    font-size: 11px;
+    color: #9ca3af;
+    background: #f3f4f6;
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin: 0;
+}
+
+.you-badge {
+    position: absolute;
+    top: -8px;
+    right: 8px;
+    background: #10b981;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+/* Section Titles */
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 16px 0;
+}
+
+.section-title .material-symbols-rounded {
+    font-size: 20px;
+    color: #3b82f6;
+}
+
+/* Hierarchy Grid */
+.hierarchy-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+/* Hierarchy Sections */
+.hierarchy-section {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.hierarchy-section.manager-section {
+    border-top: 4px solid #f59e0b;
+}
+
+.hierarchy-section.current-section {
+    border-top: 4px solid #10b981;
+    grid-column: 1 / -1;
+}
+
+.hierarchy-section.peers-section {
+    border-top: 4px solid #8b5cf6;
+    grid-column: 1 / -1;
+}
+
+.hierarchy-section.reports-section {
+    border-top: 4px solid #ec4899;
+    grid-column: 1 / -1;
+}
+
+/* Hierarchy Cards */
+.hierarchy-card {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.hierarchy-card:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.manager-card {
+    margin-bottom: 0;
+}
+
+.current-card {
+    background: linear-gradient(135deg, #f0fdf4 0%, #f0f9ff 100%);
+    border: 2px solid #10b981;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.peer-card,
+.report-card {
+    flex-direction: column;
+}
+
+/* Card Avatar */
+.card-avatar {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+}
+
+.current-card .card-avatar {
+    width: 80px;
+    height: 80px;
+}
+
+.card-avatar img,
+.card-avatar .avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.card-avatar .avatar-placeholder.current {
+    font-size: 28px;
+}
+
+/* Card Content */
+.card-content {
+    flex: 1;
+}
+
+.peer-card .card-content,
+.report-card .card-content {
+    text-align: center;
+}
+
+.card-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: #1f2937;
+    margin: 0 0 6px 0;
+}
+
+.card-email {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0 0 12px 0;
+}
+
+.card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.card-meta p {
+    font-size: 13px;
+    color: #4b5563;
+    margin: 0;
+}
+
+.card-meta strong {
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.role-badge {
+    display: inline-block;
+    background: #dbeafe;
+    color: #0c4a6e;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Cards Grid */
+.hierarchy-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .organization-hierarchy {
+        padding: 12px;
+    }
+
+    .hierarchy-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hierarchy-section.current-section,
+    .hierarchy-section.peers-section,
+    .hierarchy-section.reports-section {
+        grid-column: auto;
+    }
+
+    .org-path-cards {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .path-arrow {
+        transform: rotate(90deg);
+    }
+
+    .org-path-card {
+        min-width: 100%;
+    }
+
+    .hierarchy-cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hierarchy-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .card-avatar {
+        margin: 0 auto;
+    }
+
+    .card-email,
+    .card-meta {
+        text-align: center;
+    }
+}
+
+/* Animation */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hierarchy-section,
+.hierarchy-card {
+    animation: slideIn 0.3s ease-out;
+}
+
+.hierarchy-section:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.hierarchy-section:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.hierarchy-section:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.hierarchy-section:nth-child(4) {
+    animation-delay: 0.2s;
+}

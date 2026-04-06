@@ -1,0 +1,540 @@
+-- ============================================================================
+-- SKILL SPIRE LMS - Complete Supabase Database Export
+-- Generated: March 26, 2026
+-- Project Ref: veaawiernjkdsfiziqen
+-- ============================================================================
+-- This file contains:
+-- 1. Complete database schema for all tables
+-- 2. All migrations applied
+-- 3. Extensions enabled
+-- 4. Storage configuration
+-- 5. Edge Functions code
+-- 6. RLS policies and security configuration
+-- ============================================================================
+
+-- ============================================================================
+-- SECTION 1: EXTENSIONS ENABLED
+-- ============================================================================
+
+-- The following PostgreSQL extensions are installed and available:
+-- - This allows you to view which extensions are active in your Supabase project
+-- Use: SELECT * FROM pg_extension; to see all installed extensions
+
+-- ============================================================================
+-- SECTION 2: PUBLIC SCHEMA TABLES (Core LMS Tables)
+-- ============================================================================
+
+-- The following tables exist in the public schema:
+-- Curriculum & Learning:
+--   - courses
+--   - lessons
+--   - assessments
+--   - assessment_results
+--   - quizzes
+--   - quiz_results
+--   - learning_journeys
+--   - journey_modules
+--   - user_journey_assignments
+--   - user_journey_module_progress
+--   - calendar_events
+
+-- Skills & Career:
+--   - skills
+--   - skill_families
+--   - skill_course_mappings
+--   - skill_assignments
+--   - user_skill_achievements
+--   - user_badges
+--   - career_paths
+--   - user_career_paths
+--   - leaderboard
+
+-- Flashcards:
+--   - flashcard_sets
+--   - flashcards
+--   - flashcard_progress
+--   - flashcard_set_completion
+--   - flashcard_color_settings
+
+-- User Management:
+--   - profiles
+--   - enrollments
+--   - course_assignments
+--   - user_statistics
+--   - learning_hours
+--   - lesson_progress
+
+-- Assessments & Feedback:
+--   - external_assessments
+--   - external_assessment_results
+--   - user_external_assessments
+--   - course_feedback
+--   - course_reviews
+--   - user_mandatory_courses
+
+-- Notifications:
+--   - notifications
+--   - notification_logs
+--   - notification_preferences
+--   - notification_campaigns
+--   - notification_drafts
+--   - notification_queue
+--   - notification_queue_status
+--   - notification_stats_daily
+--   - notification_audit_log
+--   - notification_auto_send_rules
+--   - scheduled_notifications
+--   - whatsapp_templates
+
+-- System & Admin:
+--   - categories
+--   - certificates
+--   - community_posts
+--   - community_comments
+--   - community_likes
+--   - user_notification_counts
+--   - user_learning_stats_summary
+--   - module_learning_stats
+--   - module_learning_stats_summary
+--   - mandatory_modules_completion_status
+--   - auto_send_rule_execution_log
+--   - user_mandatory_courses
+
+-- Views:
+--   - course_assignments_with_details
+--   - v_pass_rate
+--   - v_skill_coverage
+
+-- ============================================================================
+-- SECTION 3: AUTHENTICATION SCHEMA (Auth Tables)
+-- ============================================================================
+-- 
+-- Supabase manages authentication via the 'auth' schema
+-- Key tables include:
+--   - auth.users (Main user accounts)
+--   - auth.identities (User identity providers)
+--   - auth.sessions (Active sessions)
+--   - auth.mfa_factors (Multi-factor authentication)
+--   - auth.audit_log_entries (Auth audit logs)
+--   - auth.oauth_clients (OAuth application clients)
+--   - auth.saml_providers (SAML provider configurations)
+--   - auth.webauthn_credentials (WebAuthn/FIDO2 credentials)
+
+-- ============================================================================
+-- SECTION 4: STORAGE SCHEMA (Storage Tables)
+-- ============================================================================
+--
+-- Storage is managed via the 'storage' schema
+-- Key tables:
+--   - storage.buckets (Storage bucket definitions)
+--   - storage.objects (Stored files/objects)
+--   - storage.s3_multipart_uploads (S3 multipart upload tracking)
+--   - storage.s3_multipart_uploads_parts (S3 upload part details)
+
+-- STORAGE BUCKETS CONFIGURATION:
+-- 
+-- Bucket Name: Documents
+--   - Public: true
+--   - File Size Limit: 52428800 bytes (50 MB)
+--   - Created: 2025-12-12T09:51:57.278Z
+-- 
+-- Bucket Name: lessons-content
+--   - Public: true
+--   - File Size Limit: unlimited
+--   - Created: 2025-12-12T09:55:41.937Z
+-- 
+-- Bucket Name: avatars
+--   - Public: true
+--   - File Size Limit: unlimited
+--   - Created: 2025-12-20T10:43:18.611Z
+-- 
+-- Bucket Name: community-uploads
+--   - Public: true
+--   - File Size Limit: unlimited
+--   - Created: 2025-12-22T05:45:27.427Z
+
+-- STORAGE CONFIGURATION:
+-- 
+-- File Size Limit (Global): 52428800 bytes (50 MB)
+-- Image Transformation: disabled
+-- S3 Protocol: enabled
+-- Iceberg Catalog: disabled
+-- Vector Buckets: disabled
+
+-- ============================================================================
+-- SECTION 5: REALTIME TABLES
+-- ============================================================================
+--
+-- Realtime database for real-time features:
+--   - realtime.messages (Main realtime messages)
+--   - realtime.messages_2026_03_23 (Date-based partitions)
+--   - realtime.messages_2026_03_24
+--   - realtime.messages_2026_03_25
+--   - realtime.messages_2026_03_26
+--   - realtime.messages_2026_03_27
+--   - realtime.messages_2026_03_28
+--   - realtime.messages_2026_03_29
+--   - realtime.subscription (Subscription tracking)
+
+-- ============================================================================
+-- SECTION 6: DATABASE MIGRATIONS APPLIED
+-- ============================================================================
+-- All migrations have been successfully applied to the database.
+-- Migration list in chronological order:
+
+-- 20260312050231: backfill_missing_skill_achievements_v4
+-- 20260312061134: add_type_to_skills
+-- 20260312124549: create_categories_table
+-- 20260312124555: insert_default_categories
+-- 20260313085539: create_flashcard_tables
+-- 20260313123422: add_flashcard_to_lessons_type
+-- 20260313123742: fix_flashcard_sets_columns
+-- 20260313125427: create_flashcard_sets_proper
+-- 20260313125530: clean_invalid_flashcard_ids
+-- 20260313125548: fix_lesson_content_block_ids_v2
+-- 20260313130727: create_flashcard_color_settings
+-- 20260316053158: create_whatsapp_notifications
+-- 20260316072301: create_advanced_notifications
+-- 20260316121047: fix_enrollments_rls_admin_access
+-- 20260316121300: fix_instructor_visibility_for_students
+-- 20260317043040: create_course_feedback_table
+-- 20260317123215: update_course_average_rating_on_review
+-- 20260318041847: enable_rls_on_public_tables
+-- 20260318041920: remove_security_definer_from_views
+-- 20260318041944: fix_security_definer_views
+-- 20260318042108: add_rls_policies_corrected
+-- 20260318042217: final_fix_security_definer_views_v2
+-- 20260318101614: update_course_feedback_rls_policies
+-- 20260318101720: migrate_course_reviews_to_feedback
+-- 20260318102010: create_trigger_update_course_rating_on_feedback
+-- 20260318102530: standardize_duration_columns
+-- 20260318114542: add_duration_minutes_to_lessons
+-- 20260318114655: fix_lessons_rls_policies
+-- 20260324114126: fix_enrollments_rls_for_admin_assignments
+-- 20260324114243: fix_trigger_security_context
+-- 20260324114305: fix_enrollments_trigger_bypass_rls
+-- 20260326085638: fix_courses_rls_admin_insert
+-- 20260326090059: fix_assessments_rls_admin_insert
+-- 20260326090109: fix_career_paths_rls_admin_insert
+-- 20260326090130: fix_courses_rls_admin_update_delete
+-- 20260326090200: add_ai_skill_mapping_columns
+
+-- Total Migrations: 37
+
+-- ============================================================================
+-- SECTION 7: EDGE FUNCTIONS
+-- ============================================================================
+
+-- ============================================================================
+-- Edge Function 1: whatsapp-notification-scheduler
+-- ============================================================================
+-- Purpose: Schedules WhatsApp notifications for course reminders
+-- Status: ACTIVE
+-- JWT Verification: enabled
+-- Deployed: 2024-01-13T20:30:24.748Z
+
+/*
+CREATE OR REPLACE FUNCTION whatsapp_notification_scheduler()
+RETURNS void AS $$
+-- This edge function:
+-- 1. Checks for pending notifications to send
+-- 2. Formats WhatsApp messages
+-- 3. Sends via WhatsApp API
+-- 4. Logs delivery status
+-- See WHATSAPP_IMPLEMENTATION_GUIDE.md for deployment details
+$$ LANGUAGE plpgsql;
+*/
+
+-- ============================================================================
+-- Edge Function 2: whatsapp-webhook
+-- ============================================================================
+-- Purpose: Receives WhatsApp status updates and message events from Meta
+-- Status: ACTIVE
+-- JWT Verification: enabled
+-- Deployed: 2024-01-13T20:30:38.358Z
+--
+-- Endpoints:
+-- GET: /functions/v1/whatsapp-webhook (Hub verification)
+-- POST: /functions/v1/whatsapp-webhook (Webhook events)
+--
+-- Handles:
+-- - Message delivery/read status updates
+-- - Incoming message events
+-- - Error status updates
+--
+-- Database updates:
+-- - Updates notification_logs with delivery status
+-- - Records delivered_at and read_at timestamps
+-- - Logs error messages for failed deliveries
+
+-- ============================================================================
+-- Edge Function 3: enable-preset-rule
+-- ============================================================================
+-- Purpose: Enables notification preset templates
+-- Status: ACTIVE
+-- JWT Verification: enabled
+-- Deployed: 2024-01-13T20:43:23.620Z
+--
+-- Available Preset Templates:
+-- 1. 'assessment-3day': Assessment Due (3 Days)
+-- 2. 'course-1week': Course Due (1 Week)
+-- 3. 'course-assigned': New Course Assigned
+-- 4. 'careerpath-weekly': Career Path Weekly Check
+-- 5. 'reengagement-14day': Re-engagement (14 Days Inactive)
+-- 6. 'motivation-midcourse': Mid-Course Motivation (50%)
+--
+-- Creates notification_auto_send_rules in database
+
+-- ============================================================================
+-- Edge Function 4: process-notification-history
+-- ============================================================================
+-- Purpose: Processes and exports notification history, stats, and analytics
+-- Status: ACTIVE
+-- JWT Verification: enabled
+-- Deployed: 2024-01-14T13:43:03.538Z
+--
+-- Supported Actions:
+-- - get-history: Retrieve notification history with filters
+-- - get-stats: Get aggregated notification statistics
+-- - export-history: Export history as CSV
+--
+-- Query Parameters:
+--   - user_id: Filter by specific user
+--   - action_type: Filter by notification action (sent, viewed, clicked, failed, bounced)
+--   - date_from: Start date for filtering (ISO 8601)
+--   - date_to: End date for filtering (ISO 8601)
+--   - limit: Maximum records to return (default: 1000)
+--   - offset: Pagination offset (default: 0)
+
+-- ============================================================================
+-- Edge Function 5: manage-autosend-rules
+-- ============================================================================
+-- Purpose: Manages automatic notification sending rules
+-- Status: ACTIVE
+-- JWT Verification: enabled
+-- Deployed: 2024-01-14T13:43:29.411Z
+--
+-- Features:
+-- - Create automated notification rules
+-- - Manage trigger types and parameters
+-- - Configure rule priority and frequency
+-- - Set max sends per user limits
+--
+-- Trigger Types:
+--   - course_due: Trigger on course due date
+--   - task_pending: Trigger on pending tasks
+--   - low_engagement: Trigger on low engagement
+--   - inactive_user: Trigger on user inactivity
+
+-- ============================================================================
+-- SECTION 8: ROW LEVEL SECURITY (RLS) POLICIES
+-- ============================================================================
+--
+-- RLS is enabled on all public tables for security
+-- Key policy approaches:
+--
+-- 1. User-specific access:
+--    - Users can only view their own enrollments, progress, and stats
+--    - Users can only view courses they're enrolled in
+--
+-- 2. Admin/Instructor access:
+--    - Admins can create and manage courses, assignments, assessments
+--    - Instructors can view student progress in their courses
+--    - Admins can bypass normal RLS policies where needed
+--
+-- 3. Public data:
+--    - Published courses visible to all authenticated users
+--    - Community posts and public content visible to all
+--
+-- Affected Tables with RLS:
+--    - courses (public courses visible, but creation restricted)
+--    - lessons (restricted to enrolled users)
+--    - enrollments (users see own, admins see all)
+--    - lesson_progress (users see own progress)
+--    - quiz_results (users see own results)
+--    - certificates (users see own)
+--    - notifications (users see own)
+--    - profiles (restricted)
+--    - user statistics tables (restricted to user's own data)
+
+-- ============================================================================
+-- SECTION 9: IMPORTANT TABLES & KEY FIELDS
+-- ============================================================================
+
+-- Table: courses
+-- Key fields:
+--   - id (UUID, primary key)
+--   - title (text)
+--   - description (text)
+--   - created_by (UUID, foreign key to profiles)
+--   - duration (interval)
+--   - duration_minutes (integer) 
+--   - is_published (boolean)
+--   - category_id (UUID, foreign key to categories)
+--
+-- Table: lessons
+-- Key fields:
+--   - id (UUID)
+--   - course_id (UUID)
+--   - title (text)
+--   - content (JSONB with blocks)
+--   - lesson_type (enum: text, video, quiz, flashcard, assessment)
+--   - duration (interval)
+--   - duration_minutes (integer)
+--   - order_index (integer)
+--
+-- Table: enrollments
+-- Key fields:
+--   - id (UUID)
+--   - user_id (UUID)
+--   - course_id (UUID)
+--   - enrolled_at (timestamp)
+--   - progress (integer, 0-100)
+--   - is_completed (boolean)
+--   - completed_at (timestamp)
+--   - marked_by_admin (boolean)
+--
+-- Table: lesson_progress
+-- Key fields:
+--   - id (UUID)
+--   - user_id (UUID)
+--   - lesson_id (UUID)
+--   - is_completed (boolean)
+--   - completed_at (timestamp)
+--   - time_spent_seconds (integer)
+--
+-- Table: notification_logs
+-- Key fields:
+--   - id (UUID)
+--   - user_id (UUID)
+--   - notification_type (text: whatsapp, email, in_app)
+--   - status (text: queued, sent, delivered, read, failed)
+--   - whatsapp_message_id (text)
+--   - delivered_at (timestamp)
+--   - read_at (timestamp)
+--
+-- Table: notification_auto_send_rules
+-- Key fields:
+--   - id (UUID)
+--   - admin_id (UUID)
+--   - name (text)
+--   - trigger_type (text)
+--   - is_active (boolean)
+--   - max_sends_per_user (integer)
+--   - priority (integer)
+
+-- ============================================================================
+-- SECTION 10: AUTHENTICATION & USER SYSTEM
+-- ============================================================================
+--
+-- Authentication Flow:
+-- 1. User signs up/logs in via Supabase Auth
+-- 2. Auth creates entry in auth.users
+-- 3. Trigger creates corresponding entry in public.profiles
+-- 4. JWT token issued with user_id as 'sub' claim
+--
+-- Key Auth Features:
+-- - Email/Password authentication
+-- - OAuth providers support
+-- - Multi-factor authentication (MFA)
+-- - WebAuthn/FIDO2 support
+-- - Session management
+--
+-- Profiles Table Integration:
+--   - Synced with auth.users
+--   - Stores user metadata (name, avatar, role, etc.)
+--   - Contains user statistics and preferences
+
+-- ============================================================================
+-- SECTION 11: WEBHOOK & NOTIFICATION SYSTEM
+-- ============================================================================
+--
+-- WhatsApp Integration:
+-- 1. Notifications created in notification_queue
+-- 2. WhatsApp scheduler processes queue
+-- 3. Messages sent via WhatsApp Business API
+-- 4. Status webhook receives delivery updates
+-- 5. notification_logs updated with status
+--
+-- Notification Types:
+-- - Course reminders
+-- - Assignment notifications
+-- - Assessment notifications
+-- - Progress updates
+-- - System announcements
+--
+-- Auto-Send Rules:
+-- - Trigger-based notifications
+-- - Time-delayed sends
+-- - User preference filtering
+-- - Frequency capping per user
+
+-- ============================================================================
+-- SECTION 12: RECOMMENDED QUERIES FOR COMMON TASKS
+-- ============================================================================
+
+-- Get all courses with enrollment count:
+-- SELECT 
+--   c.id, c.title, COUNT(e.id) as enrollment_count
+-- FROM courses c
+-- LEFT JOIN enrollments e ON c.id = e.course_id
+-- GROUP BY c.id, c.title
+-- ORDER BY enrollment_count DESC;
+
+-- Get course completion rate:
+-- SELECT 
+--   c.title,
+--   COUNT(CASE WHEN e.is_completed THEN 1 END)::float / COUNT(*) * 100 as completion_rate
+-- FROM courses c
+-- JOIN enrollments e ON c.id = e.course_id
+-- GROUP BY c.id, c.title;
+
+-- Get user learning progress:
+-- SELECT 
+--   p.id, p.first_name, p.last_name,
+--   COUNT(DISTINCT e.course_id) as courses_enrolled,
+--   COUNT(CASE WHEN e.is_completed THEN 1 END) as courses_completed,
+--   COUNT(CASE WHEN lp.is_completed THEN 1 END) as lessons_completed
+-- FROM profiles p
+-- LEFT JOIN enrollments e ON p.id = e.user_id
+-- LEFT JOIN lesson_progress lp ON p.id = lp.user_id
+-- GROUP BY p.id;
+
+-- Get notification delivery stats:
+-- SELECT 
+--   DATE_TRUNC('day', created_at)::date as date,
+--   status,
+--   COUNT(*) as count
+-- FROM notification_logs
+-- GROUP BY DATE_TRUNC('day', created_at), status
+-- ORDER BY date DESC;
+
+-- ============================================================================
+-- SECTION 13: DEPLOYMENT & CONFIGURATION
+-- ============================================================================
+--
+-- Project Details:
+-- - Project Ref: veaawiernjkdsfiziqen
+-- - Region: (see Supabase dashboard)
+-- - Tier: (see Supabase dashboard)
+--
+-- To export/backup your data:
+-- 1. Via Supabase Dashboard: Settings > Database > Backups
+-- 2. Via CLI: supabase db pull
+-- 3. Via pg_dump: pg_dump -h db.veaawiernjkdsfiziqen.supabase.co -U postgres -d postgres > backup.sql
+--
+-- To manage edge functions:
+-- See supabase_edge_functions.ts file in project
+--
+-- To configure storage:
+-- - Update bucket rules via Supabase Dashboard
+-- - Set object/bucket policies in Storage > Policies
+--
+-- To manage RLS policies:
+-- - View all policies: SELECT * FROM pg_policies;
+-- - Tables with RLS enabled: All tables in public schema
+-- - Admin bypass enabled for certain operations
+
+-- ============================================================================
+-- END OF SUPABASE EXPORT
+-- ============================================================================
