@@ -24,6 +24,19 @@ const allowedViewsOptions = [
   { value: 'Administrator View', label: 'Administrator View' },
 ];
 
+const companyOptions = [
+  { value: 'Clove Technologies Pvt. Ltd.', label: 'Clove Technologies Pvt. Ltd.' },
+];
+
+const locationOptions = [
+  { value: 'Visakhapatnam', label: 'Visakhapatnam' },
+  { value: 'Hyderabad', label: 'Hyderabad' },
+];
+
+const industryOptions = [
+  { value: 'AEC', label: 'AEC' },
+];
+
 const EditUserPage = () => {
   const { id } = useParams<{ id: string }>();
   const { register, handleSubmit, control, setValue, formState: { errors } } = useForm();
@@ -59,6 +72,15 @@ const EditUserPage = () => {
             } else {
               setValue('allowed_views', []);
             }
+          } else if (key === 'company') {
+            const companyOption = companyOptions.find(o => o.value === data[key]);
+            if (companyOption) setValue('company', companyOption);
+          } else if (key === 'location') {
+            const locationOption = locationOptions.find(o => o.value === data[key]);
+            if (locationOption) setValue('location', locationOption);
+          } else if (key === 'industry') {
+            const industryOption = industryOptions.find(o => o.value === data[key]);
+            if (industryOption) setValue('industry', industryOption);
           } else {
             setValue(key, data[key] || '');
           }
@@ -86,13 +108,13 @@ const EditUserPage = () => {
         user_status: data.user_status?.value || 'Active',
         preferred_language: data.preferred_language || '',
         allowed_views: Array.isArray(data.allowed_views) ? data.allowed_views.map((v: any) => v?.value).filter(Boolean) : [],
-        company: data.company || '',
+        company: data.company?.value || '',
         department: data.department || '',
         designation: data.designation || '',
         employment_type: data.employment_type || '',
-        industry: data.industry || '',
+        industry: data.industry?.value || '',
         leadership_role: data.leadership_role || '',
-        location: data.location || '',
+        location: data.location?.value || '',
         role: data.role?.value || 'learner',
         persona: data.persona || '',
         team: data.team || '',
@@ -160,13 +182,29 @@ const EditUserPage = () => {
               <div>
                 <h2 className="text-xl font-semibold mb-4">Employment / Company</h2>
                 <div className="space-y-4">
-                  <input {...register('company')} placeholder="Company" className="w-full p-2 border rounded" />
+                  <Controller
+                    name="company"
+                    control={control}
+                    render={({ field }) => <Select {...field} options={companyOptions} placeholder="Company" isClearable />}
+                  />
+
                   <input {...register('department')} placeholder="Department" className="w-full p-2 border rounded" />
                   <input {...register('designation')} placeholder="Designation" className="w-full p-2 border rounded" />
                   <input {...register('employment_type')} placeholder="Employment Type" className="w-full p-2 border rounded" />
-                  <input {...register('industry')} placeholder="Industry" className="w-full p-2 border rounded" />
+
+                  <Controller
+                    name="industry"
+                    control={control}
+                    render={({ field }) => <Select {...field} options={industryOptions} placeholder="Industry" isClearable />}
+                  />
+
                   <input {...register('leadership_role')} placeholder="Leadership Role" className="w-full p-2 border rounded" />
-                  <input {...register('location')} placeholder="Location" className="w-full p-2 border rounded" />
+
+                  <Controller
+                    name="location"
+                    control={control}
+                    render={({ field }) => <Select {...field} options={locationOptions} placeholder="Location" isClearable />}
+                  />
                 </div>
               </div>
 

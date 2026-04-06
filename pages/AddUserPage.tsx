@@ -25,6 +25,19 @@ const allowedViewsOptions = [
   { value: 'Administrator View', label: 'Administrator View' },
 ];
 
+const companyOptions = [
+  { value: 'Clove Technologies Pvt. Ltd.', label: 'Clove Technologies Pvt. Ltd.' },
+];
+
+const locationOptions = [
+  { value: 'Visakhapatnam', label: 'Visakhapatnam' },
+  { value: 'Hyderabad', label: 'Hyderabad' },
+];
+
+const industryOptions = [
+  { value: 'AEC', label: 'AEC' },
+];
+
 const AddUserPage = () => {
   const { register, handleSubmit, control, formState: { errors } } = useForm();
   const location = useLocation();
@@ -207,13 +220,13 @@ const AddUserPage = () => {
         user_status: data.user_status.value,
         preferred_language: data.preferred_language,
         allowed_views: data.allowed_views.map((v: any) => v.value),
-        company: data.company,
+        company: data.company?.value,
         department: data.department,
         designation: data.designation,
         employment_type: data.employment_type,
-        industry: data.industry,
+        industry: data.industry?.value,
         leadership_role: data.leadership_role,
-        location: data.location,
+        location: data.location?.value,
         role: data.role.value,
         persona: data.persona,
         team: data.team,
@@ -385,13 +398,29 @@ const AddUserPage = () => {
               <div>
                 <h2 className="text-xl font-semibold mb-4">Employment / Company</h2>
                 <div className="space-y-4">
-                  <input {...register('company')} placeholder="Company" className="w-full p-2 border rounded" />
+                  <Controller
+                    name="company"
+                    control={control}
+                    render={({ field }) => <Select {...field} options={companyOptions} placeholder="Company" />}
+                  />
+
                   <input {...register('department')} placeholder="Department" className="w-full p-2 border rounded" />
                   <input {...register('designation')} placeholder="Designation" className="w-full p-2 border rounded" />
                   <input {...register('employment_type')} placeholder="Employment Type" className="w-full p-2 border rounded" />
-                  <input {...register('industry')} placeholder="Industry" className="w-full p-2 border rounded" />
+
+                  <Controller
+                    name="industry"
+                    control={control}
+                    render={({ field }) => <Select {...field} options={industryOptions} placeholder="Industry" />}
+                  />
+
                   <input {...register('leadership_role')} placeholder="Leadership Role" className="w-full p-2 border rounded" />
-                  <input {...register('location')} placeholder="Location" className="w-full p-2 border rounded" />
+
+                  <Controller
+                    name="location"
+                    control={control}
+                    render={({ field }) => <Select {...field} options={locationOptions} placeholder="Location" />}
+                  />
                 </div>
               </div>
 
