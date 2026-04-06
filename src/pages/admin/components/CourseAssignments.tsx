@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../../../lib/supabaseClient';
+import Loader from '../../../../components/Loader';
 import { courseAssignmentService } from '../../../../lib/courseAssignmentService';
 import { exportToCSV } from '../../../../lib/exportUtils';
 
@@ -675,10 +676,9 @@ const CourseAssignments: React.FC = () => {
 
           {/* User Groups Display */}
           {loading ? (
-            <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-3"></div>
-              <p className="text-gray-600">Loading assignments...</p>
-              <p className="text-xs text-gray-500 mt-2">This may take a moment if there are many assignments</p>
+            <div className="bg-white rounded-lg border border-gray-200 p-20">
+              <Loader size="lg" message="Loading assignments..." />
+              <p className="text-xs text-center text-gray-500 mt-2">This may take a moment if there are many assignments</p>
             </div>
           ) : filteredAssignments.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-lg border border-gray-200">

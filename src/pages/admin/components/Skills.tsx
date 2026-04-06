@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../../../lib/supabaseClient';
+import Loader from '../../../../components/Loader';
 
 interface Skill {
   id: string;
@@ -212,7 +213,9 @@ const Skills: React.FC = () => {
           <tbody className="divide-y divide-gray-200">
             {loading ? (
               <tr>
-                <td colSpan={5} className="text-center py-8 text-gray-700">Loading skills...</td>
+                <td colSpan={5} className="py-20">
+                  <Loader size="lg" message="Loading skills..." />
+                </td>
               </tr>
             ) : filteredSkills.length === 0 ? (
               <tr>

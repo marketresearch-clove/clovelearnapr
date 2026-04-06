@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../../../lib/supabaseClient';
+import Loader from '../../../../components/Loader';
 import * as FaIcons from 'react-icons/fa';
 import * as MdIcons from 'react-icons/md';
 
@@ -293,7 +294,9 @@ const SkillFamilies: React.FC = () => {
           <tbody className="divide-y divide-gray-200">
             {loading ? (
               <tr>
-                <td colSpan={6} className="text-center py-4 text-gray-700">Loading skill families...</td>
+                <td colSpan={6} className="py-20">
+                  <Loader size="lg" message="Loading skill families..." />
+                </td>
               </tr>
             ) : filteredFamilies.length === 0 ? (
               <tr>

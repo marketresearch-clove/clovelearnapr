@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../components/AdminLayout';
+import Loader from '../components/Loader';
 import { supabase } from '../lib/supabaseClient';
 import { exportToExcel, exportToPDF, exportToCSV } from '../lib/exportUtils';
 import {
@@ -257,9 +258,27 @@ const AdminReportsPage: React.FC = () => {
 
   return (
     <AdminLayout title="LMS Analytics & Learning Reports">
+      <style>{`
+        .reports-sidebar {
+          padding-right: 12px;
+        }
+        .reports-sidebar::-webkit-scrollbar {
+          width: 1.5px;
+        }
+        .reports-sidebar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .reports-sidebar::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 10px;
+        }
+        .reports-sidebar::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+      `}</style>
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
         {/* Report Sidebar */}
-        <div className="lg:col-span-1 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+        <div className="reports-sidebar lg:col-span-1 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto sticky top-8 pl-2">
           {Object.entries(reportsByCategory).map(([category, categoryReports]: [string, any]) => (
             <div key={category} className="space-y-2">
               <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider px-2 py-1">{category}</h4>
@@ -359,10 +378,7 @@ const AdminReportsPage: React.FC = () => {
                   {loading ? (
                     <tr>
                       <td colSpan={Object.keys(data[0] || {}).length || 10} className="px-6 py-20 text-center">
-                        <div className="flex flex-col items-center gap-3">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                          <p className="text-sm text-gray-500">Loading report data...</p>
-                        </div>
+                        <Loader size="lg" message="Loading report data..." />
                       </td>
                     </tr>
                   ) : data.length > 0 ? (

@@ -220,7 +220,7 @@ const PlatformTutorial: React.FC<PlatformTutorialProps> = ({ isOpen, onClose, on
                 {/* Tutorial Modal */}
                 <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
                     {/* Header */}
-                    <div className="relative bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-8 text-white">
+                    <div className="relative bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-8 text-white">
                         <button
                             onClick={handleSkip}
                             className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors"
@@ -233,7 +233,7 @@ const PlatformTutorial: React.FC<PlatformTutorialProps> = ({ isOpen, onClose, on
                         </div>
 
                         {/* Step Indicator */}
-                        <div className="flex items-center gap-2 text-sm text-primary-100">
+                        <div className="flex items-center gap-2 text-sm text-indigo-100">
                             <div className="flex gap-1">
                                 {steps.map((_, idx) => (
                                     <div
@@ -241,8 +241,8 @@ const PlatformTutorial: React.FC<PlatformTutorialProps> = ({ isOpen, onClose, on
                                         className={`h-1.5 rounded-full transition-all ${idx === currentStep
                                             ? 'bg-white w-8'
                                             : idx < currentStep
-                                                ? 'bg-primary-200 w-2'
-                                                : 'bg-primary-300 w-2'
+                                                ? 'bg-indigo-200 w-2'
+                                                : 'bg-indigo-300 w-2'
                                             }`}
                                     />
                                 ))}
@@ -254,54 +254,54 @@ const PlatformTutorial: React.FC<PlatformTutorialProps> = ({ isOpen, onClose, on
                     <div className="px-6 py-6">
                         {/* Icon */}
                         <div className="mb-6 flex justify-center">
-                            <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center">
+                            <div className="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center">
                                 {step.id === 1 && (
-                                    <span className="material-symbols-rounded text-primary-600 text-3xl">
+                                    <span className="material-symbols-rounded text-indigo-600 text-3xl">
                                         rocket_launch
                                     </span>
                                 )}
                                 {step.id === 2 && (
-                                    <span className="material-symbols-rounded text-primary-600 text-3xl">
+                                    <span className="material-symbols-rounded text-indigo-600 text-3xl">
                                         account_circle
                                     </span>
                                 )}
                                 {step.id === 3 && (
-                                    <span className="material-symbols-rounded text-primary-600 text-3xl">
+                                    <span className="material-symbols-rounded text-indigo-600 text-3xl">
                                         dashboard
                                     </span>
                                 )}
                                 {step.id === 4 && (
-                                    <span className="material-symbols-rounded text-primary-600 text-3xl">
+                                    <span className="material-symbols-rounded text-indigo-600 text-3xl">
                                         grid_view
                                     </span>
                                 )}
                                 {step.id === 5 && (
-                                    <span className="material-symbols-rounded text-primary-600 text-3xl">
+                                    <span className="material-symbols-rounded text-indigo-600 text-3xl">
                                         school
                                     </span>
                                 )}
                                 {step.id === 6 && (
-                                    <span className="material-symbols-rounded text-primary-600 text-3xl">
+                                    <span className="material-symbols-rounded text-indigo-600 text-3xl">
                                         calendar_month
                                     </span>
                                 )}
                                 {step.id === 7 && (
-                                    <span className="material-symbols-rounded text-primary-600 text-3xl">
+                                    <span className="material-symbols-rounded text-indigo-600 text-3xl">
                                         forum
                                     </span>
                                 )}
                                 {step.id === 8 && (
-                                    <span className="material-symbols-rounded text-primary-600 text-3xl">
+                                    <span className="material-symbols-rounded text-indigo-600 text-3xl">
                                         leaderboard
                                     </span>
                                 )}
                                 {step.id === 9 && (
-                                    <span className="material-symbols-rounded text-primary-600 text-3xl">
+                                    <span className="material-symbols-rounded text-indigo-600 text-3xl">
                                         settings
                                     </span>
                                 )}
                                 {step.id === 10 && (
-                                    <span className="material-symbols-rounded text-primary-600 text-3xl">
+                                    <span className="material-symbols-rounded text-indigo-600 text-3xl">
                                         done_all
                                     </span>
                                 )}
@@ -360,7 +360,7 @@ const PlatformTutorial: React.FC<PlatformTutorialProps> = ({ isOpen, onClose, on
 
                             <button
                                 onClick={handleNext}
-                                className="flex items-center gap-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium text-sm"
+                                className="flex items-center gap-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm"
                             >
                                 <span>{step.action}</span>
                                 <FiChevronRight size={18} />

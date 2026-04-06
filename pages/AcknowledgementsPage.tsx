@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AdminLayout from '../components/AdminLayout';
+import Loader from '../components/Loader';
 import { supabase } from '../lib/supabaseClient';
 
 interface AckRecord {
@@ -299,237 +300,238 @@ const AcknowledgementsPage: React.FC = () => {
 
   return (
     <AdminLayout title="Policy Acknowledgements">
-      <div className="space-y-5">
+      {loading ? (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader size="lg" message="Loading acknowledgements..." />
+        </div>
+      ) : (
+        <div className="space-y-5">
 
-        {/* Template Configuration Section */}
-        <div className="bg-white rounded-xl border border-gray-300">
-          <button
-            onClick={() => setShowTemplateConfig(!showTemplateConfig)}
-            className="w-full flex items-center justify-between px-5 py-3.5 bg-blue-100 hover:bg-blue-150 transition-colors text-left border-b border-gray-300"
-          >
-            <div className="flex items-center gap-3">
-              <span className="material-symbols-rounded text-blue-700">palette</span>
-              <div>
-                <h3 className="font-semibold text-gray-900">Configure Document Templates</h3>
-                <p className="text-xs text-gray-700 mt-0.5">Upload letterhead and customize acknowledgement document appearance</p>
-              </div>
-            </div>
-            <span className={`material-symbols-rounded text-gray-700 font-semibold transition-transform ${showTemplateConfig ? 'rotate-180' : ''}`}>expand_more</span>
-          </button>
-
-          {showTemplateConfig && (
-            <div className="p-5 space-y-4">
-              {/* Quick Letterhead Upload */}
-              <div className="bg-blue-50 border-2 border-dashed border-blue-400 rounded-lg p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="material-symbols-rounded text-blue-700 text-2xl">image</span>
-                  <div>
-                    <h4 className="font-semibold text-gray-900">Upload Letterhead Image</h4>
-                    <p className="text-xs text-gray-700">PNG, JPG, or GIF (max 5MB)</p>
-                  </div>
-                </div>
-
-                {letterheadImage ? (
-                  <div className="space-y-3">
-                    <img src={letterheadImage} alt="Letterhead" className="max-h-32 bg-white p-2 rounded border border-gray-400" />
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="Template name..."
-                        id="template-name-input"
-                        className="flex-1 px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-gray-900"
-                      />
-                      <button
-                        onClick={() => {
-                          const name = (document.getElementById('template-name-input') as HTMLInputElement)?.value || 'Template ' + (templates.length + 1);
-                          handleSaveTemplate(name);
-                          (document.getElementById('template-name-input') as HTMLInputElement).value = '';
-                        }}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
-                      >
-                        Save Template
-                      </button>
-                      <button
-                        onClick={() => setLetterheadImage(null)}
-                        className="px-3 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg text-sm font-medium transition-colors"
-                      >
-                        <span className="material-symbols-rounded">close</span>
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <label className="cursor-pointer">
-                    <div className="text-center py-4">
-                      <span className="material-symbols-rounded text-gray-600 text-4xl block mb-2">cloud_upload</span>
-                      <p className="text-sm font-medium text-gray-800">Click to upload or drag and drop</p>
-                    </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleLetterheadUpload}
-                      className="hidden"
-                    />
-                  </label>
-                )}
-              </div>
-
-              {/* Saved Templates */}
-              {templates.length > 0 && (
+          {/* Template Configuration Section */}
+          <div className="bg-white rounded-xl border border-gray-300">
+            <button
+              onClick={() => setShowTemplateConfig(!showTemplateConfig)}
+              className="w-full flex items-center justify-between px-5 py-3.5 bg-blue-100 hover:bg-blue-150 transition-colors text-left border-b border-gray-300"
+            >
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-rounded text-blue-700">palette</span>
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-3">Saved Templates</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {templates.map(t => (
-                      <div
-                        key={t.id}
-                        onClick={() => setSelectedTemplateId(t.id)}
-                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${selectedTemplateId === t.id
-                            ? 'border-blue-600 bg-blue-50'
-                            : 'border-gray-300 hover:border-gray-400'
-                          }`}
-                      >
-                        {t.letterheadImage && (
-                          <img src={t.letterheadImage} alt={t.name} className="w-full h-20 object-contain mb-2 bg-white rounded p-1 border border-gray-300" />
-                        )}
-                        <p className="text-xs font-medium text-gray-900 truncate mb-2">{t.name}</p>
+                  <h3 className="font-semibold text-gray-900">Configure Document Templates</h3>
+                  <p className="text-xs text-gray-700 mt-0.5">Upload letterhead and customize acknowledgement document appearance</p>
+                </div>
+              </div>
+              <span className={`material-symbols-rounded text-gray-700 font-semibold transition-transform ${showTemplateConfig ? 'rotate-180' : ''}`}>expand_more</span>
+            </button>
+
+            {showTemplateConfig && (
+              <div className="p-5 space-y-4">
+                {/* Quick Letterhead Upload */}
+                <div className="bg-blue-50 border-2 border-dashed border-blue-400 rounded-lg p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="material-symbols-rounded text-blue-700 text-2xl">image</span>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Upload Letterhead Image</h4>
+                      <p className="text-xs text-gray-700">PNG, JPG, or GIF (max 5MB)</p>
+                    </div>
+                  </div>
+
+                  {letterheadImage ? (
+                    <div className="space-y-3">
+                      <img src={letterheadImage} alt="Letterhead" className="max-h-32 bg-white p-2 rounded border border-gray-400" />
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Template name..."
+                          id="template-name-input"
+                          className="flex-1 px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-gray-900"
+                        />
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveTemplate(t.id);
+                          onClick={() => {
+                            const name = (document.getElementById('template-name-input') as HTMLInputElement)?.value || 'Template ' + (templates.length + 1);
+                            handleSaveTemplate(name);
+                            (document.getElementById('template-name-input') as HTMLInputElement).value = '';
                           }}
-                          className="w-full px-2 py-1 text-xs text-red-700 hover:bg-red-100 rounded transition-colors"
+                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
                         >
-                          Remove
+                          Save Template
+                        </button>
+                        <button
+                          onClick={() => setLetterheadImage(null)}
+                          className="px-3 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg text-sm font-medium transition-colors"
+                        >
+                          <span className="material-symbols-rounded">close</span>
                         </button>
                       </div>
-                    ))}
-                  </div>
-                  {selectedTemplateId && (
-                    <p className="text-xs text-green-700 mt-3">✓ Template selected for printing</p>
+                    </div>
+                  ) : (
+                    <label className="cursor-pointer">
+                      <div className="text-center py-4">
+                        <span className="material-symbols-rounded text-gray-600 text-4xl block mb-2">cloud_upload</span>
+                        <p className="text-sm font-medium text-gray-800">Click to upload or drag and drop</p>
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLetterheadUpload}
+                        className="hidden"
+                      />
+                    </label>
                   )}
                 </div>
+
+                {/* Saved Templates */}
+                {templates.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-3">Saved Templates</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {templates.map(t => (
+                        <div
+                          key={t.id}
+                          onClick={() => setSelectedTemplateId(t.id)}
+                          className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${selectedTemplateId === t.id
+                            ? 'border-blue-600 bg-blue-50'
+                            : 'border-gray-300 hover:border-gray-400'
+                            }`}
+                        >
+                          {t.letterheadImage && (
+                            <img src={t.letterheadImage} alt={t.name} className="w-full h-20 object-contain mb-2 bg-white rounded p-1 border border-gray-300" />
+                          )}
+                          <p className="text-xs font-medium text-gray-900 truncate mb-2">{t.name}</p>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveTemplate(t.id);
+                            }}
+                            className="w-full px-2 py-1 text-xs text-red-700 hover:bg-red-100 rounded transition-colors"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    {selectedTemplateId && (
+                      <p className="text-xs text-green-700 mt-3">✓ Template selected for printing</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Policy Acknowledgements</h1>
+              <p className="text-sm text-gray-600 mt-0.5">
+                {filtered.length} signed acknowledgement{filtered.length !== 1 ? 's' : ''} · {Object.keys(grouped).length} {viewMode === 'document' ? 'documents' : 'employees'}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleDownloadCSV}
+                disabled={filtered.length === 0}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                <span className="material-symbols-rounded text-sm">download</span>
+                Export CSV
+              </button>
+            </div>
+          </div>
+
+          {/* View Toggle + Filters */}
+          <div className="bg-white rounded-xl border border-gray-300 p-4 space-y-3">
+            {/* View mode */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide mr-2">View by:</span>
+              {(['document', 'user'] as const).map(m => (
+                <button
+                  key={m}
+                  onClick={() => setViewMode(m)}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${viewMode === m
+                    ? 'bg-orange-500 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                  <span className="flex items-center gap-1.5">
+                    <span className="material-symbols-rounded text-sm">{m === 'document' ? 'policy' : 'person'}</span>
+                    {m === 'document' ? 'Document / Policy' : 'Employee / User'}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-wrap gap-2">
+              <div className="relative">
+                <span className="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">search</span>
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="pl-9 pr-3 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 w-48 text-gray-900"
+                />
+              </div>
+
+              <select value={filterPolicy} onChange={e => setFilterPolicy(e.target.value)}
+                className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900">
+                <option value="all">All Documents</option>
+                {policies.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+
+              <select value={filterCourse} onChange={e => setFilterCourse(e.target.value)}
+                className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900">
+                <option value="all">All Courses</option>
+                {courses.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+
+              <select value={filterDept} onChange={e => setFilterDept(e.target.value)}
+                className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900">
+                <option value="all">All Departments</option>
+                {departments.map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+
+              <select value={filterUser} onChange={e => setFilterUser(e.target.value)}
+                className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900">
+                <option value="all">All Employees</option>
+                {users.map(u => <option key={u} value={u}>{u}</option>)}
+              </select>
+
+              {(filterPolicy !== 'all' || filterCourse !== 'all' || filterDept !== 'all' || filterUser !== 'all' || searchQuery) && (
+                <button
+                  onClick={() => { setFilterPolicy('all'); setFilterCourse('all'); setFilterDept('all'); setFilterUser('all'); setSearchQuery(''); }}
+                  className="px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1"
+                >
+                  <span className="material-symbols-rounded text-sm">close</span> Clear
+                </button>
               )}
+            </div>
+          </div>
+
+          {/* Content */}
+          {Object.keys(grouped).length === 0 ? (
+            <div className="text-center py-16 bg-white rounded-xl border border-gray-300">
+              <span className="material-symbols-rounded text-5xl text-gray-400 block mb-3">policy</span>
+              <p className="text-gray-600 font-medium">No acknowledgements found</p>
+              <p className="text-sm text-gray-600 mt-1">Acknowledgements appear here after learners sign policy lessons.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {Object.entries(grouped)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([groupKey, groupRecords]) => (
+                  <GroupCard
+                    key={groupKey}
+                    groupKey={groupKey}
+                    records={groupRecords}
+                    viewMode={viewMode}
+                    onPrint={handlePrint}
+                  />
+                ))}
             </div>
           )}
         </div>
-
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Policy Acknowledgements</h1>
-            <p className="text-sm text-gray-600 mt-0.5">
-              {filtered.length} signed acknowledgement{filtered.length !== 1 ? 's' : ''} · {Object.keys(grouped).length} {viewMode === 'document' ? 'documents' : 'employees'}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handleDownloadCSV}
-              disabled={filtered.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-medium transition-colors"
-            >
-              <span className="material-symbols-rounded text-sm">download</span>
-              Export CSV
-            </button>
-          </div>
-        </div>
-
-        {/* View Toggle + Filters */}
-        <div className="bg-white rounded-xl border border-gray-300 p-4 space-y-3">
-          {/* View mode */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide mr-2">View by:</span>
-            {(['document', 'user'] as const).map(m => (
-              <button
-                key={m}
-                onClick={() => setViewMode(m)}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${viewMode === m
-                    ? 'bg-orange-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-              >
-                <span className="flex items-center gap-1.5">
-                  <span className="material-symbols-rounded text-sm">{m === 'document' ? 'policy' : 'person'}</span>
-                  {m === 'document' ? 'Document / Policy' : 'Employee / User'}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {/* Filters */}
-          <div className="flex flex-wrap gap-2">
-            <div className="relative">
-              <span className="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">search</span>
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="pl-9 pr-3 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 w-48 text-gray-900"
-              />
-            </div>
-
-            <select value={filterPolicy} onChange={e => setFilterPolicy(e.target.value)}
-              className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900">
-              <option value="all">All Documents</option>
-              {policies.map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
-
-            <select value={filterCourse} onChange={e => setFilterCourse(e.target.value)}
-              className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900">
-              <option value="all">All Courses</option>
-              {courses.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-
-            <select value={filterDept} onChange={e => setFilterDept(e.target.value)}
-              className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900">
-              <option value="all">All Departments</option>
-              {departments.map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
-
-            <select value={filterUser} onChange={e => setFilterUser(e.target.value)}
-              className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900">
-              <option value="all">All Employees</option>
-              {users.map(u => <option key={u} value={u}>{u}</option>)}
-            </select>
-
-            {(filterPolicy !== 'all' || filterCourse !== 'all' || filterDept !== 'all' || filterUser !== 'all' || searchQuery) && (
-              <button
-                onClick={() => { setFilterPolicy('all'); setFilterCourse('all'); setFilterDept('all'); setFilterUser('all'); setSearchQuery(''); }}
-                className="px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1"
-              >
-                <span className="material-symbols-rounded text-sm">close</span> Clear
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Content */}
-        {loading ? (
-          <div className="text-center py-16 text-gray-600">
-            <span className="material-symbols-rounded text-4xl animate-spin block mb-3">sync</span>
-            Loading acknowledgements...
-          </div>
-        ) : Object.keys(grouped).length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-xl border border-gray-300">
-            <span className="material-symbols-rounded text-5xl text-gray-400 block mb-3">policy</span>
-            <p className="text-gray-600 font-medium">No acknowledgements found</p>
-            <p className="text-sm text-gray-600 mt-1">Acknowledgements appear here after learners sign policy lessons.</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {Object.entries(grouped)
-              .sort(([a], [b]) => a.localeCompare(b))
-              .map(([groupKey, groupRecords]) => (
-                <GroupCard
-                  key={groupKey}
-                  groupKey={groupKey}
-                  records={groupRecords}
-                  viewMode={viewMode}
-                  onPrint={handlePrint}
-                />
-              ))}
-          </div>
-        )}
-      </div>
+      )}
     </AdminLayout>
   );
 };

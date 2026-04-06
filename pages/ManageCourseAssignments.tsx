@@ -4,6 +4,7 @@ import AdminLayout from '../components/AdminLayout';
 import { courseAssignmentService } from '../lib/courseAssignmentService';
 import { courseService, testDatabaseConnectivity } from '../lib/courseService';
 import useAuthGuard from '../hooks/useAuthGuard';
+import Loader from '../components/Loader';
 
 interface FilterState {
   department: string[];
@@ -1004,10 +1005,7 @@ const ManageCourseAssignments: React.FC<ManageCourseAssignmentsProps> = ({ hideL
           >
             {loading ? (
               <div className="flex flex-col items-center justify-center py-8 gap-3">
-                <div className="animate-spin">
-                  <span className="material-symbols-outlined text-3xl text-primary">hourglass_top</span>
-                </div>
-                <p className="text-gray-500 text-sm">Loading courses...</p>
+                <Loader size="lg" centered={false} />
                 <button
                   onClick={() => loadInitialData()}
                   className="px-3 py-1 text-xs bg-primary text-white rounded hover:bg-primary/90"

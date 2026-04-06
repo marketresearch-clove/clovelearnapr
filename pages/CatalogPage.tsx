@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import { enrollmentService } from '../lib/enrollmentService';
 import { getCertificateByUserAndCourse } from '../lib/certificateService';
+import Loader from '../components/Loader';
 
 // Lazy Image Component
 const LazyImage: React.FC<{ src: string; alt: string; className?: string }> = ({ src, alt, className = '' }) => {
@@ -431,12 +432,7 @@ const CatalogPage: React.FC = () => {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-              <p className="text-slate-600">Loading courses...</p>
-            </div>
-          </div>
+          <Loader size="lg" message="Loading courses..." containerPadding="py-12" />
         ) : error ? (
           <div className="bg-red-50 border border-red-200 rounded p-6 text-center">
             <p className="text-red-600 font-medium mb-2">Unable to Load Courses</p>

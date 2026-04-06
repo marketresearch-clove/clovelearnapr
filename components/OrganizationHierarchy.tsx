@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import '../styles/OrganizationHierarchy.css';
 
@@ -16,10 +16,73 @@ interface UserProfile {
     avatar_url?: string;
     avatarurl?: string;
     role: string;
-    manager_id: string;
-    manager_name: string;
+    manager_id: string | null;
+    manager_name?: string;
     linkedin_profile_url?: string;
 }
+
+interface HierarchyNode {
+    user: UserProfile;
+    level: number;
+    children: HierarchyNode[];
+}
+
+// Grade to Level Mapping
+const GRADE_LEVEL_MAP: Record<string, { level: number; roleTitle: string }> = {
+    'T': { level: 1, roleTitle: 'Trainee' },
+    'T1': { level: 1, roleTitle: 'Trainee' },
+    'E': { level: 2, roleTitle: 'Executive' },
+    'E1': { level: 2, roleTitle: 'Executive' },
+    'E2': { level: 2, roleTitle: 'Executive' },
+    'E3': { level: 2, roleTitle: 'Executive' },
+    'L': { level: 3, roleTitle: 'Lead' },
+    'L1': { level: 3, roleTitle: 'Lead' },
+    'L2': { level: 3, roleTitle: 'Lead' },
+    'L3': { level: 3, roleTitle: 'Lead' },
+    'M': { level: 4, roleTitle: 'Manager' },
+    'M1': { level: 4, roleTitle: 'Manager' },
+    'M2': { level: 4, roleTitle: 'Manager' },
+    'M3': { level: 4, roleTitle: 'Manager' },
+    'M4': { level: 4, roleTitle: 'Manager' },
+    'G': { level: 5, roleTitle: 'Head' },
+    'G1': { level: 5, roleTitle: 'Head' },
+    'G2': { level: 5, roleTitle: 'Head' },
+    'V': { level: 6, roleTitle: 'Vice President' },
+    'V1': { level: 6, roleTitle: 'Vice President' },
+    'V2': { level: 6, roleTitle: 'Vice President' },
+    'V3': { level: 6, roleTitle: 'Vice President' },
+    'C': { level: 7, roleTitle: 'Chief Officer' },
+    'C1': { level: 7, roleTitle: 'Chief Officer' },
+    'C2': { level: 7, roleTitle: 'Chief Officer' },
+};
+
+const getGradeLevel = (grade: string): number => GRADE_LEVEL_MAP[grade]?.level || 0;
+const getRoleTitle = (grade: string): string => GRADE_LEVEL_MAP[grade]?.roleTitle || 'Employee';
+
+const GRADE_ORDER = ['T', 'E1', 'E2', 'E3', 'L1', 'L2', 'L3', 'M1', 'M2', 'M3', 'G1', 'G2', 'V1', 'V2', 'V3', 'C1', 'C2'];
+const getGradeOrderIndex = (grade: string) => {
+    const normalized = grade?.toUpperCase?.();
+    const exactIndex = GRADE_ORDER.indexOf(normalized);
+    if (exactIndex !== -1) return exactIndex;
+
+    const prefix = normalized?.match(/^[A-Z]+/)?.[0] || normalized;
+    const fallbackIndex = GRADE_ORDER.findIndex(item => item.startsWith(prefix));
+    return fallbackIndex !== -1 ? fallbackIndex : GRADE_ORDER.length;
+};
+
+const compareByGradeOrder = (a: string, b: string) => {
+    return getGradeOrderIndex(a) - getGradeOrderIndex(b);
+};
+
+const normalizeName = (value?: string | null) =>
+    value?.trim().toLowerCase() || '';
+
+const resolveManagerId = (profile: UserProfile, profileByName: Map<string, string>) => {
+    if (profile.manager_id) return profile.manager_id;
+    const normalizedManagerName = normalizeName(profile.manager_name);
+    if (!normalizedManagerName) return null;
+    return profileByName.get(normalizedManagerName) || null;
+};
 
 interface HierarchyData {
     currentUser: UserProfile;
@@ -28,32 +91,21 @@ interface HierarchyData {
     allPeers: UserProfile[];
     directReports: UserProfile[];
     departments: string[];
+    allGrades: string[];
+    allOtherDeptProfiles: UserProfile[];
+    allProfiles: UserProfile[];
 }
 
 const getGradeColor = (grade: string) => {
     const gradeMap: { [key: string]: string } = {
-        'L1': 'bg-blue-600',
-        'L2': 'bg-blue-500',
-        'L3': 'bg-blue-400',
-        'E1': 'bg-indigo-600',
-        'E2': 'bg-indigo-500',
-        'E3': 'bg-indigo-400',
-        'C1': 'bg-green-600',
-        'C2': 'bg-green-500',
-        'D1': 'bg-orange-600',
-        'D2': 'bg-orange-500',
-        'D3': 'bg-orange-400',
-        'G1': 'bg-pink-600',
-        'G2': 'bg-pink-500',
-        'H1': 'bg-indigo-600',
-        'M1': 'bg-cyan-600',
-        'M2': 'bg-cyan-500',
-        'M3': 'bg-cyan-400',
-        'M4': 'bg-cyan-300',
-        'T1': 'bg-amber-600',
-        'V1': 'bg-rose-600',
-        'V2': 'bg-rose-500',
-        'V3': 'bg-rose-400',
+        'L1': 'bg-blue-600', 'L2': 'bg-blue-500', 'L3': 'bg-blue-400',
+        'E1': 'bg-indigo-600', 'E2': 'bg-indigo-500', 'E3': 'bg-indigo-400',
+        'C1': 'bg-green-600', 'C2': 'bg-green-500',
+        'D1': 'bg-orange-600', 'D2': 'bg-orange-500', 'D3': 'bg-orange-400',
+        'G1': 'bg-pink-600', 'G2': 'bg-pink-500',
+        'H1': 'bg-indigo-600', 'M1': 'bg-cyan-600', 'M2': 'bg-cyan-500',
+        'M3': 'bg-cyan-400', 'M4': 'bg-cyan-300',
+        'T1': 'bg-amber-600', 'V1': 'bg-rose-600', 'V2': 'bg-rose-500', 'V3': 'bg-rose-400',
     };
     return gradeMap[grade] || 'bg-slate-400';
 };
@@ -66,49 +118,132 @@ const getInitials = (firstName: string, lastName: string, fullName?: string) => 
     return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
 };
 
+// Build hierarchical tree based on manager relationships
+// Always returns a single unified tree starting from the top-level person
+const buildHierarchyTree = (allProfiles: UserProfile[], selectedDept: string, selectedGrade: string): HierarchyNode[] => {
+    if (allProfiles.length === 0) return [];
+
+    const profileByName = new Map<string, string>();
+    allProfiles.forEach(profile => {
+        const normalized = normalizeName(profile.fullname || `${profile.first_name || ''} ${profile.last_name || ''}`);
+        if (normalized && !profileByName.has(normalized)) {
+            profileByName.set(normalized, profile.id);
+        }
+    });
+
+    const resolveManagerKey = (profile: UserProfile) => resolveManagerId(profile, profileByName);
+
+    // 1. Filter based on department
+    let filteredProfiles = allProfiles;
+    if (selectedDept !== 'All') {
+        // Include dept members AND their chain of managers up to the root
+        const deptMembers = allProfiles.filter(p => p.department === selectedDept);
+        const managerIds = new Set<string>();
+        const queue = [...deptMembers];
+
+        while (queue.length > 0) {
+            const person = queue.shift();
+            const managerId = person ? resolveManagerKey(person) : null;
+            if (managerId && !managerIds.has(managerId)) {
+                managerIds.add(managerId);
+                const manager = allProfiles.find(p => p.id === managerId);
+                if (manager) queue.push(manager);
+            }
+        }
+
+        const uniqueProfiles = new Map<string, UserProfile>();
+        [...deptMembers, ...allProfiles.filter(p => managerIds.has(p.id))].forEach(profile => {
+            uniqueProfiles.set(profile.id, profile);
+        });
+        filteredProfiles = Array.from(uniqueProfiles.values());
+    }
+
+    // 2. Grade filter - only if specified
+    if (selectedGrade !== 'All') {
+        filteredProfiles = filteredProfiles.filter(p => p.employee_grade === selectedGrade);
+    }
+
+    // 3. Build manager->reports map from filtered profiles
+    const reportsByManager = new Map<string, UserProfile[]>();
+    filteredProfiles.forEach(profile => {
+        const managerId = resolveManagerKey(profile);
+        if (managerId) {
+            if (!reportsByManager.has(managerId)) {
+                reportsByManager.set(managerId, []);
+            }
+            reportsByManager.get(managerId)!.push(profile);
+        }
+    });
+
+    // 4. Recursively build tree
+    const buildNodeTree = (user: UserProfile, visited = new Set<string>()): HierarchyNode => {
+        if (visited.has(user.id)) {
+            return { user, level: getGradeLevel(user.employee_grade), children: [] };
+        }
+
+        visited.add(user.id);
+        const reports = reportsByManager.get(user.id) || [];
+        const sortedReports = reports.sort((a, b) =>
+            compareByGradeOrder(b.employee_grade) - compareByGradeOrder(a.employee_grade) ||
+            (a.department || '').localeCompare(b.department || '') ||
+            (a.fullname || '').localeCompare(b.fullname || '')
+        );
+
+        return {
+            user,
+            level: getGradeLevel(user.employee_grade),
+            children: sortedReports.map(r => buildNodeTree(r, new Set(visited)))
+        };
+    };
+
+    // 4.5 Cache resolved manager IDs so root detection uses the same resolution
+    const resolvedManagerByProfile = new Map<string, string | null>();
+    const getResolvedManagerId = (profile: UserProfile) => {
+        if (resolvedManagerByProfile.has(profile.id)) return resolvedManagerByProfile.get(profile.id)!;
+        const managerId = resolveManagerKey(profile);
+        resolvedManagerByProfile.set(profile.id, managerId);
+        return managerId;
+    };
+
+    // 5. Find all roots (people with no manager in filtered profiles)
+    const rootPeople = filteredProfiles.filter(p => {
+        const managerId = getResolvedManagerId(p);
+        if (!managerId) return true;
+        return !filteredProfiles.some(f => f.id === managerId);
+    });
+
+    if (rootPeople.length === 0) return [];
+
+    // 6. Build a tree for each root so the full organization chart is shown
+    return rootPeople
+        .sort((a, b) =>
+            compareByGradeOrder(b.employee_grade) - compareByGradeOrder(a.employee_grade) ||
+            (a.department || '').localeCompare(b.department || '') ||
+            (a.fullname || '').localeCompare(b.fullname || '')
+        )
+        .map(root => buildNodeTree(root));
+};
+
 const UserCard: React.FC<{ user: UserProfile; isHighlighted?: boolean; size?: 'large' | 'medium' | 'small' }> = ({
-    user,
-    isHighlighted = false,
-    size = 'medium'
+    user, isHighlighted = false, size = 'medium'
 }) => {
-    const sizeClasses = {
-        large: 'w-56 p-3',
-        medium: 'w-48 p-2.5',
-        small: 'w-44 p-2'
-    };
-
-    const imgSizeClasses = {
-        large: 'w-14 h-14',
-        medium: 'w-12 h-12',
-        small: 'w-10 h-10'
-    };
-
-    const nameClasses = {
-        large: 'text-base font-bold',
-        medium: 'text-sm font-bold',
-        small: 'text-xs font-bold'
-    };
-
-    const titleClasses = {
-        large: 'text-xs',
-        medium: 'text-[10px]',
-        small: 'text-[9px]'
-    };
+    const cardW = { large: 224, medium: 192, small: 176 }[size];
+    const imgSize = { large: 'w-14 h-14', medium: 'w-12 h-12', small: 'w-10 h-10' }[size];
+    const nameSz = { large: 'text-base font-bold', medium: 'text-sm font-bold', small: 'text-xs font-bold' }[size];
+    const titleSz = { large: 'text-xs', medium: 'text-[10px]', small: 'text-[9px]' }[size];
 
     const handleLinkedInClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (user.linkedin_profile_url) {
-            window.open(user.linkedin_profile_url, '_blank');
-        }
+        if (user.linkedin_profile_url) window.open(user.linkedin_profile_url, '_blank');
     };
 
     return (
         <div
             className={`group cursor-pointer transition-all duration-300 ${isHighlighted
-                ? 'bg-white p-3 shadow-2xl shadow-blue-600/10 border-2 border-blue-600 ring-8 ring-blue-600/5'
-                : 'bg-white p-3 shadow-xl shadow-slate-900/5 hover:scale-105 border border-transparent hover:border-blue-600/20'
-                } ${sizeClasses[size] || sizeClasses.medium}`}
-            style={{ borderRadius: '15px' }}
+                ? 'bg-white shadow-2xl shadow-blue-600/10 border-2 border-blue-600 ring-8 ring-blue-600/5'
+                : 'bg-white shadow-xl shadow-slate-900/5 hover:scale-105 border border-transparent hover:border-blue-600/20'
+                }`}
+            style={{ borderRadius: '15px', width: cardW, padding: size === 'large' ? '12px' : size === 'medium' ? '10px' : '8px', flexShrink: 0 }}
         >
             <div className="flex items-start justify-between mb-2">
                 <div className="relative">
@@ -116,12 +251,12 @@ const UserCard: React.FC<{ user: UserProfile; isHighlighted?: boolean; size?: 'l
                         <img
                             src={(user.avatar_url || user.avatarurl) as string}
                             alt={user.fullname || `${user.first_name} ${user.last_name}`}
-                            className={`${imgSizeClasses[size]} object-cover shadow-md ${!isHighlighted ? 'grayscale group-hover:grayscale-0 transition-all' : ''}`}
+                            className={`${imgSize} object-cover shadow-md ${!isHighlighted ? 'grayscale group-hover:grayscale-0 transition-all' : ''}`}
                             style={{ borderRadius: '15px' }}
                         />
                     ) : (
                         <div
-                            className={`${imgSizeClasses[size]} flex items-center justify-center text-white font-bold text-sm bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md ${!isHighlighted ? 'grayscale group-hover:grayscale-0 transition-all' : ''}`}
+                            className={`${imgSize} flex items-center justify-center text-white font-bold text-sm bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md ${!isHighlighted ? 'grayscale group-hover:grayscale-0 transition-all' : ''}`}
                             style={{ borderRadius: '15px' }}
                         >
                             {getInitials(user.first_name, user.last_name, user.fullname)}
@@ -137,96 +272,387 @@ const UserCard: React.FC<{ user: UserProfile; isHighlighted?: boolean; size?: 'l
                             {user.employee_grade}
                         </span>
                     )}
-                    {user.linkedin_profile_url && (
+                    {user.linkedin_profile_url ? (
                         <button
                             onClick={handleLinkedInClick}
-                            className={`${isHighlighted ? 'text-blue-600 hover:text-blue-700' : 'text-slate-400 hover:text-blue-600'} transition-colors cursor-pointer text-sm`}
+                            className={`${isHighlighted ? 'text-blue-600 hover:text-blue-700' : 'text-slate-400 hover:text-blue-600'} transition-colors cursor-pointer text-sm font-bold leading-none`}
                             title="View LinkedIn Profile"
                         >
                             in
                         </button>
-                    )}
-                    {!user.linkedin_profile_url && (
-                        <span className={`text-sm ${isHighlighted ? 'text-blue-300' : 'text-slate-200'}`}>
-                            in
-                        </span>
+                    ) : (
+                        <span className={`text-sm font-bold leading-none ${isHighlighted ? 'text-blue-300' : 'text-slate-200'}`}>in</span>
                     )}
                 </div>
             </div>
-            <h3 className={`${nameClasses[size]} text-slate-900 line-clamp-2`}>
+            <h3 className={`${nameSz} text-slate-900 line-clamp-2`}>
                 {user.fullname || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User'}
             </h3>
-            <p className={`${titleClasses[size]} ${isHighlighted ? 'text-blue-600 font-bold' : 'text-slate-500 font-medium'} line-clamp-1`}>
+            <p className={`${titleSz} ${isHighlighted ? 'text-blue-600 font-bold' : 'text-slate-500 font-medium'} line-clamp-1`}>
                 {isHighlighted ? 'Current / ' : ''}{user.designation || user.job_title || 'Team Member'}
             </p>
             <div className="mt-2 pt-2 border-t border-slate-100 grid grid-cols-2 gap-2 text-center">
                 <div>
                     <p className="text-[8px] uppercase font-bold text-slate-400 tracking-tighter">Dept</p>
-                    <p className={`${size === 'small' ? 'text-[9px]' : 'text-[10px]'} font-semibold text-slate-700 truncate`}>{user.department || 'N/A'}</p>
+                    <p className="text-[10px] font-semibold text-slate-700 truncate">{user.department || 'N/A'}</p>
                 </div>
                 <div>
                     <p className="text-[8px] uppercase font-bold text-slate-400 tracking-tighter">Status</p>
-                    <p className={`${size === 'small' ? 'text-[9px]' : 'text-[10px]'} font-semibold text-emerald-600`}>Active</p>
+                    <p className="text-[10px] font-semibold text-emerald-600">Active</p>
                 </div>
             </div>
         </div>
     );
 };
 
-const ReportCard: React.FC<{ report: UserProfile; size?: 'large' | 'medium' | 'small' }> = ({
-    report,
-    size = 'medium'
-}) => {
-    const sizeClasses = {
-        large: 'w-52 p-2.5',
-        medium: 'w-44 p-2',
-        small: 'w-40 p-1.5'
-    };
+const TreeConnector: React.FC<{
+    xs: number[];
+    width: number;
+    parentX: number;
+    label?: string;
+    height?: number;
+    childDepts?: string[];
+}> = ({ xs, width, parentX, label, height: propHeight, childDepts }) => {
+    // Filter out NaN values and clamp small rounding errors around the container edges
+    const clampX = (x: number) => Math.max(0, Math.min(width, x));
+    const validXs = xs
+        .filter(x => !isNaN(x) && x >= -2 && x <= width + 2)
+        .map(clampX);
 
-    const imgSizeClasses = {
-        large: 'w-10 h-10',
-        medium: 'w-10 h-10',
-        small: 'w-8 h-8'
-    };
+    if (!width || parentX === undefined || parentX === null || validXs.length === 0) {
+        return <div style={{ height: `${propHeight ?? 52}px` }} />;
+    }
 
-    const handleLinkedInClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (report.linkedin_profile_url) {
-            window.open(report.linkedin_profile_url, '_blank');
+    // Determine if we show dept labels
+    const uniqueDepts = childDepts
+        ? Array.from(new Set(childDepts.filter(Boolean)))
+        : [];
+    const showDeptLabels = uniqueDepts.length > 1 && childDepts?.length === xs.length;
+    const height = propHeight ?? (showDeptLabels ? 72 : 52);
+
+    const minX = Math.min(...validXs);
+    const maxX = Math.max(...validXs);
+    const midY = Math.round(height / 2);
+    const color = '#4f46e5';
+    const lineWidth = 2.5;
+
+    // Calculate dept groups for labeling
+    const deptGroups: { dept: string; xs: number[] }[] = [];
+    if (showDeptLabels && childDepts) {
+        // Group consecutive children by department
+        const indexed: { x: number; dept: string }[] = [];
+        validXs.forEach((x, vIdx) => {
+            // Find which original index this valid x corresponds to
+            let originalIdx = -1;
+            let count = 0;
+            for (let i = 0; i < xs.length; i++) {
+                if (!isNaN(xs[i]) && xs[i] >= 0 && xs[i] <= width) {
+                    if (count === vIdx) {
+                        originalIdx = i;
+                        break;
+                    }
+                    count++;
+                }
+            }
+            if (originalIdx >= 0 && childDepts[originalIdx]) {
+                indexed.push({ x, dept: childDepts[originalIdx] });
+            }
+        });
+
+        let i = 0;
+        while (i < indexed.length) {
+            const dept = indexed[i].dept;
+            const groupXs = [indexed[i].x];
+            let j = i + 1;
+            while (j < indexed.length && indexed[j].dept === dept) {
+                groupXs.push(indexed[j].x);
+                j++;
+            }
+            deptGroups.push({ dept, xs: groupXs });
+            i = j;
         }
-    };
+    }
 
     return (
-        <div className={`group cursor-pointer bg-white shadow-md shadow-slate-900/5 hover:-translate-y-0.5 transition-all border border-transparent hover:border-blue-600/20 ${sizeClasses[size]}`} style={{ borderRadius: '15px' }}>
-            <div className="flex items-start gap-1.5">
-                <div className="relative flex-shrink-0">
-                    {report.avatar_url || report.avatarurl ? (
-                        <img src={(report.avatar_url || report.avatarurl) as string} alt={report.fullname} className={`${imgSizeClasses[size]} object-cover`} style={{ borderRadius: '15px' }} />
-                    ) : (
-                        <div className={`${imgSizeClasses[size]} bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-xs`} style={{ borderRadius: '15px' }}>
-                            {getInitials(report.first_name, report.last_name, report.fullname)}
-                        </div>
-                    )}
-                </div>
-                <div className="truncate flex-1">
-                    <h4 className={`font-bold text-slate-900 truncate line-clamp-1 ${size === 'small' ? 'text-xs' : 'text-sm'}`}>{report.fullname || `${report.first_name} ${report.last_name}`}</h4>
-                    <p className={`text-slate-500 font-medium truncate line-clamp-1 ${size === 'small' ? 'text-[8px]' : 'text-[9px]'}`}>{report.designation || 'Team Member'}</p>
-                    <div className={`mt-0.5 flex items-center gap-0.5 text-slate-600 ${size === 'small' ? 'text-[7px]' : 'text-[8px]'}`}>
-                        <span className={`${getGradeColor(report.employee_grade)} text-white px-1 py-0.5 font-bold`} style={{ borderRadius: '15px' }}>{report.employee_grade}</span>
-                        {report.linkedin_profile_url ? (
-                            <button
-                                onClick={handleLinkedInClick}
-                                className="text-slate-400 hover:text-blue-600 transition-colors cursor-pointer text-xs ml-0.5"
-                                title="View LinkedIn Profile"
+        <svg
+            width={width}
+            height={height}
+            style={{ display: 'block', flexShrink: 0, overflow: 'visible' }}
+            className="pointer-events-none"
+            viewBox={`0 0 ${width} ${height}`}
+            preserveAspectRatio="none"
+        >
+            {/* Vertical line from parent down to midpoint */}
+            {parentX !== undefined && (
+                <line
+                    x1={parentX}
+                    y1={0}
+                    x2={parentX}
+                    y2={midY}
+                    stroke={color}
+                    strokeWidth={lineWidth}
+                    strokeLinecap="round"
+                />
+            )}
+
+            {/* Horizontal line connecting all children (if more than 1) */}
+            {validXs.length > 1 && (
+                <line
+                    x1={minX}
+                    y1={midY}
+                    x2={maxX}
+                    y2={midY}
+                    stroke={color}
+                    strokeWidth={lineWidth}
+                    strokeLinecap="round"
+                />
+            )}
+
+            {/* Vertical lines down to each child */}
+            {validXs.map((x, i) => (
+                <line
+                    key={`child-${i}`}
+                    x1={x}
+                    y1={validXs.length === 1 ? 0 : midY}
+                    x2={x}
+                    y2={height}
+                    stroke={color}
+                    strokeWidth={lineWidth}
+                    strokeLinecap="round"
+                />
+            ))}
+
+            {/* Department labels (one per dept group) */}
+            {showDeptLabels && deptGroups.length > 0 &&
+                deptGroups.map(({ dept, xs: groupXs }, idx) => {
+                    const midX = groupXs.reduce((a, b) => a + b, 0) / groupXs.length;
+                    const labelW = Math.max(dept.length * 6.5 + 16, 55);
+                    return (
+                        <g key={`dept-${idx}`}>
+                            <rect
+                                x={midX - labelW / 2}
+                                y={midY - 10}
+                                width={labelW}
+                                height={20}
+                                fill="white"
+                                rx={8}
+                                stroke="#c7d2fe"
+                                strokeWidth="1"
+                            />
+                            <text
+                                x={midX}
+                                y={midY + 4}
+                                textAnchor="middle"
+                                fontSize="7.5"
+                                fontWeight="bold"
+                                fill={color}
+                                letterSpacing="0.6"
                             >
-                                in
-                            </button>
-                        ) : (
-                            <span className="text-slate-200 text-xs ml-0.5">in</span>
-                        )}
+                                {dept.toUpperCase()}
+                            </text>
+                        </g>
+                    );
+                })
+            }
+
+            {/* Center label (when no dept labels and multiple children) */}
+            {label && !showDeptLabels && validXs.length > 1 && (
+                <g>
+                    <rect
+                        x={(minX + maxX) / 2 - 54}
+                        y={midY - 10}
+                        width={108}
+                        height={20}
+                        fill="white"
+                        rx={9}
+                        stroke="#e0e7ff"
+                        strokeWidth="1"
+                    />
+                    <text
+                        x={(minX + maxX) / 2}
+                        y={midY + 4}
+                        textAnchor="middle"
+                        fontSize="8"
+                        fontWeight="bold"
+                        fill={color}
+                        letterSpacing="0.8"
+                    >
+                        {label.toUpperCase()}
+                    </text>
+                </g>
+            )}
+        </svg>
+    );
+};
+
+// Render hierarchical tree recursively with reliable DOM-measured connectors
+const HierarchyTreeNode: React.FC<{ node: HierarchyNode; isRoot?: boolean; currentUserId?: string; highlightedUserId?: string | null }> = ({
+    node,
+    isRoot = false,
+    currentUserId,
+    highlightedUserId
+}) => {
+    const isCurrentUser = node.user.id === currentUserId;
+    const levelInfo = GRADE_LEVEL_MAP[node.user.employee_grade];
+
+    const childrenContainerRef = useRef<HTMLDivElement>(null);
+    const childWrapperRefs = useRef<(HTMLDivElement | null)[]>([]);
+    const [childXs, setChildXs] = useState<number[]>([]);
+    const [containerWidth, setContainerWidth] = useState(0);
+    const measureRequestRef = useRef<number | null>(null);
+    const resizeObserverRef = useRef<ResizeObserver | null>(null);
+
+    const measurePositions = useCallback(() => {
+        if (!childrenContainerRef.current) return;
+
+        const containerRect = childrenContainerRef.current.getBoundingClientRect();
+        setContainerWidth(containerRect.width);
+
+        const xs: number[] = [];
+        childWrapperRefs.current.forEach(ref => {
+            if (ref) {
+                const childRect = ref.getBoundingClientRect();
+                const containerLeft = containerRect.left;
+                const childCenterX = childRect.left - containerLeft + childRect.width / 2;
+                xs.push(childCenterX);
+            }
+        });
+
+        if (xs.length === node.children.length) {
+            const same = childXs.length === xs.length && xs.every((value, index) => Math.abs(value - childXs[index]) < 0.5);
+            if (!same) {
+                setChildXs(xs);
+            }
+        }
+    }, [childXs.length, node.children.length]);
+
+    useLayoutEffect(() => {
+        if (!childrenContainerRef.current) return;
+
+        const observe = () => {
+            if (resizeObserverRef.current) {
+                resizeObserverRef.current.disconnect();
+            }
+
+            const observer = new ResizeObserver(() => {
+                if (measureRequestRef.current) {
+                    cancelAnimationFrame(measureRequestRef.current);
+                }
+                measureRequestRef.current = requestAnimationFrame(measurePositions);
+            });
+
+            resizeObserverRef.current = observer;
+            observer.observe(childrenContainerRef.current);
+            childWrapperRefs.current.forEach(el => { if (el) observer.observe(el); });
+        };
+
+        const timer = window.setTimeout(() => {
+            measurePositions();
+            observe();
+        }, 50);
+
+        return () => {
+            window.clearTimeout(timer);
+            if (measureRequestRef.current) {
+                cancelAnimationFrame(measureRequestRef.current);
+            }
+            if (resizeObserverRef.current) {
+                resizeObserverRef.current.disconnect();
+            }
+        };
+    }, [measurePositions, node.children]);
+
+    // Sort children by department > grade > name for consistent layout
+    const sortedChildren = useMemo(() => {
+        return [...node.children].sort((a, b) =>
+            compareByGradeOrder(b.user.employee_grade) - compareByGradeOrder(a.user.employee_grade) ||
+            (a.user.department || '').localeCompare(b.user.department || '') ||
+            (a.user.fullname || '').localeCompare(b.user.fullname || '')
+        );
+    }, [node.children]);
+
+    // Compute child departments for multi-dept labeling
+    const childDepts = sortedChildren.map(c => c.user.department || '');
+    const uniqueChildDepts = new Set(childDepts.filter(Boolean));
+    const hasMultipleDepts = uniqueChildDepts.size > 1;
+
+    // Generate fallback child positions (evenly distributed)
+    const fallbackChildXs = sortedChildren.map((_, i) =>
+        ((i + 0.5) / sortedChildren.length) * (containerWidth || 800)
+    );
+
+    // Use measured positions if available, otherwise fallback
+    const effectiveChildXs = childXs.length === sortedChildren.length
+        ? childXs
+        : fallbackChildXs;
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 0, gap: 20 }}>
+            {/* User Card and Role Badge */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                <UserCard
+                    user={node.user}
+                    isHighlighted={isCurrentUser || node.user.id === highlightedUserId}
+                    size={isRoot ? 'large' : 'medium'}
+                />
+                {levelInfo && (
+                    <div style={{
+                        fontSize: 10,
+                        fontWeight: 900,
+                        color: '#4338ca',
+                        letterSpacing: 1.5,
+                        textTransform: 'uppercase',
+                        background: 'white',
+                        border: '1px solid #e0e7ff',
+                        borderRadius: 12,
+                        padding: '4px 12px'
+                    }}>
+                        {levelInfo.roleTitle} ({node.user.employee_grade})
+                    </div>
+                )}
+            </div>
+
+            {/* Children Connector and Layout */}
+            {sortedChildren.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                    {/* Connector SVG */}
+                    <TreeConnector
+                        xs={effectiveChildXs}
+                        width={containerWidth || 800}
+                        parentX={containerWidth ? containerWidth / 2 : 400}
+                        childDepts={hasMultipleDepts ? childDepts : undefined}
+                    />
+
+                    {/* Children Container */}
+                    <div
+                        ref={childrenContainerRef}
+                        style={{
+                            display: 'flex',
+                            gap: 24,
+                            alignItems: 'flex-start',
+                            justifyContent: 'center',
+                            position: 'relative',
+                            flexWrap: 'nowrap',
+                            width: '100%',
+                            minHeight: '1px' // Ensure container is measurable
+                        }}
+                    >
+                        {sortedChildren.map((child, i) => (
+                            <div
+                                key={child.user.id}
+                                ref={el => { childWrapperRefs.current[i] = el; }}
+                                style={{ flexShrink: 0 }}
+                            >
+                                <HierarchyTreeNode
+                                    node={child}
+                                    currentUserId={currentUserId}
+                                    highlightedUserId={highlightedUserId}
+                                />
+                            </div>
+                        ))}
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 };
@@ -237,26 +663,31 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
     const [error, setError] = useState<string | null>(null);
     const [selectedDept, setSelectedDept] = useState('All');
     const [selectedGrade, setSelectedGrade] = useState('All');
-    const [zoom, setZoom] = useState(1);
+    const [zoom, setZoom] = useState(0.9);
     const [panX, setPanX] = useState(0);
     const [panY, setPanY] = useState(0);
     const [isPanning, setIsPanning] = useState(false);
     const [panStart, setPanStart] = useState({ x: 0, y: 0 });
-    const canvasRef = React.useRef<HTMLDivElement>(null);
+    const [searchInput, setSearchInput] = useState('');
+    const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
+    const [showSearchResults, setShowSearchResults] = useState(false);
+    const [highlightedUserId, setHighlightedUserId] = useState<string | null>(null);
+
+    const viewportRef = useRef<HTMLDivElement>(null);
+    const canvasRef = useRef<HTMLDivElement>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
+    const searchDropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         fetchHierarchyData();
     }, [userId]);
 
-    // Zoom — scroll wheel only, no Ctrl required, range 0.3x–3x
     const handleWheel = (e: React.WheelEvent) => {
         e.preventDefault();
         const delta = e.deltaY * 0.002;
-        const newZoom = Math.max(0.3, Math.min(3, zoom - delta));
-        setZoom(newZoom);
+        setZoom(prev => Math.max(0.2, Math.min(3, prev - delta)));
     };
 
-    // Pan — left-click drag, immediate (no hold timer)
     const handleMouseDown = (e: React.MouseEvent) => {
         if (e.button === 0) {
             e.preventDefault();
@@ -272,11 +703,8 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
         }
     };
 
-    const handleMouseUp = () => {
-        setIsPanning(false);
-    };
+    const handleMouseUp = () => setIsPanning(false);
 
-    // Touch pan — single finger, all screen sizes
     const handleTouchStart = (e: React.TouchEvent) => {
         if (e.touches.length === 1) {
             setIsPanning(true);
@@ -292,22 +720,60 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
         }
     };
 
-    const handleTouchEnd = () => {
-        setIsPanning(false);
+    const handleTouchEnd = () => setIsPanning(false);
+
+    const resetZoomPan = () => { setZoom(0.9); setPanX(0); setPanY(0); };
+
+    const handleSearch = useCallback((query: string) => {
+        setSearchInput(query);
+        if (!hierarchyData || query.trim().length === 0) {
+            setSearchResults([]);
+            setShowSearchResults(false);
+            return;
+        }
+
+        const lowerQuery = query.toLowerCase();
+        const results = hierarchyData.allProfiles.filter(user =>
+            (user.fullname?.toLowerCase().includes(lowerQuery)) ||
+            (user.first_name?.toLowerCase().includes(lowerQuery)) ||
+            (user.last_name?.toLowerCase().includes(lowerQuery)) ||
+            (user.email?.toLowerCase().includes(lowerQuery)) ||
+            (user.department?.toLowerCase().includes(lowerQuery)) ||
+            (user.job_title?.toLowerCase().includes(lowerQuery))
+        );
+
+        setSearchResults(results.slice(0, 8)); // Limit to 8 results
+        setShowSearchResults(true);
+    }, [hierarchyData]);
+
+    const handleSelectSearchUser = (user: UserProfile) => {
+        setHighlightedUserId(user.id);
+        setSearchInput(user.fullname || `${user.first_name} ${user.last_name}`);
+        setShowSearchResults(false);
     };
 
-    const resetZoomPan = () => {
-        setZoom(1);
-        setPanX(0);
-        setPanY(0);
-    };
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (
+                searchDropdownRef.current &&
+                !searchDropdownRef.current.contains(e.target as Node) &&
+                searchInputRef.current &&
+                !searchInputRef.current.contains(e.target as Node)
+            ) {
+                setShowSearchResults(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const fetchHierarchyData = async () => {
         try {
             setLoading(true);
             setError(null);
 
-            // Fetch current user
             const { data: currentUser, error: userError } = await supabase
                 .from('profiles')
                 .select('*')
@@ -321,36 +787,31 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
             let allPeers: UserProfile[] = [];
             let directReports: UserProfile[] = [];
 
-            // Fetch manager by trying fullname match first
-            if (currentUser.manager_name && currentUser.manager_name.trim()) {
+            // Fetch manager by ID if manager_id exists
+            if (currentUser.manager_id) {
                 try {
                     const { data: managerData } = await supabase
                         .from('profiles')
                         .select('*')
-                        .ilike('fullname', `%${currentUser.manager_name}%`)
-                        .limit(1);
-
-                    if (managerData && managerData.length > 0) {
-                        manager = managerData[0];
-                    }
+                        .eq('id', currentUser.manager_id)
+                        .single();
+                    if (managerData) manager = managerData;
                 } catch (err) {
-                    console.warn('Manager lookup failed, will show manager_name as text');
+                    console.warn('Manager lookup failed');
                 }
 
-                // Fetch ALL peers (others with same manager_name, regardless of department)
+                // Fetch all peers (people with same manager)
                 try {
                     const { data: allPeersData } = await supabase
                         .from('profiles')
                         .select('*')
-                        .eq('manager_name', currentUser.manager_name)
+                        .eq('manager_id', currentUser.manager_id)
                         .neq('id', userId)
                         .order('department', { ascending: true })
                         .order('employee_grade', { ascending: true })
                         .order('fullname', { ascending: true });
-
                     if (allPeersData) {
                         allPeers = allPeersData;
-                        // Separate same department peers
                         peers = allPeersData.filter(p => p.department === currentUser.department);
                     }
                 } catch (err) {
@@ -358,25 +819,40 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                 }
             }
 
-            // Fetch direct reports
+            // Fetch direct reports by manager_id
             try {
-                const currentUserFullName = currentUser.fullname || `${currentUser.first_name} ${currentUser.last_name}`.trim();
                 const { data: reportsData } = await supabase
                     .from('profiles')
                     .select('*')
-                    .eq('manager_name', currentUserFullName)
+                    .eq('manager_id', currentUser.id)
                     .order('employee_grade', { ascending: true })
                     .order('fullname', { ascending: true });
-
-                if (reportsData) {
-                    directReports = reportsData;
-                }
+                if (reportsData) directReports = reportsData;
             } catch (err) {
                 console.warn('Direct reports lookup failed:', err);
             }
 
-            // Get all unique departments from peers
-            const departments = Array.from(new Set(allPeers.map(p => p.department))).sort();
+            // Fetch all unique departments from entire database
+            const { data: allProfilesData } = await supabase
+                .from('profiles')
+                .select('*');
+
+            const departments = Array.from(new Set(allProfilesData?.map(p => p.department).filter(Boolean) as string[])).sort();
+            const allGrades = Array.from(new Set(allProfilesData?.map(p => p.employee_grade).filter(Boolean) as string[])).sort();
+
+            // Fetch ALL people from other departments
+            let allOtherDeptProfiles: UserProfile[] = [];
+            try {
+                const { data: otherDeptData } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .neq('department', currentUser.department)
+                    .order('department', { ascending: true })
+                    .order('fullname', { ascending: true });
+                if (otherDeptData) allOtherDeptProfiles = otherDeptData;
+            } catch (err) {
+                console.warn('Failed to fetch all other dept profiles:', err);
+            }
 
             setHierarchyData({
                 currentUser,
@@ -384,11 +860,13 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                 peers,
                 allPeers,
                 directReports,
-                departments
+                departments,
+                allGrades,
+                allOtherDeptProfiles,
+                allProfiles: allProfilesData || []
             });
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to fetch hierarchy data');
-            console.error('Hierarchy fetch error:', err);
         } finally {
             setLoading(false);
         }
@@ -426,103 +904,258 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
         );
     }
 
-    const { currentUser, manager, peers, allPeers, directReports, departments } = hierarchyData;
+    // Calculate organization statistics from the hierarchy tree
+    const { currentUser, departments, allGrades, allProfiles } = hierarchyData;
 
-    // Filter peers by grade
-    const sameLevelPeers = peers.filter(p =>
-        p.employee_grade === currentUser.employee_grade &&
-        (selectedGrade === 'All' || p.employee_grade === selectedGrade)
-    );
+    // Build hierarchical tree based on selected filters
+    const hierarchyTrees = buildHierarchyTree(allProfiles, selectedDept, selectedGrade);
 
-    // Get other department peers
-    const otherDeptPeers = allPeers.filter(p => p.department !== currentUser.department);
+    const countTreeNodes = (node: HierarchyNode): number => {
+        return 1 + node.children.reduce((sum, child) => sum + countTreeNodes(child), 0);
+    };
 
-    // Filter other department peers by selected department and grade
-    const filteredOtherDeptPeers = otherDeptPeers.filter(p =>
-        (selectedDept === 'All' || p.department === selectedDept) &&
-        (selectedGrade === 'All' || p.employee_grade === selectedGrade)
-    );
-
-    // Group other department peers by department
-    const otherDeptsByName = filteredOtherDeptPeers.reduce((acc, peer) => {
-        if (!acc[peer.department]) {
-            acc[peer.department] = [];
+    const findUserInTrees = (trees: HierarchyNode[], userId: string): HierarchyNode | null => {
+        for (const tree of trees) {
+            if (tree.user.id === userId) return tree;
+            const found = findUserInTrees(tree.children, userId);
+            if (found) return found;
         }
-        acc[peer.department].push(peer);
-        return acc;
-    }, {} as Record<string, UserProfile[]>);
+        return null;
+    };
 
-    // Check if hierarchy exists
-    const hasPeers = peers.length > 0;
-    const hasReports = directReports.length > 0;
-    const hasHierarchy = manager || currentUser.manager_name || hasPeers || hasReports;
-    const hasSameLevelPeers = sameLevelPeers.length > 0;
-    const hasOtherDepts = Object.keys(otherDeptsByName).length > 0;
+    const currentUserNode = hierarchyTrees.length > 0 ? findUserInTrees(hierarchyTrees, currentUser.id) : null;
+    const totalOrgSize = hierarchyTrees.reduce((sum, tree) => sum + countTreeNodes(tree), 0);
+    const currentUserReports = currentUserNode ? currentUserNode.children.length : 0;
+    const currentUserLevel = currentUserNode ? currentUserNode.level : 0;
+    const levelInfo = GRADE_LEVEL_MAP[currentUser.employee_grade];
+
+    const dropdownStyle: React.CSSProperties = {
+        borderRadius: '20px',
+        background: 'rgba(255,255,255,0.95)',
+        backdropFilter: 'blur(8px)',
+        border: '1px solid #e2e8f0',
+        fontSize: 12,
+        fontWeight: 600,
+        color: '#334155',
+        padding: '6px 32px 6px 14px',
+        appearance: 'none' as const,
+        WebkitAppearance: 'none' as const,
+        cursor: 'pointer',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+        outline: 'none',
+        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpolygon points='0,0 10,0 5,6' fill='%23666'/%3E%3C/svg%3E")`,
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'right 12px center',
+        backgroundSize: '10px 6px',
+    };
 
     return (
-        <div className="space-y-6 sm:space-y-8">
-            {/* Hierarchy Visualization Canvas - Exclude from mobile optimization (as requested) */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+            {/* Canvas Viewport */}
             <div
-                className="bg-slate-200 border border-slate-300 shadow-sm w-full overflow-auto"
+                ref={viewportRef}
                 style={{
-                    minHeight: '500px',
                     position: 'relative',
-                    zIndex: 1,
-                    borderRadius: '15px'
+                    width: '100%',
+                    height: 620,
+                    background: '#e8ecf0',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: 15,
+                    overflow: 'hidden',
                 }}
             >
-                {/* Fixed Filter Options and Controls on Top */}
-                <div className="sticky top-0 left-0 right-0 z-[60] p-3 sm:p-4 pointer-events-none flex justify-between items-start gap-2 flex-wrap">
-                    <div className="flex gap-2 pointer-events-auto flex-wrap">
+                {/* Filter Bar — fixed inside viewport, not transformed */}
+                <div
+                    style={{
+                        position: 'absolute', top: 0, left: 0, right: 0, zIndex: 60,
+                        padding: '12px 14px', display: 'flex', justifyContent: 'space-between',
+                        alignItems: 'flex-start', pointerEvents: 'none',
+                        background: 'linear-gradient(to bottom, rgba(232,236,240,0.95) 60%, transparent)',
+                    }}
+                >
+                    {/* Left: filter dropdowns + search */}
+                    <div style={{ display: 'flex', gap: 8, pointerEvents: 'auto', alignItems: 'center', position: 'relative' }}>
                         <select
                             value={selectedDept}
-                            onChange={(e) => setSelectedDept(e.target.value)}
-                            className="bg-white/90 backdrop-blur-sm border border-slate-200 text-xs sm:text-sm px-2 sm:px-3 py-1.5 pr-7 focus:ring-2 focus:ring-indigo-600 shadow-sm transition-all hover:bg-white"
-                            style={{ borderRadius: '15px' }}
+                            onChange={e => setSelectedDept(e.target.value)}
+                            style={dropdownStyle}
                         >
                             <option value="All">All Departments</option>
-                            {hierarchyData?.departments.map(dept => (
+                            {departments.map(dept => (
                                 <option key={dept} value={dept}>{dept}</option>
                             ))}
                         </select>
                         <select
                             value={selectedGrade}
-                            onChange={(e) => setSelectedGrade(e.target.value)}
-                            className="bg-white/90 backdrop-blur-sm border border-slate-200 text-xs sm:text-sm px-2 sm:px-3 py-1.5 pr-7 focus:ring-2 focus:ring-indigo-600 shadow-sm transition-all hover:bg-white"
-                            style={{ borderRadius: '15px' }}
+                            onChange={e => setSelectedGrade(e.target.value)}
+                            style={dropdownStyle}
                         >
-                            <option>All Grades</option>
-                            <option>L1</option>
-                            <option>E2</option>
-                            <option>E1</option>
-                            <option>C1</option>
-                            <option>C2</option>
+                            <option value="All">All Grades</option>
+                            {allGrades.map(g => (
+                                <option key={g} value={g}>{g}</option>
+                            ))}
                         </select>
+
+                        {/* Search Bar */}
+                        <div style={{ position: 'relative' }}>
+                            <div style={{
+                                display: 'flex', alignItems: 'center',
+                                borderRadius: '20px',
+                                background: 'rgba(255,255,255,0.95)',
+                                backdropFilter: 'blur(8px)',
+                                border: '1px solid #e2e8f0',
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                                paddingRight: 8,
+                                overflow: 'hidden'
+                            }}>
+                                <input
+                                    ref={searchInputRef}
+                                    type="text"
+                                    placeholder="Search user..."
+                                    value={searchInput}
+                                    onChange={e => handleSearch(e.target.value)}
+                                    onFocus={() => searchInput.trim().length > 0 && setShowSearchResults(true)}
+                                    style={{
+                                        border: 'none',
+                                        background: 'transparent',
+                                        fontSize: 12,
+                                        fontWeight: 600,
+                                        color: '#334155',
+                                        padding: '6px 12px',
+                                        outline: 'none',
+                                        minWidth: 140,
+                                    }}
+                                />
+                                <span className="material-symbols-rounded" style={{ fontSize: 16, color: '#94a3b8', flexShrink: 0 }}>search</span>
+                            </div>
+
+                            {/* Search Results Dropdown */}
+                            {showSearchResults && searchResults.length > 0 && (
+                                <div
+                                    ref={searchDropdownRef}
+                                    style={{
+                                        position: 'absolute',
+                                        top: '100%',
+                                        left: 0,
+                                        right: 0,
+                                        marginTop: 4,
+                                        background: 'rgba(255,255,255,0.98)',
+                                        backdropFilter: 'blur(8px)',
+                                        border: '1px solid #e2e8f0',
+                                        borderRadius: 12,
+                                        boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+                                        maxHeight: 320,
+                                        overflowY: 'auto',
+                                        zIndex: 1000,
+                                        minWidth: 280,
+                                    }}
+                                >
+                                    {searchResults.map(user => (
+                                        <div
+                                            key={user.id}
+                                            onClick={() => handleSelectSearchUser(user)}
+                                            style={{
+                                                padding: '10px 12px',
+                                                borderBottom: '1px solid #f1f5f9',
+                                                cursor: 'pointer',
+                                                transition: 'background-color 0.15s',
+                                                backgroundColor: user.id === highlightedUserId ? '#eff6ff' : 'transparent'
+                                            }}
+                                            onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f8fafc'}
+                                            onMouseLeave={e => e.currentTarget.style.backgroundColor = user.id === highlightedUserId ? '#eff6ff' : 'transparent'}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                <div style={{
+                                                    width: 24,
+                                                    height: 24,
+                                                    borderRadius: 10,
+                                                    background: 'linear-gradient(to br, #2563eb, #1e40af)',
+                                                    color: 'white',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    fontSize: 10,
+                                                    fontWeight: 700,
+                                                    flexShrink: 0
+                                                }}>
+                                                    {getInitials(user.first_name, user.last_name, user.fullname)}
+                                                </div>
+                                                <div style={{ minWidth: 0, flex: 1 }}>
+                                                    <p style={{ fontSize: 11, fontWeight: 700, color: '#1e293b', margin: '0 0 2px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                                                        {user.fullname || `${user.first_name} ${user.last_name}`}
+                                                    </p>
+                                                    <p style={{ fontSize: 9, color: '#64748b', margin: 0, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                                                        {user.designation || user.job_title || 'Team Member'} • {user.department || 'N/A'}
+                                                    </p>
+                                                </div>
+                                                {user.id === highlightedUserId && (
+                                                    <span className="material-symbols-rounded" style={{ fontSize: 14, color: '#2563eb', flexShrink: 0 }}>check_circle</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
-                    <div className="flex flex-col items-end gap-2 pointer-events-auto">
-                        <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm p-1.5 shadow-sm border border-slate-200" style={{ borderRadius: '15px' }}>
-                            <button title="Zoom Out" onClick={() => setZoom(Math.max(0.3, zoom - 0.2))} className="p-1 hover:bg-slate-100 rounded-lg transition text-slate-600">
-                                <span className="material-symbols-rounded text-lg sm:text-xl">zoom_out</span>
+                    {/* Right: zoom controls + hint */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, pointerEvents: 'auto' }}>
+                        <div style={{
+                            display: 'flex', alignItems: 'center', gap: 2,
+                            background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)',
+                            border: '1px solid #e2e8f0', borderRadius: 15, padding: '4px 6px',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
+                        }}>
+                            <button
+                                title="Zoom Out"
+                                onClick={() => setZoom(z => Math.max(0.2, z - 0.15))}
+                                style={{ padding: '2px 4px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', color: '#475569', display: 'flex', alignItems: 'center' }}
+                            >
+                                <span className="material-symbols-rounded" style={{ fontSize: 18 }}>zoom_out</span>
                             </button>
-                            <span className="text-[10px] sm:text-xs font-bold px-1 sm:px-2 min-w-[40px] sm:min-w-[50px] text-center text-slate-700">{Math.round(zoom * 100)}%</span>
-                            <button title="Zoom In" onClick={() => setZoom(Math.min(3, zoom + 0.2))} className="p-1 hover:bg-slate-100 rounded-lg transition text-slate-600">
-                                <span className="material-symbols-rounded text-lg sm:text-xl">zoom_in</span>
+                            <span style={{ fontSize: 11, fontWeight: 700, minWidth: 40, textAlign: 'center', color: '#334155' }}>
+                                {Math.round(zoom * 100)}%
+                            </span>
+                            <button
+                                title="Zoom In"
+                                onClick={() => setZoom(z => Math.min(3, z + 0.15))}
+                                style={{ padding: '2px 4px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', color: '#475569', display: 'flex', alignItems: 'center' }}
+                            >
+                                <span className="material-symbols-rounded" style={{ fontSize: 18 }}>zoom_in</span>
                             </button>
-                            <div className="w-px h-4 bg-slate-200 mx-1"></div>
-                            <button title="Reset View" onClick={resetZoomPan} className="p-1 hover:bg-slate-100 rounded-lg transition text-slate-600">
-                                <span className="material-symbols-rounded text-lg sm:text-xl">fit_screen</span>
+                            <div style={{ width: 1, height: 16, background: '#e2e8f0', margin: '0 2px' }} />
+                            <button
+                                title="Reset View"
+                                onClick={resetZoomPan}
+                                style={{ padding: '2px 4px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', color: '#475569', display: 'flex', alignItems: 'center' }}
+                            >
+                                <span className="material-symbols-rounded" style={{ fontSize: 18 }}>fit_screen</span>
                             </button>
                         </div>
-                        <p className="hidden sm:block text-[9px] font-bold text-slate-500 bg-white/80 backdrop-blur-sm px-2 py-1 border border-slate-200/50 shadow-sm" style={{ borderRadius: '15px' }}>
+                        <p style={{
+                            fontSize: 9, fontWeight: 700, color: '#64748b',
+                            background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(4px)',
+                            border: '1px solid rgba(226,232,240,0.6)', borderRadius: 10,
+                            padding: '3px 8px', margin: 0
+                        }}>
                             💡 Left-click + drag to pan | Mouse wheel to zoom | 🔄 Reset available
                         </p>
                     </div>
                 </div>
 
+                {/* Dot grid background */}
+                <div
+                    style={{
+                        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
+                        backgroundImage: 'radial-gradient(#0053db18 1px, transparent 1px)',
+                        backgroundSize: '24px 24px'
+                    }}
+                />
+
+                {/* Pannable / Zoomable Canvas Content */}
                 <div
                     ref={canvasRef}
-                    className="p-3 sm:p-4 md:p-6 flex flex-col items-center justify-start relative select-none touch-none"
                     onWheel={handleWheel}
                     onMouseDown={handleMouseDown}
                     onMouseMove={handleMouseMove}
@@ -532,153 +1165,100 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
                     style={{
+                        position: 'absolute',
+                        top: 0, left: 0,
+                        width: '100%',
+                        minHeight: '100%',
                         transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
-                        transformOrigin: 'center center',
-                        transition: isPanning ? 'none' : 'transform 0.2s ease-out',
-                        minHeight: '500px',
+                        transformOrigin: 'center top',
+                        transition: isPanning ? 'none' : 'transform 0.15s ease-out',
+                        cursor: isPanning ? 'grabbing' : 'grab',
+                        userSelect: 'none',
+                        touchAction: 'none',
+                        zIndex: 10,
+                        paddingTop: 72,
+                        paddingBottom: 48,
                         display: 'flex',
-                        flexDirection: 'column'
+                        flexDirection: 'column',
+                        alignItems: 'center',
                     }}
                 >
-                    {/* Decorative Grid Pattern */}
-                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#0053db 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
-
-                    {/* Manager Level */}
-                    <div className="relative z-10 flex flex-col items-center mb-6">
-                        {manager ? (
-                            <UserCard user={manager} size="large" />
-                        ) : currentUser.manager_name ? (
-                            <div className="group cursor-pointer bg-white p-4 w-56 shadow-xl shadow-slate-900/5 hover:scale-105 transition-transform duration-300" style={{ borderRadius: '15px' }}>
-                                <div className="flex items-start justify-between mb-3">
-                                    <div className="w-14 h-14 bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md" style={{ borderRadius: '15px' }}>
-                                        {getInitials('', '', currentUser.manager_name)}
-                                    </div>
-                                    <span className="bg-indigo-50 text-indigo-600 text-[9px] font-black px-1.5 py-0.5 tracking-wider" style={{ borderRadius: '15px' }}>Manager</span>
+                    {/* Single Organization Tree View */}
+                    {hierarchyTrees.length === 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '40px 24px' }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: 48, color: '#cbd5e1' }}>account_tree</span>
+                            <p style={{ fontSize: 12, fontWeight: 600, color: '#334155', margin: 0 }}>No hierarchy data available</p>
+                            <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>Try adjusting filters or selecting a different user</p>
+                        </div>
+                    ) : (
+                        <div style={{ display: 'flex', gap: 32, justifyContent: 'center', alignItems: 'flex-start', width: '100%', flexWrap: 'wrap', padding: '24px 0' }}>
+                            {hierarchyTrees.map(tree => (
+                                <div key={tree.user.id} style={{ flex: '1 1 0', minWidth: 320 }}>
+                                    <HierarchyTreeNode
+                                        node={tree}
+                                        isRoot
+                                        currentUserId={currentUser.id}
+                                        highlightedUserId={highlightedUserId}
+                                    />
                                 </div>
-                                <h3 className="text-base font-bold text-slate-900">{currentUser.manager_name}</h3>
-                                <p className="text-xs text-slate-500 font-medium">Reporting Manager</p>
-                            </div>
-                        ) : null}
-                        {hasHierarchy && <div className="w-[2px] h-6 bg-indigo-500 mt-1"></div>}
-                    </div>
-
-                    {/* Teams Section - Simplified */}
-                    {hasSameLevelPeers && (
-                        <div className="w-full mb-8 z-10 flex flex-col items-center">
-                            {sameLevelPeers.length > 2 && (
-                                <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider px-3 py-1.5 bg-white border border-indigo-100 mb-4" style={{ borderRadius: '15px' }}>
-                                    {sameLevelPeers.length + 1} Team Members
-                                </span>
-                            )}
-                            <div className="flex justify-center items-start gap-4 flex-wrap">
-                                {sameLevelPeers.map((peer) => (
-                                    <UserCard key={peer.id} user={peer} size={sameLevelPeers.length > 6 ? 'small' : 'medium'} />
-                                ))}
-                                <UserCard user={currentUser} isHighlighted={true} size="large" />
-                            </div>
-                            {hasReports && <div className="w-[2px] h-8 bg-indigo-500 mt-4"></div>}
-                        </div>
-                    )}
-
-                    {/* No Peers */}
-                    {!hasSameLevelPeers && (
-                        <div className="flex justify-center mb-8 z-10">
-                            <UserCard user={currentUser} isHighlighted={true} size="large" />
-                            {hasReports && <div className="w-[2px] h-8 bg-indigo-500 absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full"></div>}
-                        </div>
-                    )}
-
-                    {/* Direct Reports */}
-                    {hasReports && (
-                        <div className="w-full z-10">
-                            {directReports.length > 2 && (
-                                <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider px-3 py-1.5 bg-white border border-emerald-100 mb-4 inline-block" style={{ borderRadius: '15px' }}>
-                                    {directReports.length} Direct Reports
-                                </span>
-                            )}
-                            <div className="flex justify-center items-start gap-4 flex-wrap">
-                                {directReports.map((report) => (
-                                    <ReportCard key={report.id} report={report} size={directReports.length > 6 ? 'small' : 'medium'} />
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Other Departments */}
-                    {hasOtherDepts && (
-                        <div className="w-full mt-12 z-10">
-                            <h3 className="text-sm font-bold text-indigo-900 px-3 py-1.5 bg-indigo-50 border border-indigo-100 mb-6 text-center" style={{ borderRadius: '15px' }}>
-                                Other Departments
-                            </h3>
-                            <div className="space-y-8">
-                                {Object.entries(otherDeptsByName).map(([dept, peersInDept]) => (
-                                    <div key={dept} className="flex flex-col items-center">
-                                        <p className="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-4 px-3 py-1.5 bg-white border border-indigo-100" style={{ borderRadius: '15px' }}>{dept}</p>
-                                        <div className="flex justify-center items-start gap-4 flex-wrap">
-                                            {peersInDept.map((peer) => (
-                                                <UserCard key={peer.id} user={peer} size={peersInDept.length > 6 ? 'small' : 'medium'} />
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                            ))}
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* Bento Grid - Optimized for mobile */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mt-8">
-                <div className="md:col-span-2 bg-slate-50 p-5 sm:p-6 border border-slate-100" style={{ borderRadius: '15px' }}>
-                    <h3 className="text-lg font-black mb-4 text-slate-900">Hierarchy Insights</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                        <div className="bg-white p-4 border border-slate-200/50 shadow-sm" style={{ borderRadius: '15px' }}>
-                            <p className="text-xs font-bold text-slate-500 uppercase mb-2">Team Size</p>
-                            <div className="flex items-end gap-2">
-                                <span className="text-3xl font-black text-slate-900">{sameLevelPeers.length + 1}</span>
-                                <span className="text-xs text-emerald-600 font-bold pb-1 flex items-center gap-1">
-                                    <span className="material-symbols-outlined text-sm">group</span>
-                                </span>
+            {/* Bento Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 24 }}>
+                <div style={{ background: '#f8fafc', padding: 24, border: '1px solid #f1f5f9', borderRadius: 15 }}>
+                    <h3 style={{ fontSize: 18, fontWeight: 900, marginBottom: 16, color: '#0f172a', margin: '0 0 16px' }}>Organization Overview</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                        {[
+                            { label: 'Organization Size', value: totalOrgSize, sub: 'Total Members' },
+                            { label: 'Your Department', value: currentUser.department || 'N/A', sub: 'Current', small: true },
+                            { label: 'Direct Reports', value: currentUserReports, sub: 'reporting to you' },
+                            { label: 'Your Level', value: levelInfo?.roleTitle || 'Employee', sub: `Grade: ${currentUser.employee_grade}`, small: true },
+                        ].map(({ label, value, sub, small }) => (
+                            <div key={label} style={{ background: 'white', padding: 16, border: '1px solid #f1f5f9', borderRadius: 15, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                                <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', margin: '0 0 6px' }}>{label}</p>
+                                <p style={{ fontSize: small ? 14 : 28, fontWeight: 900, color: '#0f172a', margin: 0 }}>{value}</p>
+                                <p style={{ fontSize: 11, color: '#94a3b8', margin: '4px 0 0' }}>{sub}</p>
                             </div>
-                            <p className="text-xs text-slate-400 mt-1">at Your Level</p>
-                        </div>
-                        <div className="bg-white p-4 border border-slate-200/50 shadow-sm" style={{ borderRadius: '15px' }}>
-                            <p className="text-xs font-bold text-slate-500 uppercase mb-2">Department</p>
-                            <p className="text-lg font-black text-slate-900">{currentUser.department || 'N/A'}</p>
-                            <p className="text-xs text-slate-400 mt-1">Current</p>
-                        </div>
-                        <div className="bg-white p-4 border border-slate-200/50 shadow-sm" style={{ borderRadius: '15px' }}>
-                            <p className="text-xs font-bold text-slate-500 uppercase mb-2">Manager</p>
-                            <p className="text-sm font-black text-slate-900 truncate">{currentUser.manager_name || 'N/A'}</p>
-                            <p className="text-xs text-slate-400 mt-1">Reports To</p>
-                        </div>
-                        <div className="bg-white p-4 border border-slate-200/50 shadow-sm" style={{ borderRadius: '15px' }}>
-                            <p className="text-xs font-bold text-slate-500 uppercase mb-2">Reports</p>
-                            <p className="text-lg font-black text-slate-900">{directReports.length}</p>
-                            <p className="text-xs text-slate-400 mt-1">Direct Reports</p>
-                        </div>
+                        ))}
                     </div>
                 </div>
-                <div className="bg-blue-600 text-white p-5 sm:p-6 flex flex-col justify-between overflow-hidden relative group" style={{ borderRadius: '15px' }}>
-                    <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
-                        <span className="material-symbols-outlined text-[10rem]">hub</span>
+                <div style={{
+                    background: '#2563eb', color: 'white', padding: 24, borderRadius: 15,
+                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                    overflow: 'hidden', position: 'relative'
+                }}>
+                    <div style={{ position: 'absolute', right: -16, bottom: -16, opacity: 0.1 }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 160 }}>hub</span>
                     </div>
-                    <div className="relative z-10">
-                        <h3 className="text-xl font-black tracking-tight mb-3">Export Structure</h3>
-                        <p className="text-blue-100 text-xs leading-relaxed mb-6">Generate detailed PDF report of your organizational structure.</p>
+                    <div style={{ position: 'relative', zIndex: 1 }}>
+                        <h3 style={{ fontSize: 20, fontWeight: 900, margin: '0 0 8px' }}>Export Structure</h3>
+                        <p style={{ fontSize: 12, color: '#bfdbfe', lineHeight: 1.6, margin: '0 0 24px' }}>
+                            Generate detailed PDF report of your organizational structure with current filters applied.
+                        </p>
                     </div>
-                    <button className="relative z-10 w-full bg-white text-blue-600 py-2.5 font-black text-xs uppercase tracking-widest hover:bg-blue-50 transition-colors" style={{ borderRadius: '15px' }}>
+                    <button style={{
+                        position: 'relative', zIndex: 1, width: '100%', background: 'white',
+                        color: '#2563eb', padding: '10px 0', fontWeight: 900, fontSize: 11,
+                        letterSpacing: 2, textTransform: 'uppercase', border: 'none', borderRadius: 15, cursor: 'pointer'
+                    }}>
                         Download PDF
                     </button>
                 </div>
             </div>
 
             {/* Empty State */}
-            {!manager && !currentUser.manager_name && peers.length === 0 && directReports.length === 0 && (
-                <div className="text-center py-10 bg-blue-50 border-2 border-dashed border-blue-200" style={{ borderRadius: '15px' }}>
-                    <span className="material-symbols-outlined text-4xl text-blue-300 block mb-2">account_tree</span>
-                    <p className="text-slate-700 font-semibold text-sm mb-1">Organizational structure incomplete</p>
-                    <p className="text-slate-500 text-xs">Contact admin to set up manager relationships.</p>
+            {hierarchyTrees.length === 0 && (
+                <div style={{
+                    textAlign: 'center', padding: '40px 24px',
+                    background: '#eff6ff', border: '2px dashed #bfdbfe', borderRadius: 15
+                }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 48, color: '#93c5fd', display: 'block', marginBottom: 8 }}>account_tree</span>
+                    <p style={{ fontWeight: 600, fontSize: 14, color: '#1e40af', margin: '0 0 4px' }}>No organizational structure found</p>
+                    <p style={{ fontSize: 12, color: '#64748b', margin: 0 }}>Adjust filters or check if hierarchy relationships are configured.</p>
                 </div>
             )}
         </div>

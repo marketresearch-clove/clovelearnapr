@@ -4,6 +4,7 @@ import useAuthGuard from '../hooks/useAuthGuard';
 import { supabase } from '../lib/supabaseClient';
 import { advancedNotificationService, ScheduledNotification, NotificationDraft, AutoSendRule } from '../lib/advancedNotificationService';
 import { courseAssignmentService } from '../lib/courseAssignmentService';
+import Loader from '../components/Loader';
 
 type TabType = 'send' | 'drafts' | 'scheduled' | 'history' | 'auto-rules';
 
@@ -802,7 +803,7 @@ const AdvancedNotificationsPage: React.FC = () => {
         return (
             <AdminLayout title="Advanced Notifications">
                 <div className="flex items-center justify-center h-96">
-                    <div className="text-slate-500">Loading...</div>
+                    <Loader size="lg" message="Loading notifications..." />
                 </div>
             </AdminLayout>
         );

@@ -347,12 +347,12 @@ const AdminDashboard: React.FC = () => {
             {/* Enhanced Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4 bg-gray-50">
               {/* Core Metrics */}
-              <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
+              <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-blue-50 rounded-xl">
+                  <div className="p-2 bg-blue-50" style={{ borderRadius: '15px' }}>
                     <span className="material-symbols-rounded text-blue-600">people</span>
                   </div>
-                  <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-green-600 bg-green-50">
+                  <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '15px' }}>
                     <span className="material-symbols-rounded text-[12px]">trending_up</span>
                     +{stats.monthlyGrowth}%
                   </div>
@@ -361,12 +361,12 @@ const AdminDashboard: React.FC = () => {
                 <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.totalEmployees.toLocaleString()}</h3>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
+              <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-emerald-50 rounded-xl">
+                  <div className="p-2 bg-emerald-50" style={{ borderRadius: '15px' }}>
                     <span className="material-symbols-rounded text-emerald-600">group</span>
                   </div>
-                  <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-green-600 bg-green-50">
+                  <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '15px' }}>
                     <span className="material-symbols-rounded text-[12px]">trending_up</span>
                     +5%
                   </div>
@@ -375,9 +375,9 @@ const AdminDashboard: React.FC = () => {
                 <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.totalActiveLearners.toLocaleString()}</h3>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
+              <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-indigo-50 rounded-md">
+                  <div className="p-2 bg-indigo-50" style={{ borderRadius: '15px' }}>
                     <span className="material-symbols-rounded text-indigo-600">schedule</span>
                   </div>
                 </div>
@@ -385,9 +385,9 @@ const AdminDashboard: React.FC = () => {
                 <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.totalLearningHours.toLocaleString()}h</h3>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
+              <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-orange-50 rounded-md">
+                  <div className="p-2 bg-orange-50" style={{ borderRadius: '15px' }}>
                     <span className="material-symbols-rounded text-orange-600">book</span>
                   </div>
                 </div>
@@ -395,12 +395,12 @@ const AdminDashboard: React.FC = () => {
                 <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.activeCourses}</h3>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
+              <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-green-50 rounded-md">
+                  <div className="p-2 bg-green-50" style={{ borderRadius: '15px' }}>
                     <span className="material-symbols-rounded text-green-600">done_all</span>
                   </div>
-                  <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-green-600 bg-green-50">
+                  <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '15px' }}>
                     <span className="material-symbols-rounded text-[12px]">trending_up</span>
                     +2%
                   </div>
@@ -409,12 +409,12 @@ const AdminDashboard: React.FC = () => {
                 <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.completionRate}%</h3>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
+              <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-teal-50 rounded-md">
+                  <div className="p-2 bg-teal-50" style={{ borderRadius: '15px' }}>
                     <span className="material-symbols-rounded text-teal-600">verified</span>
                   </div>
-                  <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-green-600 bg-green-50">
+                  <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '15px' }}>
                     <span className="material-symbols-rounded text-[12px]">trending_up</span>
                     +8%
                   </div>
@@ -423,12 +423,12 @@ const AdminDashboard: React.FC = () => {
                 <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.assessmentPassRate}%</h3>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
+              <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-indigo-50 rounded-md">
+                  <div className="p-2 bg-indigo-50" style={{ borderRadius: '15px' }}>
                     <span className="material-symbols-rounded text-indigo-600">card_giftcard</span>
                   </div>
-                  <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-green-600 bg-green-50">
+                  <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '15px' }}>
                     <span className="material-symbols-rounded text-[12px]">trending_up</span>
                     +12
                   </div>
@@ -437,9 +437,9 @@ const AdminDashboard: React.FC = () => {
                 <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.certificatesEarned}</h3>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
+              <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-pink-50 rounded-md">
+                  <div className="p-2 bg-pink-50" style={{ borderRadius: '15px' }}>
                     <span className="material-symbols-rounded text-pink-600">radar</span>
                   </div>
                 </div>
@@ -447,12 +447,12 @@ const AdminDashboard: React.FC = () => {
                 <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.skillCoverage}%</h3>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
+              <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-yellow-50 rounded-md">
+                  <div className="p-2 bg-yellow-50" style={{ borderRadius: '15px' }}>
                     <span className="material-symbols-rounded text-yellow-600">star</span>
                   </div>
-                  <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-green-600 bg-green-50">
+                  <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '15px' }}>
                     <span className="material-symbols-rounded text-[12px]">trending_up</span>
                     +0.2
                   </div>
@@ -461,9 +461,9 @@ const AdminDashboard: React.FC = () => {
                 <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.avgCourseRating}★</h3>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
+              <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-cyan-50 rounded-md">
+                  <div className="p-2 bg-cyan-50" style={{ borderRadius: '15px' }}>
                     <span className="material-symbols-rounded text-cyan-600">business</span>
                   </div>
                 </div>
@@ -471,12 +471,12 @@ const AdminDashboard: React.FC = () => {
                 <h3 className="text-lg font-black text-gray-900 mt-1 truncate">{stats.topDepartment}</h3>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
+              <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-rose-50 rounded-md">
+                  <div className="p-2 bg-rose-50" style={{ borderRadius: '15px' }}>
                     <span className="material-symbols-rounded text-rose-600">access_time</span>
                   </div>
-                  <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-green-600 bg-green-50">
+                  <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '15px' }}>
                     <span className="material-symbols-rounded text-[12px]">trending_up</span>
                     +0.3h
                   </div>
@@ -488,16 +488,16 @@ const AdminDashboard: React.FC = () => {
 
             {/* Analytics Cards */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+              <div className="bg-white p-6 border border-gray-100 shadow-sm" style={{ borderRadius: '15px' }}>
                 <UserStatsCard />
               </div>
-              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+              <div className="bg-white p-6 border border-gray-100 shadow-sm" style={{ borderRadius: '15px' }}>
                 <CompletedLearningHoursCard />
               </div>
             </div>
 
             {/* Top Departments Chart */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+            <div className="bg-white p-6 border border-gray-100 shadow-sm" style={{ borderRadius: '15px' }}>
               <div className="flex justify-between items-center mb-6">
                 <h4 className="font-bold text-gray-900 flex items-center gap-2">
                   <span className="material-symbols-rounded text-blue-500">bar_chart</span>
@@ -523,10 +523,10 @@ const AdminDashboard: React.FC = () => {
                               <span>{dept.coursesCompleted}/{dept.coursesEnrolled} courses</span>
                             </div>
                           </div>
-                          <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                          <div className="h-2 w-full bg-gray-200 overflow-hidden" style={{ borderRadius: '15px' }}>
                             <div
-                              className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-700"
-                              style={{ width: `${percentage}%` }}
+                              className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-700"
+                              style={{ width: `${percentage}%`, borderRadius: '15px' }}
                             />
                           </div>
                         </div>
@@ -540,7 +540,7 @@ const AdminDashboard: React.FC = () => {
             </div>
 
             {/* Course Popularity */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+            <div className="bg-white p-6 border border-gray-100 shadow-sm" style={{ borderRadius: '15px' }}>
               <div className="flex items-center justify-between mb-8">
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">Popularity</h3>
@@ -556,10 +556,10 @@ const AdminDashboard: React.FC = () => {
                         <span className="text-gray-700 font-semibold truncate max-w-[70%]">{course.title}</span>
                         <span className="text-gray-900 font-bold">{course.percentage}%</span>
                       </div>
-                      <div className="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                      <div className="h-2.5 w-full bg-gray-200 overflow-hidden" style={{ borderRadius: '15px' }}>
                         <div
-                          className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-700 ease-out"
-                          style={{ width: `${course.percentage}%` }}
+                          className="h-full bg-gradient-to-r from-green-500 to-green-600 transition-all duration-700 ease-out"
+                          style={{ width: `${course.percentage}%`, borderRadius: '15px' }}
                         />
                       </div>
                     </div>
@@ -573,8 +573,8 @@ const AdminDashboard: React.FC = () => {
             </div>
 
             {/* Users & Modules Section */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-8 border-b border-gray-100">
+            <div className="shadow-sm border border-gray-100 overflow-hidden" style={{ borderRadius: '15px' }}>
+              <div className="bg-white p-8 border-b border-gray-100">
                 <div className="flex items-center gap-8">
                   <button
                     onClick={() => setActiveTab('users')}
@@ -584,7 +584,7 @@ const AdminDashboard: React.FC = () => {
                       }`}
                   >
                     By users
-                    {activeTab === 'users' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full" />}
+                    {activeTab === 'users' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary" style={{ borderRadius: '15px 15px 0 0' }} />}
                   </button>
                   <button
                     onClick={() => setActiveTab('modules')}
@@ -594,7 +594,7 @@ const AdminDashboard: React.FC = () => {
                       }`}
                   >
                     By modules
-                    {activeTab === 'modules' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full" />}
+                    {activeTab === 'modules' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary" style={{ borderRadius: '15px 15px 0 0' }} />}
                   </button>
                 </div>
               </div>
@@ -602,7 +602,7 @@ const AdminDashboard: React.FC = () => {
             </div>
 
             {/* Department Completion */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-12">
+            <div className="bg-white border border-gray-100 shadow-sm overflow-hidden mb-12" style={{ borderRadius: '15px' }}>
               <div className="p-8 border-b border-gray-50">
                 <h3 className="text-lg font-bold text-gray-900">Completion</h3>
                 <p className="text-sm text-gray-500 mt-1">Detailed breakdown of learning progress across departments</p>
@@ -622,16 +622,16 @@ const AdminDashboard: React.FC = () => {
                         <tr key={row.dept} className="hover:bg-gray-50/30 transition-colors">
                           <td className="px-8 py-5 text-gray-900 font-bold text-sm">{row.dept}</td>
                           <td className="px-8 py-5">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
+                            <span className="inline-flex items-center px-2.5 py-0.5 text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100" style={{ borderRadius: '15px' }}>
                               {row.users} Employees
                             </span>
                           </td>
                           <td className="px-8 py-5">
                             <div className="flex items-center gap-4">
-                              <div className="flex-1 max-w-[160px] h-2 bg-gray-200 rounded-full overflow-hidden">
+                              <div className="flex-1 max-w-[160px] h-2 bg-gray-200 overflow-hidden" style={{ borderRadius: '15px' }}>
                                 <div
-                                  className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full transition-all duration-700"
-                                  style={{ width: `${row.progress}%` }}
+                                  className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 transition-all duration-700"
+                                  style={{ width: `${row.progress}%`, borderRadius: '15px' }}
                                 />
                               </div>
                               <span className="text-gray-900 font-bold text-sm">{row.progress}%</span>

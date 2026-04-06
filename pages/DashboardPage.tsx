@@ -3,12 +3,14 @@ import { Course } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
+import { courseService } from '../lib/courseService';
 import { durationService } from '../lib/durationService';
 import { lessonProgressService } from '../lib/lessonProgressService';
 import { userStatisticsService } from '../lib/userStatisticsService';
 import { leaderboardService } from '../lib/leaderboardService';
 import { enrollmentService } from '../lib/enrollmentService';
 import PlatformTutorial from '../components/PlatformTutorial';
+import Loader from '../components/Loader';
 
 const StatCard: React.FC<{ title: string; value: string; icon: string; color: string; trend?: string }> = ({ title, value, icon, color, trend }) => (
   <div className="bg-white p-4 md:p-6 shadow-sm border border-slate-100 flex items-start justify-between" style={{ borderRadius: '15px' }}>
@@ -154,25 +156,25 @@ const DashboardPage: React.FC = () => {
 
         if (courseIds.length > 0) {
           try {
-            console.log('⏳ Fetching course details...', { courseIds: courseIds.length });
-            const coursesRes = await withTimeout(
-              supabase
-                .from('courses')
-                .select('id, title, certificate_enabled, duration, thumbnail, instructorname, category, totalstudents')
-                .in('id', courseIds),
+            console.log('⏳ Fetching course details with courseService...', { courseIds: courseIds.length });
+            // Use courseService to get all published courses with calculated totalstudents
+            const allPublishedCourses = await withTimeout(
+              courseService.getPublishedCourses(),
               15000,
-              `courses.select(${courseIds.length} ids)`
+              'courseService.getPublishedCourses()'
             );
 
-            console.log('🖼️ Courses response:', {
-              error: coursesRes.error,
-              count: coursesRes.data?.length || 0,
+            // Filter to only the courses in the user's enrollments
+            const coursesData = allPublishedCourses.filter((c: any) => courseIds.includes(c.id));
+
+            console.log('🖼️ Courses fetched:', {
+              count: coursesData?.length || 0,
               took: 'see timestamp above'
             });
 
             const courseMap = new Map();
-            if (coursesRes.data) {
-              coursesRes.data.forEach((course: any) => {
+            if (coursesData) {
+              coursesData.forEach((course: any) => {
                 courseMap.set(course.id, course);
               });
               console.log('📍 CourseMap built with', courseMap.size, 'courses');
@@ -512,12 +514,7 @@ const DashboardPage: React.FC = () => {
 
             <div className="space-y-4">
               {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="text-center">
-                    <div className="animate-spin h-8 w-8 border-b-2 border-primary-600 mx-auto mb-3" style={{ borderRadius: '50%' }}></div>
-                    <p className="text-slate-600">Loading courses...</p>
-                  </div>
-                </div>
+                <Loader size="sm" message="Loading courses..." containerPadding="py-8" />
               ) : enrolledCourses.length === 0 ? (
                 <div className="bg-white p-8 border border-slate-100 text-center" style={{ borderRadius: '15px' }}>
                   <span className="material-symbols-rounded text-5xl text-slate-300 block mb-3">school</span>

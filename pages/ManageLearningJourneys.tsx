@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import AdminLayout from '../components/AdminLayout';
+import Loader from '../components/Loader';
 import { supabase } from '../lib/supabaseClient';
 import { courseAssignmentService } from '../lib/courseAssignmentService';
 import { learningJourneyService, LearningJourney, JourneyModule } from '../lib/learningJourneyService';
@@ -1389,600 +1390,606 @@ const ManageLearningJourneys: React.FC = () => {
 
   return (
     <AdminLayout title="Learning Journey Management">
-      <div className="space-y-6">
-        {successMessage && (
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-sm text-green-600">{successMessage}</p>
-          </div>
-        )}
-
-        {errorMessage && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-600">{errorMessage}</p>
-          </div>
-        )}
-
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Learning Journey Management</h2>
-            <p className="text-gray-600 mt-1">Create, manage, and assign learning journeys.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                setEditingJourneyId(null);
-                setNewJourney({ title: '', description: '', type: 'Standard', modules: [] });
-                setShowCreateModal(true);
-              }}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center gap-2"
-            >
-              <span className="material-symbols-rounded">add</span>
-              Create Journey
-            </button>
-            <button
-              onClick={() => {
-                setEditingCareerPathId(null);
-                setNewCareerPath({
-                  currentRole: '',
-                  nextRole: '',
-                  description: '',
-                  skillRequirements: []
-                });
-                setShowCreateCareerPathModal(true);
-              }}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
-            >
-              <span className="material-symbols-rounded">add</span>
-              Create Career Path
-            </button>
-          </div>
+      {loading ? (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader size="lg" message="Loading learning journeys..." />
         </div>
+      ) : (
+        <div className="space-y-6">
+          {successMessage && (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-sm text-green-600">{successMessage}</p>
+            </div>
+          )}
 
-        {/* Tabs */}
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8">
-            <button
-              onClick={() => setActiveTab('assign')}
-              className={`
+          {errorMessage && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{errorMessage}</p>
+            </div>
+          )}
+
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Learning Journey Management</h2>
+              <p className="text-gray-600 mt-1">Create, manage, and assign learning journeys.</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  setEditingJourneyId(null);
+                  setNewJourney({ title: '', description: '', type: 'Standard', modules: [] });
+                  setShowCreateModal(true);
+                }}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center gap-2"
+              >
+                <span className="material-symbols-rounded">add</span>
+                Create Journey
+              </button>
+              <button
+                onClick={() => {
+                  setEditingCareerPathId(null);
+                  setNewCareerPath({
+                    currentRole: '',
+                    nextRole: '',
+                    description: '',
+                    skillRequirements: []
+                  });
+                  setShowCreateCareerPathModal(true);
+                }}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
+              >
+                <span className="material-symbols-rounded">add</span>
+                Create Career Path
+              </button>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
+              <button
+                onClick={() => setActiveTab('assign')}
+                className={`
                 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
                 ${activeTab === 'assign'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
               `}
-            >
-              Assign Journeys
-            </button>
-            <button
-              onClick={() => setActiveTab('manage')}
-              className={`
+              >
+                Assign Journeys
+              </button>
+              <button
+                onClick={() => setActiveTab('manage')}
+                className={`
                 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
                 ${activeTab === 'manage'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
               `}
-            >
-              Manage Journeys
-            </button>
-            <button
-              onClick={() => setActiveTab('careerPaths')}
-              className={`
+              >
+                Manage Journeys
+              </button>
+              <button
+                onClick={() => setActiveTab('careerPaths')}
+                className={`
                 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
                 ${activeTab === 'careerPaths'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
               `}
-            >
-              Career Paths
-            </button>
-            <button
-              onClick={() => setActiveTab('careerProgress')}
-              className={
-                `
+              >
+                Career Paths
+              </button>
+              <button
+                onClick={() => setActiveTab('careerProgress')}
+                className={
+                  `
                 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
                 ${activeTab === 'careerProgress'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
               `}
-            >
-              Manage Career Paths
-            </button>
-            <button
-              onClick={() => setActiveTab('userCareerAssignments')}
-              className={`
+              >
+                Manage Career Paths
+              </button>
+              <button
+                onClick={() => setActiveTab('userCareerAssignments')}
+                className={`
                 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
                 ${activeTab === 'userCareerAssignments'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
               `}
-            >
-              User Career Paths
-            </button>
-          </nav>
-        </div>
+              >
+                User Career Paths
+              </button>
+            </nav>
+          </div>
 
-        {activeTab === 'assign' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
+          {activeTab === 'assign' && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-6">
 
-              {/* Role Filters */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <button
-                  onClick={() => setActiveDepartment('All')}
-                  className={`px-4 py-2 text-sm font-semibold rounded-full flex items-center gap-2 transition-colors ${activeDepartment === 'All' ? 'bg-[#4f46e5] text-white' : 'bg-white text-black border border-black'}`}
-                >
-                  All Users ({users.length})
-                </button>
-                {Object.entries(departmentCounts).map(([department, count]) => (
+                {/* Role Filters */}
+                <div className="flex items-center gap-2 flex-wrap">
                   <button
-                    key={department}
-                    onClick={() => setActiveDepartment(department)}
-                    className={`px-4 py-2 text-sm font-semibold rounded-full flex items-center gap-2 transition-colors ${activeDepartment === department ? 'bg-[#4f46e5] text-white' : 'bg-white text-black border border-black'}`}
+                    onClick={() => setActiveDepartment('All')}
+                    className={`px-4 py-2 text-sm font-semibold rounded-full flex items-center gap-2 transition-colors ${activeDepartment === 'All' ? 'bg-[#4f46e5] text-white' : 'bg-white text-black border border-black'}`}
                   >
-                    {department} ({count})
+                    All Users ({users.length})
                   </button>
-                ))}
-              </div>
+                  {Object.entries(departmentCounts).map(([department, count]) => (
+                    <button
+                      key={department}
+                      onClick={() => setActiveDepartment(department)}
+                      className={`px-4 py-2 text-sm font-semibold rounded-full flex items-center gap-2 transition-colors ${activeDepartment === department ? 'bg-[#4f46e5] text-white' : 'bg-white text-black border border-black'}`}
+                    >
+                      {department} ({count})
+                    </button>
+                  ))}
+                </div>
 
-              {/* Users List */}
-              <div className="bg-white rounded-xl border border-gray-200">
-                <div className="p-6 border-b border-gray-200">
-                  <div className="flex flex-wrap justify-between items-center gap-4">
-                    <h3 className="font-semibold text-gray-900">
-                      Users - {activeDepartment} ({filteredUsers.length} Users)
-                    </h3>
-                    <div className="flex items-center gap-4">
-                      <input
-                        type="text"
-                        placeholder="Search User"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-                      />
-                      <button onClick={() => setShowAdvancedSearch(!showAdvancedSearch)} className="text-sm font-medium text-indigo-600 hover:underline">
-                        Advanced Search
-                      </button>
-                      <label className="flex items-center gap-2 cursor-pointer text-sm">
+                {/* Users List */}
+                <div className="bg-white rounded-xl border border-gray-200">
+                  <div className="p-6 border-b border-gray-200">
+                    <div className="flex flex-wrap justify-between items-center gap-4">
+                      <h3 className="font-semibold text-gray-900">
+                        Users - {activeDepartment} ({filteredUsers.length} Users)
+                      </h3>
+                      <div className="flex items-center gap-4">
                         <input
-                          type="checkbox"
-                          onChange={toggleAllUsers}
-                          checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
-                          className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-600"
+                          type="text"
+                          placeholder="Search User"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
                         />
-                        Select All
-                      </label>
+                        <button onClick={() => setShowAdvancedSearch(!showAdvancedSearch)} className="text-sm font-medium text-indigo-600 hover:underline">
+                          Advanced Search
+                        </button>
+                        <label className="flex items-center gap-2 cursor-pointer text-sm">
+                          <input
+                            type="checkbox"
+                            onChange={toggleAllUsers}
+                            checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
+                            className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-600"
+                          />
+                          Select All
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  {showAdvancedSearch && (
+                    <div className="p-6 border-b border-gray-200 bg-white">
+                      <h3 className="font-semibold text-gray-900 mb-4">Advanced Search</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                        {/* Filter Grid */}
+                        {filterOptions.departments && filterOptions.departments.length > 0 && (
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Department</label>
+                            <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                              {filterOptions.departments.map((dept: string) => (
+                                <label key={dept} className="flex items-center gap-2 cursor-pointer group">
+                                  <input
+                                    type="checkbox"
+                                    checked={filters.department.includes(dept)}
+                                    onChange={() => toggleFilter('department', dept)}
+                                    className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600"
+                                  />
+                                  <span className="text-sm text-slate-600 group-hover:text-slate-900">{dept}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {filterOptions.designations && filterOptions.designations.length > 0 && (
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Designation</label>
+                            <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                              {filterOptions.designations.map((desig: string) => (
+                                <label key={desig} className="flex items-center gap-2 cursor-pointer group">
+                                  <input
+                                    type="checkbox"
+                                    checked={filters.designation.includes(desig)}
+                                    onChange={() => toggleFilter('designation', desig)}
+                                    className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600"
+                                  />
+                                  <span className="text-sm text-slate-600 group-hover:text-slate-900">{desig}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {filterOptions.locations && filterOptions.locations.length > 0 && (
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Location</label>
+                            <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                              {filterOptions.locations.map((loc: string) => (
+                                <label key={loc} className="flex items-center gap-2 cursor-pointer group">
+                                  <input
+                                    type="checkbox"
+                                    checked={filters.location.includes(loc)}
+                                    onChange={() => toggleFilter('location', loc)}
+                                    className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600"
+                                  />
+                                  <span className="text-sm text-slate-600 group-hover:text-slate-900">{loc}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {filterOptions.grades && filterOptions.grades.length > 0 && (
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Employee Grade</label>
+                            <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                              {filterOptions.grades.map((grade: string) => (
+                                <label key={grade} className="flex items-center gap-2 cursor-pointer group">
+                                  <input
+                                    type="checkbox"
+                                    checked={filters.grade.includes(grade)}
+                                    onChange={() => toggleFilter('grade', grade)}
+                                    className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600"
+                                  />
+                                  <span className="text-sm text-slate-600 group-hover:text-slate-900">{grade}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {filterOptions.companies && filterOptions.companies.length > 0 && (
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Company</label>
+                            <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                              {filterOptions.companies.map((company: string) => (
+                                <label key={company} className="flex items-center gap-2 cursor-pointer group">
+                                  <input
+                                    type="checkbox"
+                                    checked={filters.company.includes(company)}
+                                    onChange={() => toggleFilter('company', company)}
+                                    className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600"
+                                  />
+                                  <span className="text-sm text-slate-600 group-hover:text-slate-900">{company}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {filterOptions.employmentTypes && filterOptions.employmentTypes.length > 0 && (
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Employment Type</label>
+                            <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                              {filterOptions.employmentTypes.map((type: string) => (
+                                <label key={type} className="flex items-center gap-2 cursor-pointer group">
+                                  <input
+                                    type="checkbox"
+                                    checked={filters.employmentType.includes(type)}
+                                    onChange={() => toggleFilter('employmentType', type)}
+                                    className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600"
+                                  />
+                                  <span className="text-sm text-slate-600 group-hover:text-slate-900">{type}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {filterOptions.industries && filterOptions.industries.length > 0 && (
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Industry</label>
+                            <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                              {filterOptions.industries.map((industry: string) => (
+                                <label key={industry} className="flex items-center gap-2 cursor-pointer group">
+                                  <input
+                                    type="checkbox"
+                                    checked={filters.industry.includes(industry)}
+                                    onChange={() => toggleFilter('industry', industry)}
+                                    className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600"
+                                  />
+                                  <span className="text-sm text-slate-600 group-hover:text-slate-900">{industry}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {filterOptions.leadershipRoles && filterOptions.leadershipRoles.length > 0 && (
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Leadership Role</label>
+                            <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                              {filterOptions.leadershipRoles.map((role: string) => (
+                                <label key={role} className="flex items-center gap-2 cursor-pointer group">
+                                  <input
+                                    type="checkbox"
+                                    checked={filters.leadershipRole.includes(role)}
+                                    onChange={() => toggleFilter('leadershipRole', role)}
+                                    className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600"
+                                  />
+                                  <span className="text-sm text-slate-600 group-hover:text-slate-900">{role}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {filterOptions.personas && filterOptions.personas.length > 0 && (
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Persona</label>
+                            <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                              {filterOptions.personas.map((persona: string) => (
+                                <label key={persona} className="flex items-center gap-2 cursor-pointer group">
+                                  <input
+                                    type="checkbox"
+                                    checked={filters.persona.includes(persona)}
+                                    onChange={() => toggleFilter('persona', persona)}
+                                    className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600"
+                                  />
+                                  <span className="text-sm text-slate-600 group-hover:text-slate-900">{persona}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {filterOptions.teams && filterOptions.teams.length > 0 && (
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Team</label>
+                            <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                              {filterOptions.teams.map((team: string) => (
+                                <label key={team} className="flex items-center gap-2 cursor-pointer group">
+                                  <input
+                                    type="checkbox"
+                                    checked={filters.team.includes(team)}
+                                    onChange={() => toggleFilter('team', team)}
+                                    className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600"
+                                  />
+                                  <span className="text-sm text-slate-600 group-hover:text-slate-900">{team}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="max-h-[600px] overflow-y-auto">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-6">
+                      {filteredUsers.map(user => (
+                        <div
+                          key={user.id}
+                          onClick={() => toggleUser(user.id)}
+                          className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedUsers.includes(user.id)
+                            ? 'border-indigo-600 bg-indigo-50'
+                            : 'border-gray-200 hover:border-indigo-200'
+                            }`}
+                        >
+                          <UserAvatar user={user} />
+                          <div className="text-center">
+                            <h4 className="font-bold text-gray-900 text-sm truncate">{user.fullname}</h4>
+                            <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                            <div className="mt-2 flex flex-wrap justify-center gap-1">
+                              {user.department && (
+                                <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full">
+                                  {user.department}
+                                </span>
+                              )}
+                              {user.designation && (
+                                <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full">
+                                  {user.designation}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {showAdvancedSearch && (
-                  <div className="p-6 border-b border-gray-200 bg-white">
-                    <h3 className="font-semibold text-gray-900 mb-4">Advanced Search</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                      {/* Filter Grid */}
-                      {filterOptions.departments && filterOptions.departments.length > 0 && (
-                        <div>
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Department</label>
-                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
-                            {filterOptions.departments.map((dept: string) => (
-                              <label key={dept} className="flex items-center gap-2 cursor-pointer group">
-                                <input
-                                  type="checkbox"
-                                  checked={filters.department.includes(dept)}
-                                  onChange={() => toggleFilter('department', dept)}
-                                  className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600"
-                                />
-                                <span className="text-sm text-slate-600 group-hover:text-slate-900">{dept}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {filterOptions.designations && filterOptions.designations.length > 0 && (
-                        <div>
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Designation</label>
-                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
-                            {filterOptions.designations.map((desig: string) => (
-                              <label key={desig} className="flex items-center gap-2 cursor-pointer group">
-                                <input
-                                  type="checkbox"
-                                  checked={filters.designation.includes(desig)}
-                                  onChange={() => toggleFilter('designation', desig)}
-                                  className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600"
-                                />
-                                <span className="text-sm text-slate-600 group-hover:text-slate-900">{desig}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {filterOptions.locations && filterOptions.locations.length > 0 && (
-                        <div>
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Location</label>
-                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
-                            {filterOptions.locations.map((loc: string) => (
-                              <label key={loc} className="flex items-center gap-2 cursor-pointer group">
-                                <input
-                                  type="checkbox"
-                                  checked={filters.location.includes(loc)}
-                                  onChange={() => toggleFilter('location', loc)}
-                                  className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600"
-                                />
-                                <span className="text-sm text-slate-600 group-hover:text-slate-900">{loc}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {filterOptions.grades && filterOptions.grades.length > 0 && (
-                        <div>
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Employee Grade</label>
-                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
-                            {filterOptions.grades.map((grade: string) => (
-                              <label key={grade} className="flex items-center gap-2 cursor-pointer group">
-                                <input
-                                  type="checkbox"
-                                  checked={filters.grade.includes(grade)}
-                                  onChange={() => toggleFilter('grade', grade)}
-                                  className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600"
-                                />
-                                <span className="text-sm text-slate-600 group-hover:text-slate-900">{grade}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {filterOptions.companies && filterOptions.companies.length > 0 && (
-                        <div>
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Company</label>
-                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
-                            {filterOptions.companies.map((company: string) => (
-                              <label key={company} className="flex items-center gap-2 cursor-pointer group">
-                                <input
-                                  type="checkbox"
-                                  checked={filters.company.includes(company)}
-                                  onChange={() => toggleFilter('company', company)}
-                                  className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600"
-                                />
-                                <span className="text-sm text-slate-600 group-hover:text-slate-900">{company}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {filterOptions.employmentTypes && filterOptions.employmentTypes.length > 0 && (
-                        <div>
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Employment Type</label>
-                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
-                            {filterOptions.employmentTypes.map((type: string) => (
-                              <label key={type} className="flex items-center gap-2 cursor-pointer group">
-                                <input
-                                  type="checkbox"
-                                  checked={filters.employmentType.includes(type)}
-                                  onChange={() => toggleFilter('employmentType', type)}
-                                  className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600"
-                                />
-                                <span className="text-sm text-slate-600 group-hover:text-slate-900">{type}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {filterOptions.industries && filterOptions.industries.length > 0 && (
-                        <div>
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Industry</label>
-                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
-                            {filterOptions.industries.map((industry: string) => (
-                              <label key={industry} className="flex items-center gap-2 cursor-pointer group">
-                                <input
-                                  type="checkbox"
-                                  checked={filters.industry.includes(industry)}
-                                  onChange={() => toggleFilter('industry', industry)}
-                                  className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600"
-                                />
-                                <span className="text-sm text-slate-600 group-hover:text-slate-900">{industry}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {filterOptions.leadershipRoles && filterOptions.leadershipRoles.length > 0 && (
-                        <div>
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Leadership Role</label>
-                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
-                            {filterOptions.leadershipRoles.map((role: string) => (
-                              <label key={role} className="flex items-center gap-2 cursor-pointer group">
-                                <input
-                                  type="checkbox"
-                                  checked={filters.leadershipRole.includes(role)}
-                                  onChange={() => toggleFilter('leadershipRole', role)}
-                                  className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600"
-                                />
-                                <span className="text-sm text-slate-600 group-hover:text-slate-900">{role}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {filterOptions.personas && filterOptions.personas.length > 0 && (
-                        <div>
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Persona</label>
-                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
-                            {filterOptions.personas.map((persona: string) => (
-                              <label key={persona} className="flex items-center gap-2 cursor-pointer group">
-                                <input
-                                  type="checkbox"
-                                  checked={filters.persona.includes(persona)}
-                                  onChange={() => toggleFilter('persona', persona)}
-                                  className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600"
-                                />
-                                <span className="text-sm text-slate-600 group-hover:text-slate-900">{persona}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {filterOptions.teams && filterOptions.teams.length > 0 && (
-                        <div>
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Team</label>
-                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
-                            {filterOptions.teams.map((team: string) => (
-                              <label key={team} className="flex items-center gap-2 cursor-pointer group">
-                                <input
-                                  type="checkbox"
-                                  checked={filters.team.includes(team)}
-                                  onChange={() => toggleFilter('team', team)}
-                                  className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600"
-                                />
-                                <span className="text-sm text-slate-600 group-hover:text-slate-900">{team}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+              {/* Sidebar - Journeys List */}
+              <div className="space-y-6">
+                <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-6">
+                  <h3 className="font-bold text-gray-900 mb-4">Select Journeys</h3>
 
-                <div className="max-h-[600px] overflow-y-auto">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-6">
-                    {filteredUsers.map(user => (
+                  <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                    {journeys.map(journey => (
                       <div
-                        key={user.id}
-                        onClick={() => toggleUser(user.id)}
-                        className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedUsers.includes(user.id)
+                        key={journey.id}
+                        onClick={() => toggleJourney(journey.id)}
+                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${selectedJourneys.includes(journey.id)
                           ? 'border-indigo-600 bg-indigo-50'
                           : 'border-gray-200 hover:border-indigo-200'
                           }`}
                       >
-                        <UserAvatar user={user} />
-                        <div className="text-center">
-                          <h4 className="font-bold text-gray-900 text-sm truncate">{user.fullname}</h4>
-                          <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                          <div className="mt-2 flex flex-wrap justify-center gap-1">
-                            {user.department && (
-                              <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full">
-                                {user.department}
-                              </span>
-                            )}
-                            {user.designation && (
-                              <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full">
-                                {user.designation}
-                              </span>
-                            )}
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-bold text-gray-900 text-sm">{journey.title}</h4>
+                            <span className="text-xs text-gray-500">{journey.type}</span>
                           </div>
+                          {selectedJourneys.includes(journey.id) && (
+                            <span className="material-symbols-rounded text-indigo-600 text-lg">check_circle</span>
+                          )}
                         </div>
                       </div>
                     ))}
                   </div>
+
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="text-sm text-gray-600">Selected Users:</span>
+                      <span className="font-bold text-gray-900">{selectedUsers.length}</span>
+                    </div>
+                    <div className="flex justify-between items-center mb-6">
+                      <span className="text-sm text-gray-600">Selected Journeys:</span>
+                      <span className="font-bold text-gray-900">{selectedJourneys.length}</span>
+                    </div>
+
+                    {/* Journey Start Date Picker */}
+                    <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Journey Start Date
+                      </label>
+                      <input
+                        type="date"
+                        value={journeyStartDate}
+                        onChange={(e) => setJourneyStartDate(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                      />
+                      <p className="text-xs text-gray-600 mt-2">
+                        ℹ️ Journey will start immediately with this date. Module unlock dates will be calculated from this date.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={handleAssignJourneys}
+                      disabled={saving || selectedUsers.length === 0 || selectedJourneys.length === 0}
+                      className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg shadow-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {saving ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Assigning...
+                        </>
+                      ) : (
+                        <>
+                          <span className="material-symbols-rounded">assignment_add</span>
+                          Assign Journeys
+                        </>
+                      )}
+                    </button>
+                    {(selectedUsers.length === 0 || selectedJourneys.length === 0) && (
+                      <p className="text-xs text-center text-gray-500 mt-2">
+                        Select at least one user and one journey to assign.
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
+          )}
 
-            {/* Sidebar - Journeys List */}
+          {activeTab === 'manage' && (
             <div className="space-y-6">
-              <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-6">
-                <h3 className="font-bold text-gray-900 mb-4">Select Journeys</h3>
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto flex-1">
+                  <div className="relative w-full sm:w-80">
+                    <span className="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-white-400">search</span>
+                    <input
+                      type="text"
+                      placeholder="Search journeys..."
+                      value={journeySearchQuery}
+                      onChange={(e) => setJourneySearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                    />
+                  </div>
+                  <select
+                    value={filterJourneyType}
+                    onChange={(e) => setFilterJourneyType(e.target.value)}
+                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value="all">All Types</option>
+                    <option value="Standard">Standard</option>
+                    <option value="Drip">Drip</option>
+                    <option value="Flexible">Flexible</option>
+                  </select>
+                </div>
+                <button
+                  onClick={handleExportJourneys}
+                  className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors font-semibold"
+                >
+                  <span className="material-symbols-rounded">download</span>
+                  Export Journeys
+                </button>
+              </div>
 
-                <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
-                  {journeys.map(journey => (
-                    <div
-                      key={journey.id}
-                      onClick={() => toggleJourney(journey.id)}
-                      className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${selectedJourneys.includes(journey.id)
-                        ? 'border-indigo-600 bg-indigo-50'
-                        : 'border-gray-200 hover:border-indigo-200'
-                        }`}
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="font-bold text-gray-900 text-sm">{journey.title}</h4>
-                          <span className="text-xs text-gray-500">{journey.type}</span>
-                        </div>
-                        {selectedJourneys.includes(journey.id) && (
-                          <span className="material-symbols-rounded text-indigo-600 text-lg">check_circle</span>
-                        )}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredJourneys.map(journey => (
+                  <div key={journey.id} className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="font-bold text-gray-900 text-lg">{journey.title}</h3>
+                        <span className="inline-block px-2 py-1 bg-indigo-50 text-indigo-700 text-[10px] rounded-full mt-1 font-bold uppercase">
+                          {journey.type}
+                        </span>
+                      </div>
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => handleEditJourney(journey)}
+                          className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                          title="Edit Journey"
+                        >
+                          <span className="material-symbols-rounded text-xl">edit</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteJourney(journey.id)}
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete Journey"
+                        >
+                          <span className="material-symbols-rounded text-xl">delete</span>
+                        </button>
                       </div>
                     </div>
-                  ))}
-                </div>
 
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="text-sm text-gray-600">Selected Users:</span>
-                    <span className="font-bold text-gray-900">{selectedUsers.length}</span>
-                  </div>
-                  <div className="flex justify-between items-center mb-6">
-                    <span className="text-sm text-gray-600">Selected Journeys:</span>
-                    <span className="font-bold text-gray-900">{selectedJourneys.length}</span>
-                  </div>
-
-                  {/* Journey Start Date Picker */}
-                  <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Journey Start Date
-                    </label>
-                    <input
-                      type="date"
-                      value={journeyStartDate}
-                      onChange={(e) => setJourneyStartDate(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                    />
-                    <p className="text-xs text-gray-600 mt-2">
-                      ℹ️ Journey will start immediately with this date. Module unlock dates will be calculated from this date.
+                    <p className="text-gray-600 text-sm mb-6 flex-1 line-clamp-3">
+                      {journey.description || 'No description provided.'}
                     </p>
-                  </div>
 
+                    <div className="border-t border-gray-200 pt-4 mt-auto">
+                      <button
+                        onClick={() => handleViewAssignments(journey)}
+                        className="w-full py-2 px-4 bg-white border border-gray-200 text-gray-700 font-bold rounded-lg hover:bg-white hover:text-indigo-600 hover:border-indigo-200 transition-all flex items-center justify-center gap-2"
+                      >
+                        <span className="material-symbols-rounded">group</span>
+                        Manage Assignments
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                {filteredJourneys.length === 0 && (
+                  <div className="col-span-full text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
+                    <span className="material-symbols-rounded text-4xl text-gray-400 mb-2">school</span>
+                    <p className="text-gray-500">No learning journeys found matching your filters.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'careerPaths' && <CareerManagement />}
+          {activeTab === 'careerProgress' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200">
+                <h3 className="font-semibold text-gray-900">Manage Career Paths</h3>
+                <div className="flex items-center gap-2">
                   <button
-                    onClick={handleAssignJourneys}
-                    disabled={saving || selectedUsers.length === 0 || selectedJourneys.length === 0}
-                    className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg shadow-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    onClick={() => setCareerPathsViewMode('table')}
+                    className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors ${careerPathsViewMode === 'table'
+                      ? 'bg-indigo-100 text-indigo-700'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    title="Table View"
                   >
-                    {saving ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Assigning...
-                      </>
-                    ) : (
-                      <>
-                        <span className="material-symbols-rounded">assignment_add</span>
-                        Assign Journeys
-                      </>
-                    )}
+                    <span className="material-symbols-rounded text-lg">table_chart</span>
+                    Table
                   </button>
-                  {(selectedUsers.length === 0 || selectedJourneys.length === 0) && (
-                    <p className="text-xs text-center text-gray-500 mt-2">
-                      Select at least one user and one journey to assign.
-                    </p>
-                  )}
+                  <button
+                    onClick={() => setCareerPathsViewMode('simplified')}
+                    className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors ${careerPathsViewMode === 'simplified'
+                      ? 'bg-indigo-100 text-indigo-700'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    title="Card View"
+                  >
+                    <span className="material-symbols-rounded text-lg">dashboard</span>
+                    Cards
+                  </button>
                 </div>
               </div>
+              {careerPathsViewMode === 'simplified' ? <SimplifiedCareerPathsView /> : <UserCareerAssignments />}
             </div>
-          </div>
-        )}
-
-        {activeTab === 'manage' && (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-              <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto flex-1">
-                <div className="relative w-full sm:w-80">
-                  <span className="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-white-400">search</span>
-                  <input
-                    type="text"
-                    placeholder="Search journeys..."
-                    value={journeySearchQuery}
-                    onChange={(e) => setJourneySearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                  />
-                </div>
-                <select
-                  value={filterJourneyType}
-                  onChange={(e) => setFilterJourneyType(e.target.value)}
-                  className="px-4 py-2 bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="all">All Types</option>
-                  <option value="Standard">Standard</option>
-                  <option value="Drip">Drip</option>
-                  <option value="Flexible">Flexible</option>
-                </select>
-              </div>
-              <button
-                onClick={handleExportJourneys}
-                className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors font-semibold"
-              >
-                <span className="material-symbols-rounded">download</span>
-                Export Journeys
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredJourneys.map(journey => (
-                <div key={journey.id} className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="font-bold text-gray-900 text-lg">{journey.title}</h3>
-                      <span className="inline-block px-2 py-1 bg-indigo-50 text-indigo-700 text-[10px] rounded-full mt-1 font-bold uppercase">
-                        {journey.type}
-                      </span>
-                    </div>
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => handleEditJourney(journey)}
-                        className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                        title="Edit Journey"
-                      >
-                        <span className="material-symbols-rounded text-xl">edit</span>
-                      </button>
-                      <button
-                        onClick={() => handleDeleteJourney(journey.id)}
-                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete Journey"
-                      >
-                        <span className="material-symbols-rounded text-xl">delete</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <p className="text-gray-600 text-sm mb-6 flex-1 line-clamp-3">
-                    {journey.description || 'No description provided.'}
-                  </p>
-
-                  <div className="border-t border-gray-200 pt-4 mt-auto">
-                    <button
-                      onClick={() => handleViewAssignments(journey)}
-                      className="w-full py-2 px-4 bg-white border border-gray-200 text-gray-700 font-bold rounded-lg hover:bg-white hover:text-indigo-600 hover:border-indigo-200 transition-all flex items-center justify-center gap-2"
-                    >
-                      <span className="material-symbols-rounded">group</span>
-                      Manage Assignments
-                    </button>
-                  </div>
-                </div>
-              ))}
-
-              {filteredJourneys.length === 0 && (
-                <div className="col-span-full text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
-                  <span className="material-symbols-rounded text-4xl text-gray-400 mb-2">school</span>
-                  <p className="text-gray-500">No learning journeys found matching your filters.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'careerPaths' && <CareerManagement />}
-        {activeTab === 'careerProgress' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200">
-              <h3 className="font-semibold text-gray-900">Manage Career Paths</h3>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCareerPathsViewMode('table')}
-                  className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors ${careerPathsViewMode === 'table'
-                    ? 'bg-indigo-100 text-indigo-700'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  title="Table View"
-                >
-                  <span className="material-symbols-rounded text-lg">table_chart</span>
-                  Table
-                </button>
-                <button
-                  onClick={() => setCareerPathsViewMode('simplified')}
-                  className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors ${careerPathsViewMode === 'simplified'
-                    ? 'bg-indigo-100 text-indigo-700'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  title="Card View"
-                >
-                  <span className="material-symbols-rounded text-lg">dashboard</span>
-                  Cards
-                </button>
-              </div>
-            </div>
-            {careerPathsViewMode === 'simplified' ? <SimplifiedCareerPathsView /> : <UserCareerAssignments />}
-          </div>
-        )}
-        {activeTab === 'userCareerAssignments' && <AssignCareerPathsTab />}
-      </div>
+          )}
+          {activeTab === 'userCareerAssignments' && <AssignCareerPathsTab />}
+        </div>
+      )}
 
       {/* User Career Path Progress Modal */}
       {userProgressModalOpen && selectedCareerPathForDetails && (

@@ -92,7 +92,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onStartTutorial, isT
         {/* Collapse Toggle Button - Desktop Only */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="hidden md:flex absolute -right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white border border-slate-200 rounded-full items-center justify-center text-slate-500 hover:text-primary-600 hover:border-primary-200 shadow-sm z-50 transition-all duration-300"
+          className="hidden md:flex absolute -right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white border border-slate-200 items-center justify-center text-slate-500 hover:text-primary-600 hover:border-primary-200 shadow-sm z-50 transition-all duration-300"
+          style={{ borderRadius: '15px' }}
           disabled={tutorialActive}
           title={tutorialActive ? 'Sidebar locked during tutorial' : ''}
         >
@@ -105,7 +106,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onStartTutorial, isT
         <div className="flex-shrink-0">
           <div className={`h-16 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-6'} border-b border-slate-100 cursor-pointer overflow-hidden`} onClick={handleLogoClick}>
             <div className="flex items-center">
-              <div className={`w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center ${isCollapsed ? '' : 'mr-3'} shrink-0`}>
+              <div className={`w-8 h-8 bg-indigo-600 flex items-center justify-center ${isCollapsed ? '' : 'mr-3'} shrink-0`} style={{ borderRadius: '15px' }}>
                 <span className="material-symbols-rounded text-white text-xl">landscape</span>
               </div>
               {!isCollapsed && <span className="font-heading font-bold text-xl text-slate-800 tracking-tight whitespace-nowrap">Clove LP</span>}
@@ -132,11 +133,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onStartTutorial, isT
                     onClick={() => !tutorialActive && handleClose()}
                     data-tutorial={dataAttr}
                     className={({ isActive }) =>
-                      `flex items-center ${isCollapsed ? 'justify-center px-2' : 'px-4'} py-3 rounded-lg transition-all group relative ${isActive
+                      `flex items-center ${isCollapsed ? 'justify-center px-2' : 'px-4'} py-3 transition-all group relative ${isActive
                         ? 'bg-indigo-50 text-indigo-600 font-semibold shadow-sm border-l-4 border-indigo-600'
                         : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
                       } ${tutorialActive ? 'cursor-help' : ''}`
                     }
+                    style={{ borderRadius: '15px' }}
                     title={isCollapsed ? item.name : ''}
                   >
                     <span className={`material-symbols-rounded ${isCollapsed ? '' : 'mr-3'} ${window.location.hash.includes(item.path) ? 'icon-filled' : ''}`}>

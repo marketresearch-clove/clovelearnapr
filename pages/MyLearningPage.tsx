@@ -14,6 +14,7 @@ import { externalAssessmentService, ExternalAssessment, UserExternalAssessment, 
 import { EFSET_BADGES, getEFSETBadge } from '../lib/efsetHelper';
 import * as FaIcons from 'react-icons/fa';
 import * as MdIcons from 'react-icons/md';
+import Loader from '../components/Loader';
 
 const MyLearningPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'journey' | 'career' | 'assigned' | 'assessments' | 'certificates' | 'acquired'>('journey');
@@ -267,7 +268,7 @@ const LearningJourneyTab: React.FC<{ onSkillClick: () => void; onCourseClick: ()
   const selectedJourney = journeys.find(j => j.id === selectedJourneyId);
 
   if (loading) {
-    return <div className="p-8 text-center">Loading learning journey...</div>;
+    return <Loader size="md" message="Loading learning journey..." containerPadding="py-8" />;
   }
 
   if (journeys.length === 0) {
@@ -540,11 +541,7 @@ const CareerPathTab: React.FC<{ setActiveTab: (tab: any) => void }> = ({ setActi
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center p-8">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-      </div>
-    );
+    return <Loader size="lg" message="Loading career paths..." containerPadding="py-8" />;
   }
 
   if (careerPaths.length === 0) {
@@ -1143,11 +1140,7 @@ const AssignedCoursesTab: React.FC<{ setActiveTab: (tab: any) => void }> = ({ se
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center p-8">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-      </div>
-    );
+    return <Loader size="lg" message="Loading assigned courses..." containerPadding="py-8" />;
   }
 
   if (error) {
@@ -1323,11 +1316,7 @@ const MyCertificatesTab: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center p-8">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-      </div>
-    );
+    return <Loader size="lg" message="Loading acquired skills..." containerPadding="py-8" />;
   }
 
   if (error) {
@@ -1484,7 +1473,7 @@ const AcquiredSkillsTab: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="p-8 text-center">Loading skills...</div>;
+    return <Loader size="md" message="Loading skills..." containerPadding="py-8" />;
   }
 
   const noSkills = achievements.length === 0 && assignedSkills.length === 0 && badges.length === 0;
@@ -1673,7 +1662,7 @@ const AssessmentsTab: React.FC<{ onSelectAssessment: (a: UserExternalAssessment)
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-slate-500">Loading assessments...</div>;
+  if (loading) return <Loader size="md" message="Loading assessments..." containerPadding="py-8" />;
 
   if (assignments.length === 0) {
     return (

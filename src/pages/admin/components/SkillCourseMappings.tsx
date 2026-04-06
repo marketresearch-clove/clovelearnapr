@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../../../lib/supabaseClient';
+import Loader from '../../../../components/Loader';
 import { generateSkillsForCourse } from '../../../../lib/aiService';
 import { skillService } from '../../../../lib/skillService';
 import { exportToCSV } from '../../../../lib/exportUtils';
@@ -532,7 +533,9 @@ const SkillCourseMappings: React.FC = () => {
 
       {/* ── Grouped view ── */}
       {loading ? (
-        <div className="text-center py-12 text-gray-700">Loading mappings...</div>
+        <div className="py-20">
+          <Loader size="lg" message="Loading mappings..." />
+        </div>
       ) : Object.keys(groupedByCourse).length === 0 ? (
         <div className="text-center py-12 text-gray-700">No mappings found</div>
       ) : (

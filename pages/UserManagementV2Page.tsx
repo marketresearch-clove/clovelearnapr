@@ -5,6 +5,7 @@ import {
     FiFilter, FiEye, FiEyeOff, FiX, FiChevronDown, FiEdit2, FiTrash2, FiPause, FiPlay
 } from 'react-icons/fi';
 import AdminLayout from '../components/AdminLayout';
+import Loader from '../components/Loader';
 import { supabase } from '../lib/supabaseClient';
 import * as XLSX from 'xlsx';
 
@@ -317,6 +318,12 @@ const UserManagementV2Page = () => {
 
     const handleEditUser = (user: User) => {
         setEditingUserId(user.id);
+        // Convert allowed_views to string if it's an array
+        let allowedViewsValue = user.allowed_views || 'default';
+        if (Array.isArray(allowedViewsValue)) {
+            allowedViewsValue = allowedViewsValue[0] || 'default';
+        }
+
         setFormData({
             fullname: user.fullname || '',
             email: user.email || '',
@@ -324,7 +331,7 @@ const UserManagementV2Page = () => {
             mobile_number: user.mobile_number || '',
             user_status: user.user_status || 'Active',
             preferred_language: user.preferred_language || 'English',
-            allowed_views: user.allowed_views || 'default',
+            allowed_views: allowedViewsValue,
             company: user.company || '',
             department: user.department || '',
             designation: user.designation || '',
@@ -456,7 +463,7 @@ const UserManagementV2Page = () => {
 
             const userId = authData.user.id;
 
-            // Step 2: Insert profile with the auth user ID
+            // Step 2: Upsert profile with the auth user ID (using upsert to handle if profile already exists)
             const profileData = {
                 id: userId,  // Use the ID from auth.users
                 fullname: formData.fullname,
@@ -483,12 +490,11 @@ const UserManagementV2Page = () => {
                 persona: formData.persona || '',
                 team: formData.team || '',
                 employee_grade: formData.employee_grade || '',
-                created_at: new Date().toISOString(),
             };
 
             const { error: profileError } = await supabase
                 .from('profiles')
-                .insert([profileData]);
+                .upsert([profileData], { onConflict: 'id' });
 
             if (profileError) throw profileError;
 
@@ -575,17 +581,22 @@ const UserManagementV2Page = () => {
         setError(null);
 
         try {
-            const { error: deleteError } = await supabase
+            // First, delete from profiles table
+            const { error: profileDeleteError } = await supabase
                 .from('profiles')
                 .delete()
                 .eq('id', userId);
 
-            if (deleteError) throw deleteError;
+            if (profileDeleteError) throw profileDeleteError;
+
+            // Note: Auth user deletion should be handled through Supabase Admin API
+            // For now, we're only deleting the profile. The auth user will remain but be orphaned.
 
             setSuccess(`User ${userEmail} deleted successfully`);
             fetchUsers();
         } catch (err: any) {
             setError(`Failed to delete user: ${err.message}`);
+            console.error('Delete user error:', err);
         } finally {
             setLoading(false);
         }
@@ -1064,11 +1075,11 @@ const UserManagementV2Page = () => {
                 }
             }
 
-            // Insert profile data (without password field)
+            // Insert profile data (without password field) - using upsert to handle conflicts
             if (authUsers.length > 0) {
                 const { error: insertError } = await supabase
                     .from('profiles')
-                    .insert(authUsers);
+                    .upsert(authUsers, { onConflict: 'id' });
 
                 if (insertError) throw insertError;
 
@@ -1204,8 +1215,13 @@ const UserManagementV2Page = () => {
 
     return (
         <AdminLayout title="User Management V2">
-            <div className="space-y-6">
-                {/* Alert Messages */}
+            {loading ? (
+                <div className="flex items-center justify-center min-h-[400px]">
+                    <Loader size="lg" message="Loading users..." />
+                </div>
+            ) : (
+                <div className="space-y-6">
+                    {/* Alert Messages */}
                 {error && (
                     <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
                         <p className="text-red-800 font-medium flex items-center gap-2">
@@ -3326,6 +3342,7 @@ const UserManagementV2Page = () => {
                     </div>
                 )}
             </div>
+            )}
         </AdminLayout>
     );
 };

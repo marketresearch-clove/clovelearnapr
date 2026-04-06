@@ -14,6 +14,7 @@ import { userService } from '../lib/userService';
 import useAuthGuard from '../hooks/useAuthGuard';
 import { supabase } from '../lib/supabaseClient';
 import { quizService } from '../lib/quizService';
+import Loader from '../components/Loader';
 
 const AdminCourses: React.FC = () => {
   const navigate = useNavigate();
@@ -1124,7 +1125,9 @@ const AdminCourses: React.FC = () => {
             {/* Courses Table */}
             <div className="bg-white rounded-md border border-gray-200 overflow-hidden">
               {coursesLoading ? (
-                <div className="p-8 text-center text-gray-600">Loading courses...</div>
+                <div className="p-8">
+                  <Loader size="md" message="Loading courses..." containerPadding="py-4" />
+                </div>
               ) : filteredCourses.length === 0 ? (
                 <div className="p-8 text-center text-gray-600">
                   {courses.length === 0 ? 'No courses found. Create your first course!' : 'No courses match the selected filters.'}
@@ -1393,10 +1396,7 @@ const AdminCourses: React.FC = () => {
 
               <div className="p-6 space-y-6">
                 {feedbackLoading ? (
-                  <div className="text-center py-8 text-gray-600">
-                    <div className="inline-block animate-spin rounded-sm h-8 w-8 border-b-2 border-indigo-600 mb-2"></div>
-                    <p>Loading feedback data...</p>
-                  </div>
+                  <Loader size="md" message="Loading feedback data..." containerPadding="py-8" />
                 ) : (
                   <>
                     {feedbackStats && (

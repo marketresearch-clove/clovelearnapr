@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../components/AdminLayout';
+import Loader from '../components/Loader';
 import useAuthGuard from '../hooks/useAuthGuard';
 import {
     getAllSignatures,

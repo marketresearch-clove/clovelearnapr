@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../../../lib/supabaseClient';
+import Loader from '../../../../components/Loader';
 import { careerPathService } from '../../../../lib/careerPathService';
 import { skillService } from '../../../../lib/skillService';
 
@@ -671,7 +672,9 @@ const SkillAssignments: React.FC = () => {
           <tbody className="divide-y divide-gray-200">
             {loading ? (
               <tr>
-                <td colSpan={9} className="text-center py-4 text-gray-500">Loading assignments...</td>
+                <td colSpan={9} className="py-20">
+                  <Loader size="lg" message="Loading assignments..." />
+                </td>
               </tr>
             ) : filteredAssignments.length === 0 ? (
               <tr>
