@@ -132,13 +132,13 @@ const ConcernRaiseWidget: React.FC<ConcernRaiseWidgetProps> = ({ userId, userEma
                         <span className="material-symbols-outlined text-white text-lg md:text-2xl">workspace_premium</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-slate-900 mb-1 text-sm md:text-base">Dear Learners</h3>
-                        <p className="text-xs md:text-sm text-slate-700 mb-2 md:mb-4 line-clamp-2">
+                        <h3 className="font-bold text-slate-900 mb-1 text-xs md:text-sm">Dear Learners</h3>
+                        <p className="text-[10px] md:text-xs text-slate-700 mb-2 md:mb-4 line-clamp-2">
                             Always Update Your Profile With Latest Information.
                         </p>
                         <button
                             onClick={() => setShowForm(true)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 md:py-2 px-4 md:px-6 rounded-lg text-sm md:text-base transition-colors"
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1 md:py-1.5 px-3 md:px-4 rounded-lg text-xs md:text-sm transition-colors"
                         >
                             Raise Concern
                         </button>
@@ -247,9 +247,9 @@ const ConcernRaiseWidget: React.FC<ConcernRaiseWidgetProps> = ({ userId, userEma
                 <div className="flex items-center justify-between gap-2 min-w-0">
                     <button
                         onClick={() => setShowTickets(true)}
-                        className="font-semibold text-slate-900 hover:text-blue-600 transition-colors flex items-center gap-1 md:gap-2 text-sm md:text-base min-w-0"
+                        className="font-semibold text-slate-900 hover:text-blue-600 transition-colors flex items-center gap-1 md:gap-2 text-xs md:text-sm min-w-0"
                     >
-                        <span className="material-symbols-outlined text-lg md:text-xl flex-shrink-0">list</span>
+                        <span className="material-symbols-outlined text-base md:text-lg flex-shrink-0">list</span>
                         <span className="truncate">View Your Tickets</span>
                     </button>
                     {concerns.length > 0 && (

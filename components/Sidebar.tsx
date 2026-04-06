@@ -142,7 +142,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onStartTutorial, isT
                     <span className={`material-symbols-rounded ${isCollapsed ? '' : 'mr-3'} ${window.location.hash.includes(item.path) ? 'icon-filled' : ''}`}>
                       {item.icon}
                     </span>
-                    {!isCollapsed && <span className="font-medium text-sm whitespace-nowrap">{item.name}</span>}
+                    {!isCollapsed && <span className="font-medium text-xs whitespace-nowrap">{item.name}</span>}
                   </NavLink>
                 );
               })}
@@ -153,7 +153,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onStartTutorial, isT
                 disabled={tutorialActive}
               >
                 <span className={`material-symbols-rounded ${isCollapsed ? '' : 'mr-3'}`}>logout</span>
-                {!isCollapsed && <span className="font-medium text-sm whitespace-nowrap">Logout</span>}
+                {!isCollapsed && <span className="font-medium text-xs whitespace-nowrap">Logout</span>}
               </button>
             </div>
           </nav>
@@ -181,12 +181,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onStartTutorial, isT
                   // Close sidebar
                   if (onClose) onClose();
                 }}
-                className="w-full flex items-center gap-2 md:gap-3 px-2 md:px-4 py-2 md:py-3 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 transition-colors border border-blue-200 text-sm md:text-base"
+                className="w-full flex items-center gap-2 md:gap-3 px-2 md:px-4 py-2 md:py-3 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 transition-colors border border-blue-200 text-xs md:text-sm"
                 title="Start platform walkthrough"
               >
-                <span className="material-symbols-rounded text-base md:text-lg flex-shrink-0">help</span>
-                <span className="font-medium hidden sm:inline text-sm md:text-base">Start Walkthrough</span>
-                <span className="font-medium sm:hidden text-xs">Walkthrough</span>
+                <span className="material-symbols-rounded text-sm md:text-base flex-shrink-0">help</span>
+                <span className="font-medium hidden sm:inline text-xs md:text-sm">Start Walkthrough</span>
+                <span className="font-medium sm:hidden text-[10px]">Walkthrough</span>
               </button>
             </div>
           )}
