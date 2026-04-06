@@ -181,7 +181,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ className =
     const colors = {
       general: 'bg-blue-50 text-blue-600',
       course: 'bg-green-50 text-green-600',
-      assignment: 'bg-purple-50 text-purple-600',
+      assignment: 'bg-indigo-50 text-indigo-600',
       system: 'bg-gray-50 text-gray-600',
       announcement: 'bg-yellow-50 text-yellow-600'
     };

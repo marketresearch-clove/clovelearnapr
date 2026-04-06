@@ -396,7 +396,7 @@ const Users: React.FC = () => {
                         <p className="text-gray-500 text-sm">Learning Hours</p>
                         <p className="text-2xl font-bold text-gray-900">{selectedUser.learningHours}h</p>
                       </div>
-                      <div className="bg-purple-50 rounded-lg p-4">
+                      <div className="bg-indigo-50 rounded-lg p-4">
                         <p className="text-gray-500 text-sm">Average Score</p>
                         <p className="text-2xl font-bold text-gray-900">85%</p>
                       </div>

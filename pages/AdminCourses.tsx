@@ -1256,7 +1256,7 @@ const AdminCourses: React.FC = () => {
                                 </button>
                                 <button
                                   onClick={() => handleOpenColorSettings(course)}
-                                  className="p-2 hover:bg-purple-50 rounded-sm transition-colors text-purple-600"
+                                  className="p-2 hover:bg-indigo-50 rounded-sm transition-colors text-indigo-600"
                                   title="Customize Flashcard Colors"
                                 >
                                   <span className="material-symbols-outlined text-lg">palette</span>

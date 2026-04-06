@@ -66,12 +66,12 @@ const OrganizationHierarchyPage: React.FC = () => {
                             </p>
                         </div>
 
-                        <div className="bg-purple-50 p-6 rounded border border-purple-200">
-                            <h3 className="text-lg font-semibold text-purple-900 mb-2">
+                        <div className="bg-indigo-50 p-6 rounded border border-indigo-200">
+                            <h3 className="text-lg font-semibold text-indigo-900 mb-2">
                                 <span className="material-symbols-rounded inline mr-2">group</span>
                                 Team & Connectivity
                             </h3>
-                            <p className="text-purple-700 text-sm">
+                            <p className="text-indigo-700 text-sm">
                                 Connect with your team members, manager, and peers to collaborate on learning and development activities.
                             </p>
                         </div>

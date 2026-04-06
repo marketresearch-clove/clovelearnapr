@@ -79,7 +79,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) => {
         )}
         <div className="flex items-center gap-3 cursor-pointer" onClick={handleLogoClick}>
           <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-            <span className="material-symbols-rounded text-dark text-base">dashboard</span>
+            <span className="material-symbols-rounded text-white text-base">dashboard</span>
           </div>
           {isOpen && (
             <div className="flex flex-col">

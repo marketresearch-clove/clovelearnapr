@@ -356,7 +356,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
         <div className="p-4">
           {isGenerating ? (
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs font-medium text-purple-600">
+              <div className="flex items-center justify-between text-xs font-medium text-indigo-600">
                 <div className="flex items-center gap-1">
                   <span className="material-symbols-outlined text-sm animate-spin">sync</span>
                   <span>AI generating...</span>
@@ -365,7 +365,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
               </div>
               <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
                 <div
-                  className="bg-purple-600 h-full transition-all duration-300 ease-out"
+                  className="bg-indigo-600 h-full transition-all duration-300 ease-out"
                   style={{ width: `${generationProgress}%` }}
                 />
               </div>
@@ -374,7 +374,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
             <button
               onClick={handleGenerateContent}
               disabled={isGenerating}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium disabled:bg-purple-400"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium disabled:bg-indigo-400"
             >
               <span className="material-symbols-outlined">auto_awesome</span>
               {isGenerating ? 'Generating...' : 'Generate with AI'}
@@ -411,7 +411,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg border border-gray-200 flex flex-col max-h-[90vh]">
               {/* Header */}
               <div className="flex items-center gap-3 px-8 pt-8 pb-5 border-b border-gray-100 flex-shrink-0">
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
+                <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600">
                   <span className="material-symbols-outlined text-3xl">auto_awesome</span>
                 </div>
                 <div>
@@ -432,7 +432,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
                     value={courseData.title || ''}
                     onChange={(e) => setCourseData({ ...courseData, title: e.target.value })}
                     placeholder="Enter course title..."
-                    className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-gray-900"
+                    className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900"
                   />
                 </div>
 
@@ -441,7 +441,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Course Type</label>
                   <div className="grid grid-cols-3 gap-2">
                     {([
-                      { value: 'regular', icon: 'school', label: 'Regular', color: 'purple' },
+                      { value: 'regular', icon: 'school', label: 'Regular', color: 'indigo' },
                       { value: 'policy', icon: 'policy', label: 'Policy & Ack.', color: 'orange' },
                       { value: 'compliance', icon: 'verified_user', label: 'Compliance', color: 'blue' },
                     ] as const).map(opt => (
@@ -464,12 +464,12 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
                             ? 'border-orange-500 bg-orange-50'
                             : opt.value === 'compliance'
                               ? 'border-blue-500 bg-blue-50'
-                              : 'border-purple-500 bg-purple-50'
+                              : 'border-indigo-500 bg-indigo-50'
                           : 'border-gray-200 hover:border-gray-300'
                           }`}
                       >
                         <span className={`material-symbols-outlined text-lg ${aiOptions.courseType === opt.value
-                          ? opt.value === 'policy' ? 'text-orange-600' : opt.value === 'compliance' ? 'text-blue-600' : 'text-purple-600'
+                          ? opt.value === 'policy' ? 'text-orange-600' : opt.value === 'compliance' ? 'text-blue-600' : 'text-indigo-600'
                           : 'text-gray-400'
                           }`}>{opt.icon}</span>
                         <span className={`text-xs font-semibold ${aiOptions.courseType === opt.value ? 'text-gray-900' : 'text-gray-500'}`}>{opt.label}</span>
@@ -495,7 +495,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
                     <select
                       value={aiOptions.difficulty}
                       onChange={(e) => setAIOptions({ ...aiOptions, difficulty: e.target.value })}
-                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-gray-900"
+                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900"
                     >
                       <option value="beginner">Beginner</option>
                       <option value="intermediate">Intermediate</option>
@@ -507,7 +507,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
                     <select
                       value={aiOptions.contentType}
                       onChange={(e) => setAIOptions({ ...aiOptions, contentType: e.target.value })}
-                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-gray-900"
+                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900"
                     >
                       <option value="text">Rich Text (Document)</option>
                       <option value="quiz">Quiz Focused</option>
@@ -534,7 +534,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
                       max={aiOptions.courseType === 'policy' ? 5 : 10}
                       value={aiOptions.modulesCount}
                       onChange={(e) => setAIOptions({ ...aiOptions, modulesCount: parseInt(e.target.value) || 1 })}
-                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-gray-900"
+                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900"
                     />
                   </div>
                   <div>
@@ -547,7 +547,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
                       max={aiOptions.courseType === 'policy' ? 5 : 10}
                       value={aiOptions.lessonsPerModule}
                       onChange={(e) => setAIOptions({ ...aiOptions, lessonsPerModule: parseInt(e.target.value) || 1 })}
-                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-gray-900"
+                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900"
                     />
                   </div>
                 </div>
@@ -561,7 +561,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
                         type="number" min="1" max="50"
                         value={aiOptions.quizQuestionsCount}
                         onChange={(e) => setAIOptions({ ...aiOptions, quizQuestionsCount: parseInt(e.target.value) || 1 })}
-                        className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-gray-900 disabled:opacity-50"
+                        className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 disabled:opacity-50"
                         disabled={!aiOptions.contentType.includes('quiz')}
                       />
                     </div>
@@ -571,7 +571,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
                         type="number" min="1" max="50"
                         value={aiOptions.flashcardLimit}
                         onChange={(e) => setAIOptions({ ...aiOptions, flashcardLimit: parseInt(e.target.value) || 15 })}
-                        className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-gray-900 disabled:opacity-50"
+                        className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 disabled:opacity-50"
                         disabled={!aiOptions.contentType.includes('flashcard')}
                         placeholder="Max 50"
                       />
@@ -588,7 +588,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
                     placeholder={aiOptions.courseType === 'policy'
                       ? 'E.g. Include definitions, grievance procedure, penalties for violation...'
                       : 'E.g. Focus on practical examples, use a formal tone, include case studies...'}
-                    className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-gray-900 h-20 resize-none"
+                    className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 h-20 resize-none"
                   />
                 </div>
               </div>
@@ -604,7 +604,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
                 <button
                   onClick={executeAIGeneration}
                   disabled={!courseData.title}
-                  className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-semibold shadow-lg shadow-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold shadow-lg shadow-indigo-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   <span className="material-symbols-outlined text-lg">auto_awesome</span>
                   Generate Now

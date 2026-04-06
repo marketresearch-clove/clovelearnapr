@@ -387,7 +387,7 @@ const CourseDetailsForm: React.FC<CourseDetailsFormProps> = ({ courseData, onCom
                 Duration <span className="text-red-500">*</span> <span className="text-xs text-gray-500">(minutes)</span>
               </label>
               {calculatedDuration !== null && (
-                <span className="text-xs font-medium text-purple-600 bg-purple-50 px-3 py-1 rounded-full">
+                <span className="text-xs font-medium text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
                   Calculated: {durationService.formatDurationForDisplay(calculatedDuration)}
                 </span>
               )}
@@ -413,7 +413,7 @@ const CourseDetailsForm: React.FC<CourseDetailsFormProps> = ({ courseData, onCom
                       onChange(newFormData);
                     }
                   }}
-                  className="px-4 py-3 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded-lg font-medium transition text-sm whitespace-nowrap"
+                  className="px-4 py-3 bg-indigo-100 text-indigo-700 hover:bg-indigo-200 rounded-lg font-medium transition text-sm whitespace-nowrap"
                 >
                   Use Calculated
                 </button>
@@ -673,7 +673,7 @@ const CourseDetailsForm: React.FC<CourseDetailsFormProps> = ({ courseData, onCom
         <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
           <button
             type="submit"
-            className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
           >
             Save & Next
             <span className="material-symbols-outlined text-lg text-white">arrow_forward</span>

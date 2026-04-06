@@ -184,7 +184,7 @@ const NotificationsPage: React.FC = () => {
     const colors = {
       general: 'bg-blue-100 text-blue-800',
       course: 'bg-green-100 text-green-800',
-      assignment: 'bg-purple-100 text-purple-800',
+      assignment: 'bg-indigo-100 text-indigo-800',
       system: 'bg-gray-100 text-gray-800',
       announcement: 'bg-yellow-100 text-yellow-800'
     };

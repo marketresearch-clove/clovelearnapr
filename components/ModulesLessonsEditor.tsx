@@ -215,7 +215,7 @@ const SortableModuleItem: React.FC<{
             <button
               type="button"
               onClick={() => addLesson(module.id, 'quiz')}
-              className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg border-2 border-dashed border-purple-400 text-purple-600 hover:bg-purple-50 transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg border-2 border-dashed border-indigo-400 text-indigo-600 hover:bg-indigo-50 transition-colors"
             >
               <span className="material-symbols-outlined text-lg">quiz</span>
               <span className="text-sm font-medium">Add Module Quiz</span>

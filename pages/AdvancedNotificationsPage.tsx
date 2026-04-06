@@ -1267,7 +1267,7 @@ const AdvancedNotificationsPage: React.FC = () => {
                                             <div className="flex justify-between items-start mb-3">
                                                 <h5 className="font-semibold text-slate-800">{draft.title}</h5>
                                                 {draft.is_template && (
-                                                    <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Template</span>
+                                                    <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded">Template</span>
                                                 )}
                                             </div>
                                             <p className="text-sm text-slate-600 mb-4">{draft.message}</p>
@@ -1728,7 +1728,7 @@ const AdvancedNotificationsPage: React.FC = () => {
                                                             </td>
                                                             <td className="px-4 py-3">
                                                                 <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full ${notification.type === 'general' ? 'bg-blue-100 text-blue-800' :
-                                                                        notification.type === 'course' ? 'bg-purple-100 text-purple-800' :
+                                                                        notification.type === 'course' ? 'bg-indigo-100 text-indigo-800' :
                                                                             notification.type === 'assignment' ? 'bg-orange-100 text-orange-800' :
                                                                                 notification.type === 'system' ? 'bg-red-100 text-red-800' :
                                                                                     'bg-gray-100 text-gray-800'

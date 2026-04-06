@@ -44,11 +44,11 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({ isOpen, onSelect }) => {
 
           <button
             onClick={() => onSelect('admin')}
-            className="w-full p-6 text-left rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all group"
+            className="w-full p-6 text-left rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-indigo-500 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all group"
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center group-hover:bg-purple-200 dark:group-hover:bg-purple-800 transition-colors">
-                <span className="material-symbols-outlined text-purple-600 dark:text-purple-400 text-xl">
+              <div className="w-12 h-12 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center group-hover:bg-indigo-200 dark:group-hover:bg-indigo-800 transition-colors">
+                <span className="material-symbols-outlined text-indigo-600 dark:text-indigo-400 text-xl">
                   admin_panel_settings
                 </span>
               </div>

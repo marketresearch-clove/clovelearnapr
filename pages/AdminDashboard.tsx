@@ -376,8 +376,8 @@ const AdminDashboard: React.FC = () => {
 
               <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-purple-50 rounded-md">
-                    <span className="material-symbols-rounded text-purple-600">schedule</span>
+                  <div className="p-2 bg-indigo-50 rounded-md">
+                    <span className="material-symbols-rounded text-indigo-600">schedule</span>
                   </div>
                 </div>
                 <p className="text-gray-600 text-xs font-bold uppercase tracking-wider">Learning Hours</p>
@@ -629,7 +629,7 @@ const AdminDashboard: React.FC = () => {
                             <div className="flex items-center gap-4">
                               <div className="flex-1 max-w-[160px] h-2 bg-gray-200 rounded-full overflow-hidden">
                                 <div
-                                  className="h-full bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-700"
+                                  className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full transition-all duration-700"
                                   style={{ width: `${row.progress}%` }}
                                 />
                               </div>

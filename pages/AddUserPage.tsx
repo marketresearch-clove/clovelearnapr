@@ -169,8 +169,7 @@ const AddUserPage = () => {
 
         const { error: profileError } = await supabase
           .from('profiles')
-          .update(profile)
-          .eq('id', authData.user.id);
+          .upsert({ id: authData.user.id, ...profile }, { onConflict: 'id' });
 
         if (profileError) throw profileError;
         successCount++;
@@ -237,8 +236,7 @@ const AddUserPage = () => {
 
       const { error: profileError } = await supabase
         .from('profiles')
-        .update(profile)
-        .eq('id', authData.user.id);
+        .upsert({ id: authData.user.id, ...profile }, { onConflict: 'id' });
 
       if (profileError) {
         // If profile update fails, the auth user still exists.

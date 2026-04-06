@@ -330,7 +330,7 @@ const LessonContentEditor: React.FC<LessonContentEditorProps> = ({
           <button
             type="submit"
             disabled={contentBlocks.length === 0}
-            className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
           >
             Save Content
             <span className="material-symbols-outlined text-lg text-white">check</span>
@@ -1448,7 +1448,7 @@ const FlashcardContentEditor: React.FC<{
       ) : (
         <div className="p-8 border-2 border-dashed border-primary rounded-xl bg-blue-50">
           <div className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="material-symbols-outlined text-4xl text-primary">
                 flip_to_front
               </span>
@@ -1464,7 +1464,7 @@ const FlashcardContentEditor: React.FC<{
             <button
               type="button"
               onClick={() => setShowEditor(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-purple-600 text-white rounded-lg hover:shadow-lg hover:scale-105 transition-all font-semibold mx-auto"
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-indigo-600 text-white rounded-lg hover:shadow-lg hover:scale-105 transition-all font-semibold mx-auto"
             >
               <span className="material-symbols-outlined">edit</span>
               {currentFlashcards.length > 0 ? 'Edit Flashcards' : 'Create Flashcards'}

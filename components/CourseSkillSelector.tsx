@@ -321,7 +321,7 @@ const CourseSkillSelector: React.FC<CourseSkillSelectorProps> = ({
             <div className="flex gap-2 flex-wrap">
                 <button
                     onClick={() => setShowAIModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
                 >
                     <span className="material-symbols-rounded text-sm">auto_awesome</span>
                     Generate Skills - AI
@@ -464,7 +464,7 @@ const CourseSkillSelector: React.FC<CourseSkillSelectorProps> = ({
                                     <button
                                         onClick={handleGenerateSkillsWithAI}
                                         disabled={generatingSkills}
-                                        className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded-lg transition-colors mx-auto"
+                                        className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white rounded-lg transition-colors mx-auto"
                                     >
                                         <span className="material-symbols-rounded text-sm">auto_awesome</span>
                                         {generatingSkills ? 'Generating...' : 'Generate Skills'}

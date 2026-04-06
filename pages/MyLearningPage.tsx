@@ -694,7 +694,7 @@ const CareerPathTab: React.FC<{ setActiveTab: (tab: any) => void }> = ({ setActi
                     <div className="flex items-center gap-3 md:border-l md:pl-6 border-slate-100">
                       <div className="text-right">
                         <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Your Level</p>
-                        <p className={`text-sm font-black ${skill.user_achieved_level === 'Advanced' ? 'text-purple-600' :
+                        <p className={`text-sm font-black ${skill.user_achieved_level === 'Advanced' ? 'text-indigo-600' :
                           skill.user_achieved_level === 'Intermediate' ? 'text-blue-600' :
                             skill.user_achieved_level === 'Beginner' ? 'text-green-600' :
                               'text-slate-400'
@@ -794,7 +794,7 @@ const CareerPathTab: React.FC<{ setActiveTab: (tab: any) => void }> = ({ setActi
 
                   {/* Advanced Card */}
                   {selectedSkillForView.required_level === 'Advanced' && (
-                    <div className={`p-4 rounded-xl border-2 transition-all ${selectedSkillForView.user_achieved_level === 'Advanced' ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'border-transparent bg-white dark:bg-gray-800'
+                    <div className={`p-4 rounded-xl border-2 transition-all ${selectedSkillForView.user_achieved_level === 'Advanced' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-transparent bg-white dark:bg-gray-800'
                       }`}>
                       <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Advanced</p>
                       <p className="text-xl font-bold text-slate-900 dark:text-white">100%</p>
@@ -877,7 +877,7 @@ const CareerPathTab: React.FC<{ setActiveTab: (tab: any) => void }> = ({ setActi
 const SkillGroup: React.FC<{ title: string; count: number; score: number; items: any[] }> = ({ title, count, score, items }) => {
   return (
     <div className="bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden">
-      <div className="p-4 flex items-center justify-between bg-purple-50/30">
+      <div className="p-4 flex items-center justify-between bg-indigo-50/30">
         <div className="flex items-center gap-3">
           <h3 className="font-semibold text-slate-800">{title}</h3>
           <span className="bg-slate-200 text-slate-600 text-xs font-bold px-2 py-0.5 rounded">{count} Skills</span>
@@ -902,7 +902,7 @@ const SkillGroup: React.FC<{ title: string; count: number; score: number; items:
             <div key={idx} className={`flex justify-between items-center px-6 py-3 border-t border-slate-100 ${item.bg}`}>
               <span className="text-sm font-medium text-slate-800">{item.name}</span>
               {item.action ? (
-                <button className="text-xs font-bold text-purple-700 underline hover:text-purple-900">{item.action}</button>
+                <button className="text-xs font-bold text-indigo-700 underline hover:text-indigo-900">{item.action}</button>
               ) : (
                 <span className="text-sm font-bold text-slate-700">{item.score}</span>
               )}
@@ -952,7 +952,7 @@ const SkillDetailModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               </div>
 
               {/* Learning Hours */}
-              <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-4 text-white relative overflow-hidden h-32 flex flex-col justify-between">
+              <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl p-4 text-white relative overflow-hidden h-32 flex flex-col justify-between">
                 <h3 className="font-bold">Learning hours</h3>
                 <div className="text-2xl font-bold">1.2 mins / 3 hrs</div>
                 <div className="w-full bg-white/30 h-1.5 rounded-full mt-2">
@@ -1562,7 +1562,7 @@ const AcquiredSkillsTab: React.FC = () => {
                   <div>
                     <h3 className="font-bold text-lg text-slate-900">{achievement.skill_name}</h3>
                     <div className="flex gap-2 mt-2">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${achievement.course_level === 'Advanced' ? 'bg-purple-100 text-purple-700' :
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${achievement.course_level === 'Advanced' ? 'bg-indigo-100 text-indigo-700' :
                         achievement.course_level === 'Intermediate' ? 'bg-blue-100 text-blue-700' :
                           'bg-green-100 text-green-700'
                         }`}>

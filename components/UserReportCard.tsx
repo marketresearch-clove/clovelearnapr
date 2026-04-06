@@ -65,7 +65,7 @@ const UserReportCard: React.FC<UserReportCardProps> = ({ userId, isOpen, onClose
                             </h2>
                             <p className="text-gray-600 dark:text-gray-400">{reportData?.profile.email}</p>
                             {reportData?.statistics.totalPoints && (
-                                <p className="text-sm text-purple-600 dark:text-purple-400 mt-1">
+                                <p className="text-sm text-indigo-600 dark:text-indigo-400 mt-1">
                                     ⭐ {reportData.statistics.totalPoints} XP
                                 </p>
                             )}
@@ -377,7 +377,7 @@ const UserReportCard: React.FC<UserReportCardProps> = ({ userId, isOpen, onClose
                                             {reportData.skills.map((skill) => (
                                                 <div
                                                     key={skill.id}
-                                                    className="px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium flex items-center gap-1"
+                                                    className="px-3 py-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full text-sm font-medium flex items-center gap-1"
                                                 >
                                                     <span className="material-symbols-rounded text-sm">check_circle</span>
                                                     {skill.skills?.name || 'Unknown Skill'}

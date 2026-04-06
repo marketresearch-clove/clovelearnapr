@@ -10,8 +10,8 @@ const CompletedLearningHoursCard: React.FC = () => {
   const [hoveredSegment, setHoveredSegment] = useState<string | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
-  const colors = ['text-blue-500', 'text-green-500', 'text-purple-500', 'text-red-500', 'text-yellow-500', 'text-indigo-500'];
-  const bgColors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-red-500', 'bg-yellow-500', 'bg-indigo-500'];
+  const colors = ['text-blue-500', 'text-green-500', 'text-indigo-500', 'text-red-500', 'text-yellow-500', 'text-indigo-500'];
+  const bgColors = ['bg-blue-500', 'bg-green-500', 'bg-indigo-500', 'bg-red-500', 'bg-yellow-500', 'bg-indigo-500'];
 
   useEffect(() => {
     fetchStats();

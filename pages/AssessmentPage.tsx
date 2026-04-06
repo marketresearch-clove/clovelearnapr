@@ -139,8 +139,8 @@ const AssessmentPage: React.FC = () => {
                   <div className="flex-1 bg-blue-200/50 flex items-center justify-center border-r border-white/50">Strongly disagree</div>
                   <div className="flex-1 bg-blue-200/30 flex items-center justify-center border-r border-white/50">Disagree</div>
                   <div className="flex-1 bg-slate-200/50 flex items-center justify-center border-r border-white/50">Neutral</div>
-                  <div className="flex-1 bg-purple-200/30 flex items-center justify-center border-r border-white/50">Agree</div>
-                  <div className="flex-1 bg-purple-200/50 flex items-center justify-center">Strongly agree</div>
+                  <div className="flex-1 bg-indigo-200/30 flex items-center justify-center border-r border-white/50">Agree</div>
+                  <div className="flex-1 bg-indigo-200/50 flex items-center justify-center">Strongly agree</div>
                </div>
              </div>
           </div>
@@ -213,10 +213,10 @@ const AssessmentPage: React.FC = () => {
                   <div className="bg-slate-100 p-4 text-xs text-slate-700 h-32 cursor-pointer hover:bg-slate-200 transition-colors" onClick={() => handleRating('q2', 3)}>
                     Is able to bring problem-solving skills to resolve customer issues, efficiently and effectively.
                   </div>
-                  <div className="bg-purple-200/20 p-4 text-xs text-slate-700 h-32 cursor-pointer hover:bg-purple-200/40 transition-colors" onClick={() => handleRating('q2', 4)}>
+                  <div className="bg-indigo-200/20 p-4 text-xs text-slate-700 h-32 cursor-pointer hover:bg-indigo-200/40 transition-colors" onClick={() => handleRating('q2', 4)}>
                     Has an in-depth understanding of the customer issues and pulse.
                   </div>
-                  <div className="bg-purple-200/40 p-4 rounded-br-lg text-xs text-slate-700 h-32 cursor-pointer hover:bg-purple-200/60 transition-colors" onClick={() => handleRating('q2', 5)}>
+                  <div className="bg-indigo-200/40 p-4 rounded-br-lg text-xs text-slate-700 h-32 cursor-pointer hover:bg-indigo-200/60 transition-colors" onClick={() => handleRating('q2', 5)}>
                     Frequently interacts with the frontline team to understand the issues and the customer pulse.
                   </div>
                </div>

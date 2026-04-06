@@ -404,14 +404,14 @@ const UserAdminPage = () => {
 
           <div className="bg-white p-6 rounded-lg shadow-sm">
             <div className="flex items-start">
-              <FiDownload className="text-2xl text-purple-500 mr-4 mt-1 flex-shrink-0" />
+              <FiDownload className="text-2xl text-indigo-500 mr-4 mt-1 flex-shrink-0" />
               <div className="flex-1">
                 <h3 className="text-lg font-semibold mb-2">Extract User Dump</h3>
                 <p className="text-sm text-gray-600 mb-4">Download all user data as a CSV file for reporting and analysis purposes.</p>
                 <button
                   onClick={handleExtractUserDump}
                   disabled={loading}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-purple-300 text-sm font-medium transition-colors"
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-indigo-300 text-sm font-medium transition-colors"
                 >
                   {loading ? 'Extracting...' : 'Extract & Download'}
                 </button>

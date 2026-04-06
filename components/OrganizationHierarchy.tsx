@@ -35,9 +35,9 @@ const getGradeColor = (grade: string) => {
         'L1': 'bg-blue-600',
         'L2': 'bg-blue-500',
         'L3': 'bg-blue-400',
-        'E1': 'bg-purple-600',
-        'E2': 'bg-purple-500',
-        'E3': 'bg-purple-400',
+        'E1': 'bg-indigo-600',
+        'E2': 'bg-indigo-500',
+        'E3': 'bg-indigo-400',
         'C1': 'bg-green-600',
         'C2': 'bg-green-500',
         'D1': 'bg-orange-600',
@@ -72,9 +72,9 @@ const UserCard: React.FC<{ user: UserProfile; isHighlighted?: boolean; size?: 'l
     size = 'medium'
 }) => {
     const sizeClasses = {
-        large: 'w-72 p-6',
-        medium: 'w-64 p-6',
-        small: 'w-60 p-5'
+        large: 'w-64 p-4',
+        medium: 'w-56 p-3',
+        small: 'w-52 p-2.5'
     };
 
     const imgSizeClasses = {
@@ -119,7 +119,7 @@ const UserCard: React.FC<{ user: UserProfile; isHighlighted?: boolean; size?: 'l
                         />
                     ) : (
                         <div
-                            className={`${imgSizeClasses[size]} rounded-2xl flex items-center justify-center text-white font-bold text-lg bg-gradient-to-br from-blue-500 to-purple-600 shadow-md ${!isHighlighted ? 'grayscale group-hover:grayscale-0 transition-all' : ''}`}
+                            className={`${imgSizeClasses[size]} rounded-2xl flex items-center justify-center text-white font-bold text-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md ${!isHighlighted ? 'grayscale group-hover:grayscale-0 transition-all' : ''}`}
                         >
                             {getInitials(user.first_name, user.last_name, user.fullname)}
                         </div>
@@ -174,9 +174,9 @@ const ReportCard: React.FC<{ report: UserProfile; size?: 'large' | 'medium' | 's
     size = 'medium'
 }) => {
     const sizeClasses = {
-        large: 'w-72 p-6',
-        medium: 'w-60 p-5',
-        small: 'w-56 p-4'
+        large: 'w-64 p-4',
+        medium: 'w-56 p-3',
+        small: 'w-52 p-2.5'
     };
 
     const imgSizeClasses = {
@@ -199,7 +199,7 @@ const ReportCard: React.FC<{ report: UserProfile; size?: 'large' | 'medium' | 's
                     {report.avatar_url || report.avatarurl ? (
                         <img src={(report.avatar_url || report.avatarurl) as string} alt={report.fullname} className={`${imgSizeClasses[size]} rounded-xl object-cover`} />
                     ) : (
-                        <div className={`${imgSizeClasses[size]} rounded-xl bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold text-xs`}>
+                        <div className={`${imgSizeClasses[size]} rounded-xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-xs`}>
                             {getInitials(report.first_name, report.last_name, report.fullname)}
                         </div>
                     )}
@@ -233,10 +233,70 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
     const [error, setError] = useState<string | null>(null);
     const [selectedDept, setSelectedDept] = useState('All');
     const [selectedGrade, setSelectedGrade] = useState('All');
+    const [zoom, setZoom] = useState(1);
+    const [panX, setPanX] = useState(0);
+    const [panY, setPanY] = useState(0);
+    const [isPanning, setIsPanning] = useState(false);
+    const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+    const canvasRef = React.useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         fetchHierarchyData();
     }, [userId]);
+
+    // Zoom — scroll wheel only, no Ctrl required, range 0.3x–3x
+    const handleWheel = (e: React.WheelEvent) => {
+        e.preventDefault();
+        const delta = e.deltaY * 0.002;
+        const newZoom = Math.max(0.3, Math.min(3, zoom - delta));
+        setZoom(newZoom);
+    };
+
+    // Pan — left-click drag, immediate (no hold timer)
+    const handleMouseDown = (e: React.MouseEvent) => {
+        if (e.button === 0) {
+            e.preventDefault();
+            setIsPanning(true);
+            setPanStart({ x: e.clientX - panX, y: e.clientY - panY });
+        }
+    };
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (isPanning) {
+            setPanX(e.clientX - panStart.x);
+            setPanY(e.clientY - panStart.y);
+        }
+    };
+
+    const handleMouseUp = () => {
+        setIsPanning(false);
+    };
+
+    // Touch pan — single finger, all screen sizes
+    const handleTouchStart = (e: React.TouchEvent) => {
+        if (e.touches.length === 1) {
+            setIsPanning(true);
+            setPanStart({ x: e.touches[0].clientX - panX, y: e.touches[0].clientY - panY });
+        }
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (isPanning && e.touches.length === 1) {
+            e.preventDefault();
+            setPanX(e.touches[0].clientX - panStart.x);
+            setPanY(e.touches[0].clientY - panStart.y);
+        }
+    };
+
+    const handleTouchEnd = () => {
+        setIsPanning(false);
+    };
+
+    const resetZoomPan = () => {
+        setZoom(1);
+        setPanX(0);
+        setPanY(0);
+    };
 
     const fetchHierarchyData = async () => {
         try {
@@ -432,7 +492,35 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
             </div>
 
             {/* Hierarchy Visualization Canvas */}
-            <div className="bg-slate-50 rounded-[2rem] p-16 min-h-[800px] flex flex-col items-center relative overflow-hidden border border-slate-100">
+            <div
+                className="bg-slate-50 rounded-2xl border border-slate-100 shadow-sm w-full"
+                style={{
+                    minHeight: '600px',
+                    overflow: 'auto',
+                    position: 'relative',
+                    zIndex: 1
+                }}
+            >
+                <div
+                    ref={canvasRef}
+                    className="p-8 md:p-12 flex flex-col items-center justify-start relative select-none touch-none"
+                    onWheel={handleWheel}
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                    style={{
+                        transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
+                        transformOrigin: 'center center',
+                        transition: isPanning ? 'none' : 'transform 0.2s ease-out',
+                        minHeight: '600px',
+                        display: 'flex',
+                        flexDirection: 'column'
+                    }}
+                >
                 {/* Decorative Grid Pattern */}
                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#0053db 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
 
@@ -455,19 +543,35 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                     {hasHierarchy && <div className="w-[2px] h-8 bg-slate-200 mt-2"></div>}
                 </div>
 
-                {/* Horizontal Connector - Always show when hierarchy exists */}
                 {hasSameLevelPeers && sameLevelPeers.length <= 2 && (
-                    <div className="relative w-full max-w-6xl h-[2px] bg-slate-200 mb-12">
-                        <div className="absolute top-0 left-1/4 w-px h-8 bg-slate-200"></div>
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-8 bg-slate-200"></div>
-                        <div className="absolute top-0 right-1/4 w-px h-8 bg-slate-200"></div>
+                    <div className="w-full mb-12 flex justify-center px-4">
+                        <div
+                            className="relative w-full max-w-2xl h-[1.5px]"
+                            style={{ background: 'linear-gradient(to right, transparent, #4f46e5, transparent)' }}
+                        >
+                            {/* Left column connector */}
+                            <div
+                                className="absolute bottom-0 w-[1.5px] h-12 translate-y-full"
+                                style={{ left: '16.66%', background: 'linear-gradient(to top, #4f46e5, rgba(79,70,229,0.3))' }}
+                            ></div>
+                            {/* Center column connector */}
+                            <div
+                                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1.5px] h-12 translate-y-full"
+                                style={{ background: 'linear-gradient(to top, #4f46e5, rgba(79,70,229,0.3))' }}
+                            ></div>
+                            {/* Right column connector */}
+                            <div
+                                className="absolute bottom-0 w-[1.5px] h-12 translate-y-full"
+                                style={{ right: '16.66%', background: 'linear-gradient(to top, #4f46e5, rgba(79,70,229,0.3))' }}
+                            ></div>
+                        </div>
                     </div>
                 )}
 
                 {/* Small Team: 3-Column Layout (Up to 2 peers) */}
                 {hasSameLevelPeers && sameLevelPeers.length <= 2 && (
                     <div className="w-full mb-12 z-10">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-6xl mx-auto">
+                        <div className="grid grid-cols-3 gap-8 justify-items-center">
                             {/* Left Peer */}
                             <div className="flex justify-center items-start">
                                 {sameLevelPeers.length > 0 ? (
@@ -491,7 +595,7 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                     </div>
                 )}
 
-                {/* Large Team: Responsive Grid Layout (3+ peers) */}
+                {/* Large Team: Grid Layout (3+ peers) */}
                 {hasSameLevelPeers && sameLevelPeers.length > 2 && (
                     <div className="w-full mb-12 z-10">
                         <div className="flex justify-center mb-8">
@@ -499,12 +603,7 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                                 {sameLevelPeers.length + 1} Team Members at Your Level
                             </span>
                         </div>
-                        <div className={`
-                            ${sameLevelPeers.length <= 5 ? 'grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8' :
-                                sameLevelPeers.length <= 10 ? 'grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6' :
-                                    'grid grid-cols-2 md:grid-cols-5 lg:grid-cols-6 gap-6'}
-                            max-w-full px-4 mx-auto justify-items-center
-                        `}>
+                        <div className="grid grid-cols-5 gap-8 justify-items-center">
                             {/* Map through all peers */}
                             {sameLevelPeers.map((peer) => (
                                 <div key={peer.id} className="flex justify-center">
@@ -516,7 +615,7 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                             ))}
 
                             {/* Current User - Always highlighted and prominent */}
-                            <div className="flex justify-center relative col-span-full md:col-span-1">
+                            <div className="flex justify-center relative">
                                 <UserCard user={currentUser} isHighlighted={true} size="large" />
                                 {hasReports && <div className="w-[2px] h-12 bg-slate-200 absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full"></div>}
                             </div>
@@ -549,19 +648,14 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                                 </div>
                             </div>
                         ) : (
-                            // Large reports team: responsive grid layout
+                            // Large reports team: grid layout
                             <div>
                                 <div className="flex justify-center mb-8">
                                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider px-4 py-2 bg-slate-100 rounded-full">
                                         {directReports.length} Direct Reports
                                     </span>
                                 </div>
-                                <div className={`
-                                    ${directReports.length <= 5 ? 'grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8' :
-                                        directReports.length <= 10 ? 'grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6' :
-                                            'grid grid-cols-2 md:grid-cols-5 lg:grid-cols-6 gap-6'}
-                                    max-w-full px-4 mx-auto justify-items-center z-10 relative
-                                `}>
+                                <div className="grid grid-cols-5 gap-8 justify-items-center z-10 relative">
                                     {directReports.map((report) => (
                                         <ReportCard
                                             key={report.id}
@@ -587,12 +681,7 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                             {Object.entries(otherDeptsByName).map(([dept, peersInDept]) => (
                                 <div key={dept} className="flex flex-col items-center">
                                     <p className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-8 px-4 py-2 bg-slate-100 rounded-lg">{dept}</p>
-                                    <div className={`
-                                        ${peersInDept.length <= 5 ? 'grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8' :
-                                            peersInDept.length <= 10 ? 'grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6' :
-                                                'grid grid-cols-2 md:grid-cols-5 lg:grid-cols-6 gap-6'}
-                                        max-w-full px-4 justify-items-center
-                                    `}>
+                                    <div className="grid grid-cols-5 gap-8 justify-items-center">
                                         {peersInDept.map((peer) => (
                                             <UserCard
                                                 key={peer.id}
@@ -606,7 +695,26 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                         </div>
                     </div>
                 )}
+                </div>
             </div>
+
+            {/* Zoom Controls */}
+            <div className="flex justify-center gap-2 mt-8 bg-white rounded-2xl p-4 shadow-md border border-slate-100">
+                <button title="Zoom Out (Scroll wheel)" onClick={() => setZoom(Math.max(0.3, zoom - 0.2))} className="p-2 hover:bg-slate-100 rounded-lg transition">
+                    <span className="material-symbols-rounded text-sm">zoom_out</span>
+                </button>
+                <span className="text-sm font-medium px-4 min-w-[80px] text-center">{Math.round(zoom * 100)}%</span>
+                <button title="Zoom In (Scroll wheel)" onClick={() => setZoom(Math.min(3, zoom + 0.2))} className="p-2 hover:bg-slate-100 rounded-lg transition">
+                    <span className="material-symbols-rounded text-sm">zoom_in</span>
+                </button>
+                <button title="Reset Zoom & Pan" onClick={resetZoomPan} className="p-2 hover:bg-slate-100 rounded-lg transition">
+                    <span className="material-symbols-rounded text-sm">fit_screen</span>
+                </button>
+            </div>
+            <div className="text-xs text-slate-500 text-center mt-2">
+                <span>💡 Left-click + drag to pan | Mouse wheel to zoom | 🔄 Reset button available</span>
+            </div>
+
 
             {/* Bento Grid - Insights & Export */}
             <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">

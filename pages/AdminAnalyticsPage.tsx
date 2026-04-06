@@ -700,7 +700,7 @@ const KPICard = ({ title, value, icon, trend, color }: any) => {
   const colorMap: any = {
     blue: 'bg-blue-50 text-blue-600',
     green: 'bg-green-50 text-green-600',
-    purple: 'bg-purple-50 text-purple-600',
+    purple: 'bg-indigo-50 text-indigo-600',
     emerald: 'bg-emerald-50 text-emerald-600',
     orange: 'bg-orange-50 text-orange-600',
     teal: 'bg-teal-50 text-teal-600',
@@ -976,7 +976,7 @@ const EngagementDashboard: React.FC<{ engagementData: any[], engagementMetrics: 
         <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h5 className="text-sm font-semibold text-gray-800">Users Online</h5>
-            <span className="material-symbols-rounded text-purple-500">people</span>
+            <span className="material-symbols-rounded text-indigo-500">people</span>
           </div>
           <p className="text-3xl font-bold text-gray-900">{engagementMetrics.activeUsersOnline}</p>
           <p className="text-xs text-gray-500 mt-2">currently online</p>
@@ -1133,9 +1133,9 @@ const EngagementDashboard: React.FC<{ engagementData: any[], engagementMetrics: 
                     )}
                   </p>
                 </div>
-                <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
-                  <p className="text-xs font-semibold text-purple-600 uppercase mb-1">Peak Day</p>
-                  <p className="text-2xl font-bold text-purple-900">
+                <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+                  <p className="text-xs font-semibold text-indigo-600 uppercase mb-1">Peak Day</p>
+                  <p className="text-2xl font-bold text-indigo-900">
                     {Math.max(...filteredData.map((d: any) => d.lessons_completed || 0), 0)}
                   </p>
                 </div>

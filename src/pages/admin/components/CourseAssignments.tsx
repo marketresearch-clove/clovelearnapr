@@ -698,7 +698,7 @@ const CourseAssignments: React.FC = () => {
                 return (
                   <div key={group.userId} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                     {/* User Header */}
-                    <div className="bg-purple-50 border-b border-purple-200 px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-purple-100 transition-colors" onClick={() => toggleUserExpand(group.userId)}>
+                    <div className="bg-indigo-50 border-b border-indigo-200 px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-indigo-100 transition-colors" onClick={() => toggleUserExpand(group.userId)}>
                       <div className="flex items-center gap-3 flex-1">
                         <button
                           onClick={(e) => {
@@ -719,7 +719,7 @@ const CourseAssignments: React.FC = () => {
                             className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center text-purple-700 text-sm font-semibold flex-shrink-0">
+                          <div className="w-10 h-10 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-700 text-sm font-semibold flex-shrink-0">
                             {(group.user?.fullname || group.userId).substring(0, 2).toUpperCase()}
                           </div>
                         )}
@@ -746,7 +746,7 @@ const CourseAssignments: React.FC = () => {
                                   <h4 className="font-medium text-gray-900 truncate flex-1">
                                     {assignment.courses?.title || 'Unknown Course'}
                                   </h4>
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-200 text-purple-800 whitespace-nowrap flex-shrink-0">
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-200 text-indigo-800 whitespace-nowrap flex-shrink-0">
                                     {assignment.is_mandatory ? 'Mandatory' : 'Optional'}
                                   </span>
                                 </div>

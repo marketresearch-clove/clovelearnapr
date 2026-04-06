@@ -140,7 +140,7 @@ const NotificationHistoryPage: React.FC = () => {
         const colors: Record<string, string> = {
             sent: 'bg-green-100 text-green-800',
             viewed: 'bg-blue-100 text-blue-800',
-            clicked: 'bg-purple-100 text-purple-800',
+            clicked: 'bg-indigo-100 text-indigo-800',
             failed: 'bg-red-100 text-red-800',
             bounced: 'bg-orange-100 text-orange-800',
         };
@@ -177,7 +177,7 @@ const NotificationHistoryPage: React.FC = () => {
                     </div>
                     <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
                         <div className="text-sm text-slate-600 mb-2">Clicked</div>
-                        <div className="text-3xl font-bold text-purple-600">{stats.clicked}</div>
+                        <div className="text-3xl font-bold text-indigo-600">{stats.clicked}</div>
                     </div>
                     <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
                         <div className="text-sm text-slate-600 mb-2">Failed</div>

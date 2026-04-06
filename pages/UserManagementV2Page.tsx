@@ -1325,7 +1325,7 @@ const UserManagementV2Page = () => {
                                 <button
                                     onClick={handleExtractUserDump}
                                     disabled={loading}
-                                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-300 transition-colors font-medium"
+                                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 transition-colors font-medium"
                                 >
                                     <FiDownload size={18} />
                                     <span className="text-sm font-medium">Export</span>
@@ -1333,7 +1333,7 @@ const UserManagementV2Page = () => {
 
                                 <button
                                     onClick={() => switchTab('add-user')}
-                                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
                                 >
                                     <FiUserPlus size={18} />
                                     <span className="text-sm font-medium">Add User</span>
@@ -1606,7 +1606,7 @@ const UserManagementV2Page = () => {
                                                                 key={i}
                                                                 onClick={() => setCurrentPage(i)}
                                                                 className={`w-8 h-8 rounded text-sm font-medium transition-colors ${currentPage === i
-                                                                    ? 'bg-purple-600 text-white'
+                                                                    ? 'bg-indigo-600 text-white'
                                                                     : 'hover:bg-gray-200 text-gray-600'
                                                                     }`}
                                                             >
@@ -2297,7 +2297,7 @@ const UserManagementV2Page = () => {
                                 <button
                                     onClick={(e) => handleAddUser(e as any)}
                                     disabled={loading}
-                                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-300 transition-colors font-medium"
+                                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 transition-colors font-medium"
                                 >
                                     {loading ? 'Creating...' : 'Create User'}
                                 </button>
@@ -2883,8 +2883,8 @@ const UserManagementV2Page = () => {
                             {/* Export */}
                             <div className="bg-white p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
                                 <div className="flex items-start gap-4">
-                                    <div className="flex-shrink-0 w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                                        <FiDownload className="text-purple-600 text-xl" />
+                                    <div className="flex-shrink-0 w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                        <FiDownload className="text-indigo-600 text-xl" />
                                     </div>
                                     <div className="flex-1">
                                         <h3 className="text-lg font-semibold mb-2 text-gray-900">Export User Data</h3>
@@ -2894,7 +2894,7 @@ const UserManagementV2Page = () => {
                                         <button
                                             onClick={handleExtractUserDump}
                                             disabled={loading}
-                                            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-300 text-sm font-medium transition-colors"
+                                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 text-sm font-medium transition-colors"
                                         >
                                             <FiDownload size={16} />
                                             {loading ? 'Extracting...' : 'Export Data'}
@@ -3104,7 +3104,7 @@ const UserManagementV2Page = () => {
                                     <button
                                         type="submit"
                                         disabled={loading || selectedUserIds.size === 0}
-                                        className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-300 font-medium transition-colors"
+                                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 font-medium transition-colors"
                                     >
                                         {loading ? 'Updating...' : 'Apply Mapping'}
                                     </button>

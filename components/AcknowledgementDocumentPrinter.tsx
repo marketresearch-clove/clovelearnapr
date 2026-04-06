@@ -201,9 +201,9 @@ const AcknowledgementDocumentPrinter: React.FC<AcknowledgementDocumentProps> = (
 
             {/* Advanced Template Management Section */}
             {savedTemplates.length > 0 && (
-                <div className="bg-purple-50 border border-purple-200 rounded-xl p-6">
-                    <h3 className="font-bold text-purple-900 mb-4 flex items-center gap-2">
-                        <span className="material-symbols-rounded text-purple-600">collections_bookmark</span>
+                <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-6">
+                    <h3 className="font-bold text-indigo-900 mb-4 flex items-center gap-2">
+                        <span className="material-symbols-rounded text-indigo-600">collections_bookmark</span>
                         Saved Templates
                     </h3>
                     <div className="grid grid-cols-2 gap-3 mb-4">
@@ -215,8 +215,8 @@ const AcknowledgementDocumentPrinter: React.FC<AcknowledgementDocumentProps> = (
                                     setLetterheadPreview(template.imageData);
                                 }}
                                 className={`p-3 rounded-lg border-2 transition-all text-left ${selectedTemplate?.name === template.name
-                                    ? 'border-purple-600 bg-purple-100'
-                                    : 'border-purple-200 bg-white hover:border-purple-400'
+                                    ? 'border-indigo-600 bg-indigo-100'
+                                    : 'border-indigo-200 bg-white hover:border-indigo-400'
                                     }`}
                             >
                                 <p className="font-medium text-sm text-slate-900">{template.name}</p>
@@ -228,7 +228,7 @@ const AcknowledgementDocumentPrinter: React.FC<AcknowledgementDocumentProps> = (
                     </div>
                     <button
                         onClick={() => setShowTemplateSettings(true)}
-                        className="w-full inline-flex items-center justify-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm"
+                        className="w-full inline-flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm"
                     >
                         <span className="material-symbols-rounded">edit</span>
                         Manage & Customize Templates

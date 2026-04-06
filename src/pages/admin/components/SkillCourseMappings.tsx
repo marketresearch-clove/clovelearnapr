@@ -515,7 +515,7 @@ const SkillCourseMappings: React.FC = () => {
           </button>
           <button
             onClick={() => { setIsAIModalOpen(true); setAiGeneratedSuggestions([]); setAiSuggestionStatuses([]); setAiAddedIndices([]); setAiSelectedCourseId(''); setAiCurrentMappedSkills([]); }}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm transition-colors"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm transition-colors"
           >
             <span className="material-symbols-rounded text-sm">auto_awesome</span>
             AI Generate
@@ -605,7 +605,7 @@ const SkillCourseMappings: React.FC = () => {
                                 </td>
                                 <td className="py-3 px-3">
                                   {mapping.required ? (
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-200 text-purple-800">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-200 text-indigo-800">
                                       Required
                                     </span>
                                   ) : (
@@ -617,7 +617,7 @@ const SkillCourseMappings: React.FC = () => {
                                 <td className="py-3 px-3">
                                   {mapping.generated_by_ai ? (
                                     <span
-                                      className="inline-flex items-center gap-1 text-xs font-semibold text-purple-700"
+                                      className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-700"
                                       title={`AI generated${mapping.ai_generated_at ? ' on ' + new Date(mapping.ai_generated_at).toLocaleDateString() : ''}`}
                                     >
                                       <span className="material-symbols-rounded text-xs">auto_awesome</span>
@@ -788,7 +788,7 @@ const SkillCourseMappings: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
-              <span className="material-symbols-rounded text-purple-600 dark:text-purple-400">auto_awesome</span>
+              <span className="material-symbols-rounded text-indigo-600 dark:text-indigo-400">auto_awesome</span>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">AI Generate Skill Mappings</h3>
               <button
                 onClick={() => setIsAIModalOpen(false)}
@@ -813,7 +813,7 @@ const SkillCourseMappings: React.FC = () => {
                     setAiAddedIndices([]);
                     loadMappedSkillsForCourse(id);
                   }}
-                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
                 >
                   <option value="">Select Course</option>
                   {availableCourses.map((course: any) => (
@@ -867,12 +867,12 @@ const SkillCourseMappings: React.FC = () => {
                               </div>
                               <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
                                 {s.required && (
-                                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium">
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-medium">
                                     Required
                                   </span>
                                 )}
                                 {s.generated_by_ai && (
-                                  <span className="flex items-center gap-0.5 text-[10px] font-medium text-purple-500 dark:text-purple-400">
+                                  <span className="flex items-center gap-0.5 text-[10px] font-medium text-indigo-500 dark:text-indigo-400">
                                     <span className="material-symbols-rounded" style={{ fontSize: 11 }}>auto_awesome</span>
                                     AI
                                   </span>
@@ -891,7 +891,7 @@ const SkillCourseMappings: React.FC = () => {
                 <button
                   onClick={handleAIGenerate}
                   disabled={isAIGenerating || !aiSelectedCourseId}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded-lg transition-colors font-medium"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white rounded-lg transition-colors font-medium"
                 >
                   <span className={`material-symbols-rounded text-sm ${isAIGenerating ? 'animate-spin' : ''}`}>
                     {isAIGenerating ? 'sync' : 'auto_awesome'}
@@ -949,7 +949,7 @@ const SkillCourseMappings: React.FC = () => {
                                   Existing Skill
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300">
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">
                                   <span className="material-symbols-rounded" style={{ fontSize: 10 }}>add_circle</span>
                                   New Skill
                                 </span>
@@ -982,7 +982,7 @@ const SkillCourseMappings: React.FC = () => {
                       setAiSuggestionStatuses([]);
                       setAiAddedIndices([]);
                     }}
-                    className="w-full text-sm text-purple-600 dark:text-purple-400 hover:underline"
+                    className="w-full text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
                   >
                     Regenerate suggestions
                   </button>

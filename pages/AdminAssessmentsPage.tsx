@@ -16,7 +16,7 @@ const UserAvatar = ({ user }: { user: any }) => {
 
   const colors = [
     'bg-red-500', 'bg-green-500', 'bg-blue-500', 'bg-yellow-500', 'bg-indigo-500',
-    'bg-purple-500', 'bg-pink-500', 'bg-teal-500', 'bg-orange-500'
+    'bg-indigo-500', 'bg-pink-500', 'bg-teal-500', 'bg-orange-500'
   ];
 
   const color = colors[user.fullname?.length % colors.length || 0];
@@ -985,7 +985,7 @@ const ActiveAssignmentsTab: React.FC = () => {
                       <p className="font-bold text-gray-900 flex items-center gap-2">
                         {assignment.user?.fullname}
                         {assignment.user?.role === 'admin' && (
-                          <span className="bg-purple-100 text-purple-700 text-[9px] px-1.5 py-0.5 rounded uppercase">Admin</span>
+                          <span className="bg-indigo-100 text-indigo-700 text-[9px] px-1.5 py-0.5 rounded uppercase">Admin</span>
                         )}
                       </p>
                       <p className="text-[10px] text-gray-500">{assignment.user?.email}</p>
@@ -1002,7 +1002,7 @@ const ActiveAssignmentsTab: React.FC = () => {
                 <td className="px-6 py-4">
                   <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${assignment.status === 'evaluated' ? 'bg-green-100 text-green-700' :
                     assignment.status === 'submitted' ? 'bg-blue-100 text-blue-700' :
-                      assignment.status === 'in_progress' ? 'bg-purple-100 text-purple-700' :
+                      assignment.status === 'in_progress' ? 'bg-indigo-100 text-indigo-700' :
                         'bg-yellow-100 text-yellow-700'
                     }`}>
                     {assignment.status === 'assigned' ? 'Pending' : assignment.status.replace('_', ' ')}

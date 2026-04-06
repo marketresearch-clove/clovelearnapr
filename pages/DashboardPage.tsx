@@ -497,7 +497,7 @@ const DashboardPage: React.FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           <StatCard title="Courses in Progress" value={stats.coursesInProgress.toString()} icon="book" color="bg-blue-500" />
           <StatCard title="Courses Completed" value={stats.coursesCompleted.toString()} icon="check_circle" color="bg-green-500" />
-          <StatCard title="Hours Learned" value={`${stats.hoursLearned}h`} icon="schedule" color="bg-purple-500" />
+          <StatCard title="Hours Learned" value={`${stats.hoursLearned}h`} icon="schedule" color="bg-indigo-500" />
           <StatCard title="Certificates Earned" value={stats.certificatesEarned.toString()} icon="workspace_premium" color="bg-yellow-500" />
         </div>
 

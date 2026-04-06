@@ -204,7 +204,7 @@ const PlatformTutorial: React.FC<PlatformTutorialProps> = ({ isOpen, onClose, on
                 <>
                     {/* Border frame with shine effect */}
                     <div
-                        className="highlight-border-shine fixed z-[191] pointer-events-none border-2 border-purple-500 rounded-lg"
+                        className="highlight-border-shine fixed z-[191] pointer-events-none border-2 border-indigo-500 rounded-lg"
                         style={{
                             top: `${highlightRect.top - 8}px`,
                             left: `${highlightRect.left - 8}px`,
@@ -309,7 +309,7 @@ const PlatformTutorial: React.FC<PlatformTutorialProps> = ({ isOpen, onClose, on
                         </div>
 
                         {/* Description */}
-                        <p className="text-slate-600 text-center mb-2 text-sm leading-relaxed">
+                        <p className="text-slate-800 text-center mb-2 text-sm leading-relaxed">
                             {step.description}
                         </p>
 
@@ -343,7 +343,7 @@ const PlatformTutorial: React.FC<PlatformTutorialProps> = ({ isOpen, onClose, on
                     <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3">
                         <button
                             onClick={handleSkip}
-                            className="text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors"
+                            className="text-slate-800 hover:text-slate-900 text-sm font-medium transition-colors"
                         >
                             Skip
                         </button>
@@ -352,7 +352,7 @@ const PlatformTutorial: React.FC<PlatformTutorialProps> = ({ isOpen, onClose, on
                             <button
                                 onClick={handlePrev}
                                 disabled={isFirstStep}
-                                className="flex items-center gap-1 px-3 py-2 text-slate-600 hover:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="flex items-center gap-1 px-3 py-2 text-slate-800 hover:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
                                 <FiChevronLeft size={18} />
                                 <span className="text-sm font-medium hidden sm:inline">Back</span>
@@ -369,7 +369,7 @@ const PlatformTutorial: React.FC<PlatformTutorialProps> = ({ isOpen, onClose, on
                     </div>
 
                     {/* Progress Text */}
-                    <div className="px-6 py-2 text-center text-xs text-slate-500 bg-slate-50">
+                    <div className="px-6 py-2 text-center text-xs text-slate-800 bg-slate-50">
                         Step {currentStep + 1} of {steps.length}
                     </div>
                 </div>

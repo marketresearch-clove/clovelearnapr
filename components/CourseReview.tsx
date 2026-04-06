@@ -143,7 +143,7 @@ const CourseReview: React.FC<CourseReviewProps> = ({ courseData, onPublish, onBa
           </button>
           <button
             onClick={onPublish}
-            className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
           >
             <span className="material-symbols-outlined text-lg text-white">
               {courseData.status === 'published' ? 'check_circle' : 'save'}

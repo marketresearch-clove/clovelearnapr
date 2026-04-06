@@ -304,7 +304,7 @@ const SkillFamilies: React.FC = () => {
                 <tr key={family.id} className="group hover:bg-blue-50 transition-colors">
                   <td className="py-4 pl-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-md bg-purple-200 flex items-center justify-center text-purple-700 font-bold text-lg">
+                      <div className="w-8 h-8 rounded-md bg-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-lg">
                         {family.icon ? (
                           React.createElement((allIconLibraries as any)[family.icon])
                         ) : (
