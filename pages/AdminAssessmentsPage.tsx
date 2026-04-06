@@ -43,25 +43,25 @@ const AdminAssessmentsPage: React.FC = () => {
       <div className="flex flex-col gap-6">
         <div className="flex border-b border-gray-200 overflow-x-auto">
           <button
-            className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeTab === 'manage' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap ${activeTab === 'manage' ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
             onClick={() => setActiveTab('manage')}
           >
             Manage Assessments
           </button>
           <button
-            className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeTab === 'assign' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap ${activeTab === 'assign' ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
             onClick={() => setActiveTab('assign')}
           >
             Assign Assessments
           </button>
           <button
-            className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeTab === 'active' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap ${activeTab === 'active' ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
             onClick={() => setActiveTab('active')}
           >
             Active Assignments
           </button>
           <button
-            className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeTab === 'results' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap ${activeTab === 'results' ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
             onClick={() => setActiveTab('results')}
           >
             Results & Reports

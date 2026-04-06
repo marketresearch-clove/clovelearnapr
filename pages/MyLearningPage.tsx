@@ -37,37 +37,37 @@ const MyLearningPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-slate-900 mb-4">My Learning</h1>
         <div className="flex border-b border-slate-200 overflow-x-auto">
           <button
-            className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeTab === 'journey' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            className={`px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap ${activeTab === 'journey' ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
             onClick={() => setActiveTab('journey')}
           >
             Learning Journey
           </button>
           <button
-            className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeTab === 'career' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            className={`px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap ${activeTab === 'career' ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
             onClick={() => setActiveTab('career')}
           >
             Career Path
           </button>
           <button
-            className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeTab === 'assigned' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            className={`px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap ${activeTab === 'assigned' ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
             onClick={() => setActiveTab('assigned')}
           >
             Assigned Courses
           </button>
           <button
-            className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeTab === 'assessments' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            className={`px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap ${activeTab === 'assessments' ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
             onClick={() => setActiveTab('assessments')}
           >
             Assessments
           </button>
           <button
-            className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeTab === 'acquired' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            className={`px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap ${activeTab === 'acquired' ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
             onClick={() => setActiveTab('acquired')}
           >
             Acquired Skills
           </button>
           <button
-            className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap flex items-center gap-2 ${activeTab === 'certificates' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            className={`px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap flex items-center gap-2 ${activeTab === 'certificates' ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
             onClick={() => setActiveTab('certificates')}
           >
             <span className="material-symbols-rounded text-lg">workspace_premium</span>

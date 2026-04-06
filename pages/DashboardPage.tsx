@@ -11,13 +11,13 @@ import { enrollmentService } from '../lib/enrollmentService';
 import PlatformTutorial from '../components/PlatformTutorial';
 
 const StatCard: React.FC<{ title: string; value: string; icon: string; color: string; trend?: string }> = ({ title, value, icon, color, trend }) => (
-  <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-slate-100 flex items-start justify-between">
+  <div className="bg-white p-4 md:p-6 shadow-sm border border-slate-100 flex items-start justify-between" style={{ borderRadius: '15px' }}>
     <div>
       <p className="text-slate-500 text-xs md:text-sm font-medium mb-1">{title}</p>
       <h3 className="text-xl md:text-2xl font-bold text-slate-900">{value}</h3>
       {trend && <p className="text-xs text-green-600 mt-2 font-medium flex items-center gap-1"><span className="material-symbols-rounded text-sm">trending_up</span> {trend}</p>}
     </div>
-    <div className={`w-10 h-10 md:w-12 md:h-12 rounded-md flex items-center justify-center flex-shrink-0 ${color}`}>
+    <div className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center flex-shrink-0 ${color}`} style={{ borderRadius: '15px' }}>
       <span className="material-symbols-rounded text-white text-lg md:text-xl">{icon}</span>
     </div>
   </div>
@@ -464,7 +464,7 @@ const DashboardPage: React.FC = () => {
       <div className="space-y-8">
         {/* Error Banner */}
         {loadingError && (
-          <div className="p-4 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded">
+          <div className="p-4 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700" style={{ borderRadius: '15px' }}>
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="font-semibold text-red-800 dark:text-red-100">Failed to Load Dashboard</h3>
@@ -473,7 +473,8 @@ const DashboardPage: React.FC = () => {
               </div>
               <button
                 onClick={() => window.location.reload()}
-                className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 whitespace-nowrap"
+                className="px-3 py-1 bg-red-600 text-white text-sm hover:bg-red-700 whitespace-nowrap"
+                style={{ borderRadius: '15px' }}
               >
                 Retry
               </button>
@@ -487,7 +488,7 @@ const DashboardPage: React.FC = () => {
             <p className="text-slate-500">Let's learn something new today.</p>
           </div>
           <div className="flex gap-3">
-            <button className="bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded text-sm font-medium hover:bg-slate-50 transition-colors">
+            <button className="bg-white border border-slate-200 text-slate-700 px-4 py-2 text-sm font-medium hover:bg-slate-50 transition-colors" style={{ borderRadius: '15px' }}>
               View Reports
             </button>
           </div>
@@ -513,12 +514,12 @@ const DashboardPage: React.FC = () => {
               {loading ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-3"></div>
+                    <div className="animate-spin h-8 w-8 border-b-2 border-primary-600 mx-auto mb-3" style={{ borderRadius: '50%' }}></div>
                     <p className="text-slate-600">Loading courses...</p>
                   </div>
                 </div>
               ) : enrolledCourses.length === 0 ? (
-                <div className="bg-white p-8 rounded-md border border-slate-100 text-center">
+                <div className="bg-white p-8 border border-slate-100 text-center" style={{ borderRadius: '15px' }}>
                   <span className="material-symbols-rounded text-5xl text-slate-300 block mb-3">school</span>
                   <p className="text-slate-600 font-medium mb-2">No courses yet</p>
                   <p className="text-slate-500 text-sm mb-4">Explore our catalog and start learning</p>
@@ -526,23 +527,24 @@ const DashboardPage: React.FC = () => {
                 </div>
               ) : (
                 enrolledCourses.map((course) => (
-                  <div key={course.id} className="bg-white p-4 rounded-md border border-slate-100 shadow-sm flex flex-col sm:flex-row gap-4 hover:shadow-md transition-shadow cursor-pointer relative group" onClick={() => navigate(`/course/${course.id}`)}>
+                  <div key={course.id} className="bg-white p-4 border border-slate-100 shadow-sm flex flex-col sm:flex-row gap-4 hover:shadow-md transition-shadow cursor-pointer relative group" style={{ borderRadius: '15px' }} onClick={() => navigate(`/course/${course.id}`)}>
                     {/* Unenroll Button */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         openUnenrollModal(course.id, course.title);
                       }}
-                      className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
+                      className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
+                      style={{ borderRadius: '50%' }}
                       title="Unenroll from this course"
                     >
                       <span className="material-symbols-rounded text-sm">close</span>
                     </button>
 
                     <div className="relative w-full sm:w-48 h-32 flex-shrink-0">
-                      <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover rounded" />
-                      <div className="absolute inset-0 bg-black/10 rounded flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                        <div className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center backdrop-blur-sm">
+                      <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" style={{ borderRadius: '15px' }} />
+                      <div className="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity" style={{ borderRadius: '15px' }}>
+                        <div className="w-10 h-10 bg-white/90 flex items-center justify-center backdrop-blur-sm" style={{ borderRadius: '50%' }}>
                           <span className="material-symbols-rounded text-primary-600">play_arrow</span>
                         </div>
                       </div>
@@ -550,7 +552,7 @@ const DashboardPage: React.FC = () => {
                     <div className="flex-1 flex flex-col justify-between py-1">
                       <div>
                         <div className="flex justify-between items-start mb-1">
-                          <span className="text-xs font-semibold text-primary-600 bg-primary-50 px-2 py-0.5 rounded uppercase tracking-wider">{course.category}</span>
+                          <span className="text-xs font-semibold text-primary-600 bg-primary-50 px-2 py-0.5 uppercase tracking-wider" style={{ borderRadius: '15px' }}>{course.category}</span>
                         </div>
                         <h3 className="font-bold text-slate-900 mb-1">{course.title}</h3>
                         <p className="text-sm text-slate-500">by {course.instructor}</p>
@@ -572,10 +574,10 @@ const DashboardPage: React.FC = () => {
                           <span className="font-medium text-slate-700">{course.progress}% Complete</span>
                           <span className="text-slate-400">{course.completedLessons}/{course.totalLessons} Lessons</span>
                         </div>
-                        <div className="w-full bg-slate-100 rounded-full h-2">
+                        <div className="w-full bg-slate-100 h-2" style={{ borderRadius: '15px' }}>
                           <div
-                            className="bg-primary-600 h-2 rounded-full transition-all duration-500 ease-out"
-                            style={{ width: `${course.progress}%` }}
+                            className="bg-primary-600 h-2 transition-all duration-500 ease-out"
+                            style={{ width: `${course.progress}%`, borderRadius: '15px' }}
                           ></div>
                         </div>
                       </div>
@@ -589,7 +591,7 @@ const DashboardPage: React.FC = () => {
           {/* Right Column - Leaderboard & Activity */}
           <div className="space-y-6">
             {/* Daily Goal */}
-            <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg p-6 text-white relative overflow-hidden">
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-6 text-white relative overflow-hidden" style={{ borderRadius: '15px' }}>
               <div className="relative z-10">
                 <h3 className="font-bold text-lg mb-1">Daily Goal</h3>
                 <p className="text-slate-300 text-sm mb-4">Keep your streak alive!</p>
@@ -597,15 +599,15 @@ const DashboardPage: React.FC = () => {
                   <span className="text-3xl font-bold">45</span>
                   <span className="text-sm text-slate-400 mb-1">/ 60 mins</span>
                 </div>
-                <div className="w-full bg-slate-700 rounded-full h-2 mb-1">
-                  <div className="bg-green-400 h-2 rounded-full" style={{ width: '75%' }}></div>
+                <div className="w-full bg-slate-700 h-2 mb-1" style={{ borderRadius: '15px' }}>
+                  <div className="bg-green-400 h-2" style={{ width: '75%', borderRadius: '15px' }}></div>
                 </div>
               </div>
               <span className="material-symbols-rounded absolute -right-4 -bottom-4 text-9xl text-white/5 rotate-12">timer</span>
             </div>
 
             {/* Leaderboard */}
-            <div className="bg-white rounded-lg border border-slate-100 shadow-sm p-6">
+            <div className="bg-white border border-slate-100 shadow-sm p-6" style={{ borderRadius: '15px' }}>
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="font-bold text-slate-900">Top Learners</h3>
@@ -624,7 +626,7 @@ const DashboardPage: React.FC = () => {
                         <span className={`text-sm font-bold w-4 ${index === 0 ? 'text-yellow-500' : index === 1 ? 'text-slate-400' : index === 2 ? 'text-orange-400' : 'text-slate-400'}`}>
                           {index + 1}
                         </span>
-                        <img src={avatar} alt={name} className="w-8 h-8 rounded-full object-cover" />
+                        <img src={avatar} alt={name} className="w-8 h-8 object-cover" style={{ borderRadius: '50%' }} />
                         <div className="flex-1">
                           <p className="text-sm font-medium text-slate-800">{name}</p>
                           <p className="text-xs text-slate-500">{learner.totalpoints.toLocaleString()} XP</p>
@@ -647,8 +649,8 @@ const DashboardPage: React.FC = () => {
         {/* Unenroll Confirmation Modal */}
         {unenrollModal.isOpen && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
-              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mb-4 mx-auto">
+            <div className="bg-white shadow-lg max-w-md w-full p-6" style={{ borderRadius: '15px' }}>
+              <div className="flex items-center justify-center w-12 h-12 bg-red-100 mb-4 mx-auto" style={{ borderRadius: '50%' }}>
                 <span className="material-symbols-rounded text-red-600 text-xl">warning</span>
               </div>
               <h3 className="text-lg font-bold text-slate-900 text-center mb-2">Unenroll from Course?</h3>
@@ -662,18 +664,20 @@ const DashboardPage: React.FC = () => {
                 <button
                   onClick={() => setUnenrollModal({ isOpen: false, courseId: '', courseName: '' })}
                   disabled={isUnenrolling}
-                  className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ borderRadius: '15px' }}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleUnenroll}
                   disabled={isUnenrolling}
-                  className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  style={{ borderRadius: '15px' }}
                 >
                   {isUnenrolling ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                      <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent" style={{ borderRadius: '50%' }}></div>
                       Unenrolling...
                     </>
                   ) : (

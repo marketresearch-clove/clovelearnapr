@@ -72,27 +72,27 @@ const UserCard: React.FC<{ user: UserProfile; isHighlighted?: boolean; size?: 'l
     size = 'medium'
 }) => {
     const sizeClasses = {
-        large: 'w-64 p-4',
-        medium: 'w-56 p-3',
-        small: 'w-52 p-2.5'
+        large: 'w-56 p-3',
+        medium: 'w-48 p-2.5',
+        small: 'w-44 p-2'
     };
 
     const imgSizeClasses = {
-        large: 'w-16 h-16',
-        medium: 'w-14 h-14',
-        small: 'w-12 h-12'
+        large: 'w-14 h-14',
+        medium: 'w-12 h-12',
+        small: 'w-10 h-10'
     };
 
     const nameClasses = {
-        large: 'text-lg font-bold',
-        medium: 'text-base font-bold',
-        small: 'text-sm font-bold'
+        large: 'text-base font-bold',
+        medium: 'text-sm font-bold',
+        small: 'text-xs font-bold'
     };
 
     const titleClasses = {
-        large: 'text-sm',
-        medium: 'text-xs',
-        small: 'text-[10px]'
+        large: 'text-xs',
+        medium: 'text-[10px]',
+        small: 'text-[9px]'
     };
 
     const handleLinkedInClick = (e: React.MouseEvent) => {
@@ -104,31 +104,35 @@ const UserCard: React.FC<{ user: UserProfile; isHighlighted?: boolean; size?: 'l
 
     return (
         <div
-            className={`group cursor-pointer rounded-3xl transition-all duration-300 ${isHighlighted
-                ? 'bg-white p-6 shadow-2xl shadow-blue-600/10 border-2 border-blue-600 ring-8 ring-blue-600/5'
-                : 'bg-white p-6 shadow-xl shadow-slate-900/5 hover:scale-105 border border-transparent hover:border-blue-600/20'
+            className={`group cursor-pointer transition-all duration-300 ${isHighlighted
+                ? 'bg-white p-3 shadow-2xl shadow-blue-600/10 border-2 border-blue-600 ring-8 ring-blue-600/5'
+                : 'bg-white p-3 shadow-xl shadow-slate-900/5 hover:scale-105 border border-transparent hover:border-blue-600/20'
                 } ${sizeClasses[size] || sizeClasses.medium}`}
+            style={{ borderRadius: '15px' }}
         >
-            <div className="flex items-start justify-between mb-4">
+            <div className="flex items-start justify-between mb-2">
                 <div className="relative">
                     {user.avatar_url || user.avatarurl ? (
                         <img
                             src={(user.avatar_url || user.avatarurl) as string}
                             alt={user.fullname || `${user.first_name} ${user.last_name}`}
-                            className={`${imgSizeClasses[size]} rounded-2xl object-cover shadow-md ${!isHighlighted ? 'grayscale group-hover:grayscale-0 transition-all' : ''}`}
+                            className={`${imgSizeClasses[size]} object-cover shadow-md ${!isHighlighted ? 'grayscale group-hover:grayscale-0 transition-all' : ''}`}
+                            style={{ borderRadius: '15px' }}
                         />
                     ) : (
                         <div
-                            className={`${imgSizeClasses[size]} rounded-2xl flex items-center justify-center text-white font-bold text-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md ${!isHighlighted ? 'grayscale group-hover:grayscale-0 transition-all' : ''}`}
+                            className={`${imgSizeClasses[size]} flex items-center justify-center text-white font-bold text-sm bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md ${!isHighlighted ? 'grayscale group-hover:grayscale-0 transition-all' : ''}`}
+                            style={{ borderRadius: '15px' }}
                         >
                             {getInitials(user.first_name, user.last_name, user.fullname)}
                         </div>
                     )}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                     {user.employee_grade && (
                         <span
-                            className={`${isHighlighted ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'} text-[10px] font-black px-2 py-1 rounded-lg tracking-wider`}
+                            className={`${isHighlighted ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'} text-[8px] font-black px-1 py-0.5 tracking-wider`}
+                            style={{ borderRadius: '15px' }}
                         >
                             {user.employee_grade}
                         </span>
@@ -136,33 +140,33 @@ const UserCard: React.FC<{ user: UserProfile; isHighlighted?: boolean; size?: 'l
                     {user.linkedin_profile_url && (
                         <button
                             onClick={handleLinkedInClick}
-                            className={`${isHighlighted ? 'text-blue-600 hover:text-blue-700' : 'text-slate-400 hover:text-blue-600'} transition-colors cursor-pointer text-base`}
+                            className={`${isHighlighted ? 'text-blue-600 hover:text-blue-700' : 'text-slate-400 hover:text-blue-600'} transition-colors cursor-pointer text-sm`}
                             title="View LinkedIn Profile"
                         >
                             in
                         </button>
                     )}
                     {!user.linkedin_profile_url && (
-                        <span className={`text-base ${isHighlighted ? 'text-blue-300' : 'text-slate-200'}`}>
+                        <span className={`text-sm ${isHighlighted ? 'text-blue-300' : 'text-slate-200'}`}>
                             in
                         </span>
                     )}
                 </div>
             </div>
-            <h3 className={`${nameClasses[size]} text-slate-900`}>
+            <h3 className={`${nameClasses[size]} text-slate-900 line-clamp-2`}>
                 {user.fullname || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User'}
             </h3>
-            <p className={`${titleClasses[size]} ${isHighlighted ? 'text-blue-600 font-bold' : 'text-slate-500 font-medium'}`}>
-                {isHighlighted ? 'Current Learner / ' : ''}{user.designation || user.job_title || 'Team Member'}
+            <p className={`${titleClasses[size]} ${isHighlighted ? 'text-blue-600 font-bold' : 'text-slate-500 font-medium'} line-clamp-1`}>
+                {isHighlighted ? 'Current / ' : ''}{user.designation || user.job_title || 'Team Member'}
             </p>
-            <div className="mt-3 pt-3 border-t border-slate-100 grid grid-cols-2 gap-3 text-center">
+            <div className="mt-2 pt-2 border-t border-slate-100 grid grid-cols-2 gap-2 text-center">
                 <div>
-                    <p className="text-[9px] uppercase font-bold text-slate-400 tracking-tighter">Department</p>
-                    <p className={`${size === 'small' ? 'text-[10px]' : 'text-xs'} font-semibold text-slate-700 truncate`}>{user.department || 'N/A'}</p>
+                    <p className="text-[8px] uppercase font-bold text-slate-400 tracking-tighter">Dept</p>
+                    <p className={`${size === 'small' ? 'text-[9px]' : 'text-[10px]'} font-semibold text-slate-700 truncate`}>{user.department || 'N/A'}</p>
                 </div>
                 <div>
-                    <p className="text-[9px] uppercase font-bold text-slate-400 tracking-tighter">Status</p>
-                    <p className={`${size === 'small' ? 'text-[10px]' : 'text-xs'} font-semibold text-emerald-600`}>Active</p>
+                    <p className="text-[8px] uppercase font-bold text-slate-400 tracking-tighter">Status</p>
+                    <p className={`${size === 'small' ? 'text-[9px]' : 'text-[10px]'} font-semibold text-emerald-600`}>Active</p>
                 </div>
             </div>
         </div>
@@ -174,15 +178,15 @@ const ReportCard: React.FC<{ report: UserProfile; size?: 'large' | 'medium' | 's
     size = 'medium'
 }) => {
     const sizeClasses = {
-        large: 'w-64 p-4',
-        medium: 'w-56 p-3',
-        small: 'w-52 p-2.5'
+        large: 'w-52 p-2.5',
+        medium: 'w-44 p-2',
+        small: 'w-40 p-1.5'
     };
 
     const imgSizeClasses = {
-        large: 'w-12 h-12',
-        medium: 'w-12 h-12',
-        small: 'w-10 h-10'
+        large: 'w-10 h-10',
+        medium: 'w-10 h-10',
+        small: 'w-8 h-8'
     };
 
     const handleLinkedInClick = (e: React.MouseEvent) => {
@@ -193,32 +197,32 @@ const ReportCard: React.FC<{ report: UserProfile; size?: 'large' | 'medium' | 's
     };
 
     return (
-        <div className={`group cursor-pointer bg-white rounded-2xl shadow-md shadow-slate-900/5 hover:-translate-y-1 transition-all border border-transparent hover:border-blue-600/20 ${sizeClasses[size]}`}>
-            <div className="flex items-start gap-3">
+        <div className={`group cursor-pointer bg-white shadow-md shadow-slate-900/5 hover:-translate-y-0.5 transition-all border border-transparent hover:border-blue-600/20 ${sizeClasses[size]}`} style={{ borderRadius: '15px' }}>
+            <div className="flex items-start gap-1.5">
                 <div className="relative flex-shrink-0">
                     {report.avatar_url || report.avatarurl ? (
-                        <img src={(report.avatar_url || report.avatarurl) as string} alt={report.fullname} className={`${imgSizeClasses[size]} rounded-xl object-cover`} />
+                        <img src={(report.avatar_url || report.avatarurl) as string} alt={report.fullname} className={`${imgSizeClasses[size]} object-cover`} style={{ borderRadius: '15px' }} />
                     ) : (
-                        <div className={`${imgSizeClasses[size]} rounded-xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-xs`}>
+                        <div className={`${imgSizeClasses[size]} bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-xs`} style={{ borderRadius: '15px' }}>
                             {getInitials(report.first_name, report.last_name, report.fullname)}
                         </div>
                     )}
                 </div>
                 <div className="truncate flex-1">
-                    <h4 className={`font-bold text-slate-900 truncate ${size === 'small' ? 'text-xs' : 'text-sm'}`}>{report.fullname || `${report.first_name} ${report.last_name}`}</h4>
-                    <p className={`text-slate-500 font-medium truncate ${size === 'small' ? 'text-[9px]' : 'text-[10px]'}`}>{report.designation || 'Team Member'}</p>
-                    <div className={`mt-1 flex items-center gap-1 text-slate-600 ${size === 'small' ? 'text-[8px]' : 'text-[9px]'}`}>
-                        <span className={`${getGradeColor(report.employee_grade)} text-white px-2 py-0.5 rounded font-bold`}>{report.employee_grade}</span>
+                    <h4 className={`font-bold text-slate-900 truncate line-clamp-1 ${size === 'small' ? 'text-xs' : 'text-sm'}`}>{report.fullname || `${report.first_name} ${report.last_name}`}</h4>
+                    <p className={`text-slate-500 font-medium truncate line-clamp-1 ${size === 'small' ? 'text-[8px]' : 'text-[9px]'}`}>{report.designation || 'Team Member'}</p>
+                    <div className={`mt-0.5 flex items-center gap-0.5 text-slate-600 ${size === 'small' ? 'text-[7px]' : 'text-[8px]'}`}>
+                        <span className={`${getGradeColor(report.employee_grade)} text-white px-1 py-0.5 font-bold`} style={{ borderRadius: '15px' }}>{report.employee_grade}</span>
                         {report.linkedin_profile_url ? (
                             <button
                                 onClick={handleLinkedInClick}
-                                className="text-slate-400 hover:text-blue-600 transition-colors cursor-pointer text-xs ml-1"
+                                className="text-slate-400 hover:text-blue-600 transition-colors cursor-pointer text-xs ml-0.5"
                                 title="View LinkedIn Profile"
                             >
                                 in
                             </button>
                         ) : (
-                            <span className="text-slate-200 text-xs ml-1">in</span>
+                            <span className="text-slate-200 text-xs ml-0.5">in</span>
                         )}
                     </div>
                 </div>
@@ -392,10 +396,10 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center py-20">
+            <div className="flex items-center justify-center py-16">
                 <div className="text-center">
-                    <div className="inline-block w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-                    <p className="text-slate-600">Loading organizational hierarchy...</p>
+                    <div className="inline-block w-10 h-10 border-4 border-blue-200 border-t-blue-600 animate-spin mb-3" style={{ borderRadius: '15px' }}></div>
+                    <p className="text-slate-600 text-sm">Loading organizational hierarchy...</p>
                 </div>
             </div>
         );
@@ -403,11 +407,11 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
 
     if (error) {
         return (
-            <div className="bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-lg flex items-center gap-3">
-                <span className="material-symbols-outlined text-2xl">error</span>
+            <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 flex items-center gap-2" style={{ borderRadius: '15px' }}>
+                <span className="material-symbols-outlined text-lg">error</span>
                 <div>
-                    <p className="font-semibold">Error Loading Hierarchy</p>
-                    <p className="text-sm">{error}</p>
+                    <p className="font-semibold text-sm">Error Loading Hierarchy</p>
+                    <p className="text-xs">{error}</p>
                 </div>
             </div>
         );
@@ -415,9 +419,9 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
 
     if (!hierarchyData) {
         return (
-            <div className="text-center py-20">
-                <span className="material-symbols-outlined text-6xl text-slate-300 block mb-4">account_tree</span>
-                <p className="text-slate-600">No hierarchy data available</p>
+            <div className="text-center py-16">
+                <span className="material-symbols-outlined text-5xl text-slate-300 block mb-3">account_tree</span>
+                <p className="text-slate-600 text-sm">No hierarchy data available</p>
             </div>
         );
     }
@@ -427,10 +431,6 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
     // Filter peers by grade
     const sameLevelPeers = peers.filter(p =>
         p.employee_grade === currentUser.employee_grade &&
-        (selectedGrade === 'All' || p.employee_grade === selectedGrade)
-    );
-    const differentLevelPeers = peers.filter(p =>
-        p.employee_grade !== currentUser.employee_grade &&
         (selectedGrade === 'All' || p.employee_grade === selectedGrade)
     );
 
@@ -457,53 +457,72 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
     const hasReports = directReports.length > 0;
     const hasHierarchy = manager || currentUser.manager_name || hasPeers || hasReports;
     const hasSameLevelPeers = sameLevelPeers.length > 0;
-    const hasDifferentLevelPeers = differentLevelPeers.length > 0;
     const hasOtherDepts = Object.keys(otherDeptsByName).length > 0;
 
     return (
-        <div className="space-y-12">
-            {/* Page Header */}
-            <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-16">
-
-                <div className="flex gap-3">
-                    <select
-                        value={selectedDept}
-                        onChange={(e) => setSelectedDept(e.target.value)}
-                        className="bg-slate-50 border-none rounded-xl text-sm px-4 py-3 pr-10 focus:ring-2 focus:ring-blue-600 shadow-sm"
-                    >
-                        <option value="All">All Departments</option>
-                        {hierarchyData?.departments.map(dept => (
-                            <option key={dept} value={dept}>{dept}</option>
-                        ))}
-                    </select>
-                    <select
-                        value={selectedGrade}
-                        onChange={(e) => setSelectedGrade(e.target.value)}
-                        className="bg-slate-50 border-none rounded-xl text-sm px-4 py-3 pr-10 focus:ring-2 focus:ring-blue-600 shadow-sm"
-                    >
-                        <option>All Grades</option>
-                        <option>L1</option>
-                        <option>E2</option>
-                        <option>E1</option>
-                        <option>C1</option>
-                        <option>C2</option>
-                    </select>
-                </div>
-            </div>
-
-            {/* Hierarchy Visualization Canvas */}
+        <div className="space-y-6 sm:space-y-8">
+            {/* Hierarchy Visualization Canvas - Exclude from mobile optimization (as requested) */}
             <div
-                className="bg-slate-50 rounded-2xl border border-slate-100 shadow-sm w-full"
+                className="bg-slate-200 border border-slate-300 shadow-sm w-full overflow-auto"
                 style={{
-                    minHeight: '600px',
-                    overflow: 'auto',
+                    minHeight: '500px',
                     position: 'relative',
-                    zIndex: 1
+                    zIndex: 1,
+                    borderRadius: '15px'
                 }}
             >
+                {/* Fixed Filter Options and Controls on Top */}
+                <div className="sticky top-0 left-0 right-0 z-[60] p-3 sm:p-4 pointer-events-none flex justify-between items-start gap-2 flex-wrap">
+                    <div className="flex gap-2 pointer-events-auto flex-wrap">
+                        <select
+                            value={selectedDept}
+                            onChange={(e) => setSelectedDept(e.target.value)}
+                            className="bg-white/90 backdrop-blur-sm border border-slate-200 text-xs sm:text-sm px-2 sm:px-3 py-1.5 pr-7 focus:ring-2 focus:ring-indigo-600 shadow-sm transition-all hover:bg-white"
+                            style={{ borderRadius: '15px' }}
+                        >
+                            <option value="All">All Departments</option>
+                            {hierarchyData?.departments.map(dept => (
+                                <option key={dept} value={dept}>{dept}</option>
+                            ))}
+                        </select>
+                        <select
+                            value={selectedGrade}
+                            onChange={(e) => setSelectedGrade(e.target.value)}
+                            className="bg-white/90 backdrop-blur-sm border border-slate-200 text-xs sm:text-sm px-2 sm:px-3 py-1.5 pr-7 focus:ring-2 focus:ring-indigo-600 shadow-sm transition-all hover:bg-white"
+                            style={{ borderRadius: '15px' }}
+                        >
+                            <option>All Grades</option>
+                            <option>L1</option>
+                            <option>E2</option>
+                            <option>E1</option>
+                            <option>C1</option>
+                            <option>C2</option>
+                        </select>
+                    </div>
+
+                    <div className="flex flex-col items-end gap-2 pointer-events-auto">
+                        <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm p-1.5 shadow-sm border border-slate-200" style={{ borderRadius: '15px' }}>
+                            <button title="Zoom Out" onClick={() => setZoom(Math.max(0.3, zoom - 0.2))} className="p-1 hover:bg-slate-100 rounded-lg transition text-slate-600">
+                                <span className="material-symbols-rounded text-lg sm:text-xl">zoom_out</span>
+                            </button>
+                            <span className="text-[10px] sm:text-xs font-bold px-1 sm:px-2 min-w-[40px] sm:min-w-[50px] text-center text-slate-700">{Math.round(zoom * 100)}%</span>
+                            <button title="Zoom In" onClick={() => setZoom(Math.min(3, zoom + 0.2))} className="p-1 hover:bg-slate-100 rounded-lg transition text-slate-600">
+                                <span className="material-symbols-rounded text-lg sm:text-xl">zoom_in</span>
+                            </button>
+                            <div className="w-px h-4 bg-slate-200 mx-1"></div>
+                            <button title="Reset View" onClick={resetZoomPan} className="p-1 hover:bg-slate-100 rounded-lg transition text-slate-600">
+                                <span className="material-symbols-rounded text-lg sm:text-xl">fit_screen</span>
+                            </button>
+                        </div>
+                        <p className="hidden sm:block text-[9px] font-bold text-slate-500 bg-white/80 backdrop-blur-sm px-2 py-1 border border-slate-200/50 shadow-sm" style={{ borderRadius: '15px' }}>
+                            💡 Left-click + drag to pan | Mouse wheel to zoom | 🔄 Reset available
+                        </p>
+                    </div>
+                </div>
+
                 <div
                     ref={canvasRef}
-                    className="p-8 md:p-12 flex flex-col items-center justify-start relative select-none touch-none"
+                    className="p-3 sm:p-4 md:p-6 flex flex-col items-center justify-start relative select-none touch-none"
                     onWheel={handleWheel}
                     onMouseDown={handleMouseDown}
                     onMouseMove={handleMouseMove}
@@ -516,256 +535,139 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                         transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
                         transformOrigin: 'center center',
                         transition: isPanning ? 'none' : 'transform 0.2s ease-out',
-                        minHeight: '600px',
+                        minHeight: '500px',
                         display: 'flex',
                         flexDirection: 'column'
                     }}
                 >
-                {/* Decorative Grid Pattern */}
-                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#0053db 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
+                    {/* Decorative Grid Pattern */}
+                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#0053db 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
 
-                {/* Manager Level */}
-                <div className="relative z-10 flex flex-col items-center mb-8">
-                    {manager ? (
-                        <UserCard user={manager} size="large" />
-                    ) : currentUser.manager_name ? (
-                        <div className="group cursor-pointer bg-white p-6 rounded-3xl w-72 shadow-xl shadow-slate-900/5 hover:scale-105 transition-transform duration-300">
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-400 to-slate-500 flex items-center justify-center text-white font-bold text-lg shadow-md">
-                                    {getInitials('', '', currentUser.manager_name)}
-                                </div>
-                                <span className="bg-slate-100 text-slate-600 text-[10px] font-black px-2 py-1 rounded-lg tracking-wider">Manager</span>
-                            </div>
-                            <h3 className="text-lg font-bold text-slate-900">{currentUser.manager_name}</h3>
-                            <p className="text-sm text-slate-500 font-medium">Reporting Manager</p>
-                        </div>
-                    ) : null}
-                    {hasHierarchy && <div className="w-[2px] h-8 bg-slate-200 mt-2"></div>}
-                </div>
-
-                {hasSameLevelPeers && sameLevelPeers.length <= 2 && (
-                    <div className="w-full mb-12 flex justify-center px-4">
-                        <div
-                            className="relative w-full max-w-2xl h-[1.5px]"
-                            style={{ background: 'linear-gradient(to right, transparent, #4f46e5, transparent)' }}
-                        >
-                            {/* Left column connector */}
-                            <div
-                                className="absolute bottom-0 w-[1.5px] h-12 translate-y-full"
-                                style={{ left: '16.66%', background: 'linear-gradient(to top, #4f46e5, rgba(79,70,229,0.3))' }}
-                            ></div>
-                            {/* Center column connector */}
-                            <div
-                                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1.5px] h-12 translate-y-full"
-                                style={{ background: 'linear-gradient(to top, #4f46e5, rgba(79,70,229,0.3))' }}
-                            ></div>
-                            {/* Right column connector */}
-                            <div
-                                className="absolute bottom-0 w-[1.5px] h-12 translate-y-full"
-                                style={{ right: '16.66%', background: 'linear-gradient(to top, #4f46e5, rgba(79,70,229,0.3))' }}
-                            ></div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Small Team: 3-Column Layout (Up to 2 peers) */}
-                {hasSameLevelPeers && sameLevelPeers.length <= 2 && (
-                    <div className="w-full mb-12 z-10">
-                        <div className="grid grid-cols-3 gap-8 justify-items-center">
-                            {/* Left Peer */}
-                            <div className="flex justify-center items-start">
-                                {sameLevelPeers.length > 0 ? (
-                                    <UserCard user={sameLevelPeers[0]} size="medium" />
-                                ) : null}
-                            </div>
-
-                            {/* Current User - Center (Highlighted) */}
-                            <div className="flex justify-center items-start relative">
-                                <UserCard user={currentUser} isHighlighted={true} size="large" />
-                                {hasReports && <div className="w-[2px] h-12 bg-slate-200 absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full"></div>}
-                            </div>
-
-                            {/* Right Peer */}
-                            <div className="flex justify-center items-start">
-                                {sameLevelPeers.length > 1 ? (
-                                    <UserCard user={sameLevelPeers[1]} size="medium" />
-                                ) : null}
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Large Team: Grid Layout (3+ peers) */}
-                {hasSameLevelPeers && sameLevelPeers.length > 2 && (
-                    <div className="w-full mb-12 z-10">
-                        <div className="flex justify-center mb-8">
-                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider px-4 py-2 bg-slate-100 rounded-full">
-                                {sameLevelPeers.length + 1} Team Members at Your Level
-                            </span>
-                        </div>
-                        <div className="grid grid-cols-5 gap-8 justify-items-center">
-                            {/* Map through all peers */}
-                            {sameLevelPeers.map((peer) => (
-                                <div key={peer.id} className="flex justify-center">
-                                    <UserCard
-                                        user={peer}
-                                        size={sameLevelPeers.length > 10 ? 'small' : 'medium'}
-                                    />
-                                </div>
-                            ))}
-
-                            {/* Current User - Always highlighted and prominent */}
-                            <div className="flex justify-center relative">
-                                <UserCard user={currentUser} isHighlighted={true} size="large" />
-                                {hasReports && <div className="w-[2px] h-12 bg-slate-200 absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full"></div>}
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* When no peers, show current user alone */}
-                {!hasSameLevelPeers && (
-                    <div className="flex justify-center relative mb-12 z-10">
-                        <UserCard user={currentUser} isHighlighted={true} size="large" />
-                        {hasReports && <div className="w-[2px] h-16 bg-slate-200 absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full"></div>}
-                    </div>
-                )}
-
-                {/* Bottom Level: Direct Reports */}
-                {hasReports && (
-                    <div className="w-full relative">
-                        {directReports.length <= 2 ? (
-                            // Small reports team: centered 2-column layout
-                            <div className="max-w-4xl mx-auto">
-                                <div className="absolute top-0 left-1/4 right-1/4 h-[2px] bg-slate-200">
-                                    <div className="absolute top-0 left-0 w-px h-8 bg-slate-200"></div>
-                                    <div className="absolute top-0 right-0 w-px h-8 bg-slate-200"></div>
-                                </div>
-                                <div className="flex justify-center gap-12 mt-8 z-10 relative flex-wrap">
-                                    {directReports.map((report) => (
-                                        <ReportCard key={report.id} report={report} size="medium" />
-                                    ))}
-                                </div>
-                            </div>
-                        ) : (
-                            // Large reports team: grid layout
-                            <div>
-                                <div className="flex justify-center mb-8">
-                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider px-4 py-2 bg-slate-100 rounded-full">
-                                        {directReports.length} Direct Reports
-                                    </span>
-                                </div>
-                                <div className="grid grid-cols-5 gap-8 justify-items-center z-10 relative">
-                                    {directReports.map((report) => (
-                                        <ReportCard
-                                            key={report.id}
-                                            report={report}
-                                            size={directReports.length > 10 ? 'small' : 'medium'}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* Other Department Teams - Show when filter shows different departments */}
-                {hasOtherDepts && (
-                    <div className="w-full mt-20 z-10">
-                        <div className="flex items-center justify-center mb-12 gap-4">
-                            <div className="h-[1px] flex-1 bg-slate-200"></div>
-                            <h3 className="text-lg font-bold text-slate-700 px-4">Teams in Other Departments</h3>
-                            <div className="h-[1px] flex-1 bg-slate-200"></div>
-                        </div>
-                        <div className="space-y-12">
-                            {Object.entries(otherDeptsByName).map(([dept, peersInDept]) => (
-                                <div key={dept} className="flex flex-col items-center">
-                                    <p className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-8 px-4 py-2 bg-slate-100 rounded-lg">{dept}</p>
-                                    <div className="grid grid-cols-5 gap-8 justify-items-center">
-                                        {peersInDept.map((peer) => (
-                                            <UserCard
-                                                key={peer.id}
-                                                user={peer}
-                                                size={peersInDept.length > 10 ? 'small' : 'medium'}
-                                            />
-                                        ))}
+                    {/* Manager Level */}
+                    <div className="relative z-10 flex flex-col items-center mb-6">
+                        {manager ? (
+                            <UserCard user={manager} size="large" />
+                        ) : currentUser.manager_name ? (
+                            <div className="group cursor-pointer bg-white p-4 w-56 shadow-xl shadow-slate-900/5 hover:scale-105 transition-transform duration-300" style={{ borderRadius: '15px' }}>
+                                <div className="flex items-start justify-between mb-3">
+                                    <div className="w-14 h-14 bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md" style={{ borderRadius: '15px' }}>
+                                        {getInitials('', '', currentUser.manager_name)}
                                     </div>
+                                    <span className="bg-indigo-50 text-indigo-600 text-[9px] font-black px-1.5 py-0.5 tracking-wider" style={{ borderRadius: '15px' }}>Manager</span>
                                 </div>
-                            ))}
-                        </div>
+                                <h3 className="text-base font-bold text-slate-900">{currentUser.manager_name}</h3>
+                                <p className="text-xs text-slate-500 font-medium">Reporting Manager</p>
+                            </div>
+                        ) : null}
+                        {hasHierarchy && <div className="w-[2px] h-6 bg-indigo-500 mt-1"></div>}
                     </div>
-                )}
+
+                    {/* Teams Section - Simplified */}
+                    {hasSameLevelPeers && (
+                        <div className="w-full mb-8 z-10 flex flex-col items-center">
+                            {sameLevelPeers.length > 2 && (
+                                <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider px-3 py-1.5 bg-white border border-indigo-100 mb-4" style={{ borderRadius: '15px' }}>
+                                    {sameLevelPeers.length + 1} Team Members
+                                </span>
+                            )}
+                            <div className="flex justify-center items-start gap-4 flex-wrap">
+                                {sameLevelPeers.map((peer) => (
+                                    <UserCard key={peer.id} user={peer} size={sameLevelPeers.length > 6 ? 'small' : 'medium'} />
+                                ))}
+                                <UserCard user={currentUser} isHighlighted={true} size="large" />
+                            </div>
+                            {hasReports && <div className="w-[2px] h-8 bg-indigo-500 mt-4"></div>}
+                        </div>
+                    )}
+
+                    {/* No Peers */}
+                    {!hasSameLevelPeers && (
+                        <div className="flex justify-center mb-8 z-10">
+                            <UserCard user={currentUser} isHighlighted={true} size="large" />
+                            {hasReports && <div className="w-[2px] h-8 bg-indigo-500 absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full"></div>}
+                        </div>
+                    )}
+
+                    {/* Direct Reports */}
+                    {hasReports && (
+                        <div className="w-full z-10">
+                            {directReports.length > 2 && (
+                                <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider px-3 py-1.5 bg-white border border-emerald-100 mb-4 inline-block" style={{ borderRadius: '15px' }}>
+                                    {directReports.length} Direct Reports
+                                </span>
+                            )}
+                            <div className="flex justify-center items-start gap-4 flex-wrap">
+                                {directReports.map((report) => (
+                                    <ReportCard key={report.id} report={report} size={directReports.length > 6 ? 'small' : 'medium'} />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Other Departments */}
+                    {hasOtherDepts && (
+                        <div className="w-full mt-12 z-10">
+                            <h3 className="text-sm font-bold text-indigo-900 px-3 py-1.5 bg-indigo-50 border border-indigo-100 mb-6 text-center" style={{ borderRadius: '15px' }}>
+                                Other Departments
+                            </h3>
+                            <div className="space-y-8">
+                                {Object.entries(otherDeptsByName).map(([dept, peersInDept]) => (
+                                    <div key={dept} className="flex flex-col items-center">
+                                        <p className="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-4 px-3 py-1.5 bg-white border border-indigo-100" style={{ borderRadius: '15px' }}>{dept}</p>
+                                        <div className="flex justify-center items-start gap-4 flex-wrap">
+                                            {peersInDept.map((peer) => (
+                                                <UserCard key={peer.id} user={peer} size={peersInDept.length > 6 ? 'small' : 'medium'} />
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* Zoom Controls */}
-            <div className="flex justify-center gap-2 mt-8 bg-white rounded-2xl p-4 shadow-md border border-slate-100">
-                <button title="Zoom Out (Scroll wheel)" onClick={() => setZoom(Math.max(0.3, zoom - 0.2))} className="p-2 hover:bg-slate-100 rounded-lg transition">
-                    <span className="material-symbols-rounded text-sm">zoom_out</span>
-                </button>
-                <span className="text-sm font-medium px-4 min-w-[80px] text-center">{Math.round(zoom * 100)}%</span>
-                <button title="Zoom In (Scroll wheel)" onClick={() => setZoom(Math.min(3, zoom + 0.2))} className="p-2 hover:bg-slate-100 rounded-lg transition">
-                    <span className="material-symbols-rounded text-sm">zoom_in</span>
-                </button>
-                <button title="Reset Zoom & Pan" onClick={resetZoomPan} className="p-2 hover:bg-slate-100 rounded-lg transition">
-                    <span className="material-symbols-rounded text-sm">fit_screen</span>
-                </button>
-            </div>
-            <div className="text-xs text-slate-500 text-center mt-2">
-                <span>💡 Left-click + drag to pan | Mouse wheel to zoom | 🔄 Reset button available</span>
-            </div>
-
-
-            {/* Bento Grid - Insights & Export */}
-            <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="md:col-span-2 bg-slate-50 rounded-[2rem] p-8 border border-slate-100">
-                    <h3 className="text-xl font-black mb-6 text-slate-900">Hierarchy Insights</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <div className="bg-white p-6 rounded-2xl border border-slate-200/50 shadow-sm">
+            {/* Bento Grid - Optimized for mobile */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mt-8">
+                <div className="md:col-span-2 bg-slate-50 p-5 sm:p-6 border border-slate-100" style={{ borderRadius: '15px' }}>
+                    <h3 className="text-lg font-black mb-4 text-slate-900">Hierarchy Insights</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div className="bg-white p-4 border border-slate-200/50 shadow-sm" style={{ borderRadius: '15px' }}>
                             <p className="text-xs font-bold text-slate-500 uppercase mb-2">Team Size</p>
                             <div className="flex items-end gap-2">
-                                <span className="text-4xl font-black text-slate-900">{sameLevelPeers.length + 1}</span>
+                                <span className="text-3xl font-black text-slate-900">{sameLevelPeers.length + 1}</span>
                                 <span className="text-xs text-emerald-600 font-bold pb-1 flex items-center gap-1">
                                     <span className="material-symbols-outlined text-sm">group</span>
-                                    at Level
                                 </span>
                             </div>
-                            <p className="text-xs text-slate-400 mt-2">Under {currentUser.manager_name || 'Manager'}</p>
+                            <p className="text-xs text-slate-400 mt-1">at Your Level</p>
                         </div>
-                        <div className="bg-white p-6 rounded-2xl border border-slate-200/50 shadow-sm">
+                        <div className="bg-white p-4 border border-slate-200/50 shadow-sm" style={{ borderRadius: '15px' }}>
                             <p className="text-xs font-bold text-slate-500 uppercase mb-2">Department</p>
-                            <p className="text-xl font-black text-slate-900 mt-2">{currentUser.department || 'N/A'}</p>
-                            <p className="text-xs text-slate-400 mt-3">Current Assignment</p>
+                            <p className="text-lg font-black text-slate-900">{currentUser.department || 'N/A'}</p>
+                            <p className="text-xs text-slate-400 mt-1">Current</p>
                         </div>
-                        <div className="bg-white p-6 rounded-2xl border border-slate-200/50 shadow-sm">
-                            <p className="text-xs font-bold text-slate-500 uppercase mb-2">Reporting Manager</p>
-                            <p className="text-lg font-black text-slate-900 mt-2 truncate">{currentUser.manager_name || 'N/A'}</p>
-                            <p className="text-xs text-slate-400 mt-3">Direct Report</p>
+                        <div className="bg-white p-4 border border-slate-200/50 shadow-sm" style={{ borderRadius: '15px' }}>
+                            <p className="text-xs font-bold text-slate-500 uppercase mb-2">Manager</p>
+                            <p className="text-sm font-black text-slate-900 truncate">{currentUser.manager_name || 'N/A'}</p>
+                            <p className="text-xs text-slate-400 mt-1">Reports To</p>
                         </div>
-                        <div className="bg-white p-6 rounded-2xl border border-slate-200/50 shadow-sm">
-                            <p className="text-xs font-bold text-slate-500 uppercase mb-2">Reporting Lines</p>
-                            <div className="flex gap-1 mt-4">
-                                <div className="h-2 w-1/4 bg-blue-600 rounded-full"></div>
-                                <div className="h-2 w-1/3 bg-blue-400 rounded-full"></div>
-                                <div className="h-2 w-1/6 bg-slate-200 rounded-full"></div>
-                                <div className="h-2 w-1/4 bg-slate-100 rounded-full"></div>
-                            </div>
-                            <div className="flex justify-between mt-2 text-[10px] font-bold text-slate-400">
-                                <span>Direct ({directReports.length})</span>
-                                <span>Peers ({peers.length})</span>
-                            </div>
+                        <div className="bg-white p-4 border border-slate-200/50 shadow-sm" style={{ borderRadius: '15px' }}>
+                            <p className="text-xs font-bold text-slate-500 uppercase mb-2">Reports</p>
+                            <p className="text-lg font-black text-slate-900">{directReports.length}</p>
+                            <p className="text-xs text-slate-400 mt-1">Direct Reports</p>
                         </div>
                     </div>
                 </div>
-                <div className="bg-blue-600 text-white rounded-[2rem] p-8 flex flex-col justify-between overflow-hidden relative group">
+                <div className="bg-blue-600 text-white p-5 sm:p-6 flex flex-col justify-between overflow-hidden relative group" style={{ borderRadius: '15px' }}>
                     <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
-                        <span className="material-symbols-outlined text-[12rem]">hub</span>
+                        <span className="material-symbols-outlined text-[10rem]">hub</span>
                     </div>
                     <div className="relative z-10">
-                        <h3 className="text-2xl font-black tracking-tight mb-4">Export Structure</h3>
-                        <p className="text-blue-100 text-sm leading-relaxed mb-8">Generate a detailed PDF report of the current organizational breakdown including skills and learning paths.</p>
+                        <h3 className="text-xl font-black tracking-tight mb-3">Export Structure</h3>
+                        <p className="text-blue-100 text-xs leading-relaxed mb-6">Generate detailed PDF report of your organizational structure.</p>
                     </div>
-                    <button className="relative z-10 w-full bg-white text-blue-600 py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-50 transition-colors">
+                    <button className="relative z-10 w-full bg-white text-blue-600 py-2.5 font-black text-xs uppercase tracking-widest hover:bg-blue-50 transition-colors" style={{ borderRadius: '15px' }}>
                         Download PDF
                     </button>
                 </div>
@@ -773,10 +675,10 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
 
             {/* Empty State */}
             {!manager && !currentUser.manager_name && peers.length === 0 && directReports.length === 0 && (
-                <div className="text-center py-12 bg-blue-50 rounded-2xl border-2 border-dashed border-blue-200">
-                    <span className="material-symbols-outlined text-5xl text-blue-300 block mb-4">account_tree</span>
-                    <p className="text-slate-700 font-semibold mb-2">Your organizational structure is incomplete</p>
-                    <p className="text-slate-500 text-sm">Contact your administrator to set up manager relationships in User Management.</p>
+                <div className="text-center py-10 bg-blue-50 border-2 border-dashed border-blue-200" style={{ borderRadius: '15px' }}>
+                    <span className="material-symbols-outlined text-4xl text-blue-300 block mb-2">account_tree</span>
+                    <p className="text-slate-700 font-semibold text-sm mb-1">Organizational structure incomplete</p>
+                    <p className="text-slate-500 text-xs">Contact admin to set up manager relationships.</p>
                 </div>
             )}
         </div>

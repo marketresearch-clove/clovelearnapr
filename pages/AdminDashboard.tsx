@@ -310,7 +310,7 @@ const AdminDashboard: React.FC = () => {
       <div className="space-y-8 bg-gray-50">
         {/* Error Display */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4 flex items-start gap-3">
+          <div className="bg-red-50 border border-red-200 p-4 flex items-start gap-3" style={{ borderRadius: '15px' }}>
             <span className="material-symbols-rounded text-red-600 text-xl flex-shrink-0 mt-0.5">error</span>
             <div className="flex-1">
               <h4 className="font-bold text-red-900 mb-1">Dashboard Error</h4>
@@ -321,7 +321,8 @@ const AdminDashboard: React.FC = () => {
                 setError(null);
                 fetchDashboardData();
               }}
-              className="text-sm font-bold text-red-600 hover:text-red-700 flex-shrink-0 px-3 py-1 hover:bg-red-100 rounded-lg transition-colors"
+              className="text-sm font-bold text-red-600 hover:text-red-700 flex-shrink-0 px-3 py-1 hover:bg-red-100 transition-colors"
+              style={{ borderRadius: '15px' }}
             >
               Retry
             </button>
@@ -333,7 +334,7 @@ const AdminDashboard: React.FC = () => {
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <div className="inline-block">
-                <div className="w-12 h-12 border-4 border-gray-200 border-t-primary rounded-full animate-spin mb-3"></div>
+                <div className="w-12 h-12 border-4 border-gray-200 border-t-primary animate-spin mb-3" style={{ borderRadius: '50%' }}></div>
               </div>
               <p className="text-gray-600 font-medium">Loading dashboard data...</p>
               <p className="text-xs text-gray-500 mt-1">This may take a moment</p>

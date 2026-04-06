@@ -572,9 +572,9 @@ const AdminAnalyticsPage: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-3 text-sm font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-2 ${activeTab === tab.id
-                ? 'border-primary text-primary'
-                : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+              className={`px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap flex items-center gap-2 ${activeTab === tab.id
+                ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
             >
               <span className="material-symbols-rounded text-lg">{tab.icon}</span>
               {tab.label}
