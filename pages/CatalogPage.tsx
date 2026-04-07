@@ -557,7 +557,7 @@ const CatalogPage: React.FC = () => {
                                 }
                               }
                             }}
-                            className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                            className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
                           >
                             <span className="material-symbols-rounded text-sm">workspace_premium</span>
                             View Certificate

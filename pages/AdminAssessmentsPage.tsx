@@ -1,8 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { externalAssessmentService, ExternalAssessment, ExternalAssessmentResult } from '../lib/externalAssessmentService';
+import { courseAssignmentService } from '../lib/courseAssignmentService';
 import { supabase } from '../lib/supabaseClient';
 import useAuthGuard from '../hooks/useAuthGuard';
+
+interface FilterState {
+  department: string[];
+  company: string[];
+  designation: string[];
+  employmentType: string[];
+  industry: string[];
+  leadershipRole: string[];
+  location: string[];
+  persona: string[];
+  team: string[];
+  grade: string[];
+}
 
 const UserAvatar = ({ user }: { user: any }) => {
   const getInitials = (name: string) => {
@@ -224,7 +238,7 @@ const ManageAssessmentsTab: React.FC = () => {
       </div>
 
       {showForm && (
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
@@ -235,7 +249,7 @@ const ManageAssessmentsTab: React.FC = () => {
                     type="text"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full bg-gray-50 border border-gray-200 text-[#ffffff] rounded-lg px-4 py-2 text-sm"
+                    className="w-full bg-gray-50 border border-gray-200 text-[#000000] rounded-lg px-4 py-2 text-sm"
                     placeholder="e.g. EFSET English Proficiency Test"
                   />
                 </div>
@@ -246,7 +260,7 @@ const ManageAssessmentsTab: React.FC = () => {
                     type="text"
                     value={formData.provider}
                     onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
-                    className="w-full bg-gray-50 text-[#ffffff] border border-gray-200 rounded-lg px-4 py-2 text-sm"
+                    className="w-full bg-gray-50 text-[#000000] border border-gray-200 rounded-lg px-4 py-2 text-sm"
                     placeholder="e.g. EFSET"
                   />
                 </div>
@@ -257,7 +271,7 @@ const ManageAssessmentsTab: React.FC = () => {
                     type="url"
                     value={formData.external_url}
                     onChange={(e) => setFormData({ ...formData, external_url: e.target.value })}
-                    className="w-full bg-gray-50 border text-[#ffffff] border-gray-200 rounded-lg px-4 py-2 text-sm"
+                    className="w-full bg-gray-50 border text-[#000000] border-gray-200 rounded-lg px-4 py-2 text-sm"
                     placeholder="https://..."
                   />
                 </div>
@@ -271,7 +285,7 @@ const ManageAssessmentsTab: React.FC = () => {
                       type="number"
                       value={formData.duration}
                       onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
-                      className="w-full bg-gray-50 border text-[#ffffff] border-gray-200 rounded-lg px-4 py-2 text-sm"
+                      className="w-full bg-gray-50 border text-[#000000] border-gray-200 rounded-lg px-4 py-2 text-sm"
                     />
                   </div>
                   <div>
@@ -281,7 +295,7 @@ const ManageAssessmentsTab: React.FC = () => {
                       type="number"
                       value={formData.attempt_limit}
                       onChange={(e) => setFormData({ ...formData, attempt_limit: parseInt(e.target.value) })}
-                      className="w-full bg-gray-50 text-[#ffffff] border border-gray-200 rounded-lg px-4 py-2 text-sm"
+                      className="w-full bg-gray-50 text-[#000000] border border-gray-200 rounded-lg px-4 py-2 text-sm"
                     />
                   </div>
                 </div>
@@ -290,7 +304,7 @@ const ManageAssessmentsTab: React.FC = () => {
                   <textarea
                     value={formData.instructions}
                     onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
-                    className="w-full bg-gray-50 border text-[#ffffff] border-gray-200 rounded-lg px-4 py-2 text-sm h-24"
+                    className="w-full bg-gray-50 border text-[#000000] border-gray-200 rounded-lg px-4 py-2 text-sm h-24"
                     placeholder="Provide instructions for learners..."
                   ></textarea>
                 </div>
@@ -370,7 +384,7 @@ const ManageAssessmentsTab: React.FC = () => {
               </button>
               <button
                 type="submit"
-                className="bg-[#ffffff] text-primary px-8 py-2 rounded-lg text-sm font-bold transition-transform active:scale-95 shadow-lg shadow-primary/20"
+                className="bg-indigo-600 text-white px-8 py-2 rounded-lg text-sm font-bold transition-transform active:scale-95 shadow-lg shadow-primary/20"
               >
                 {editingId ? 'Update Assessment' : 'Create Assessment'}
               </button>
@@ -381,7 +395,7 @@ const ManageAssessmentsTab: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {assessments.map((assessment) => (
-          <div key={assessment.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm group">
+          <div key={assessment.id} className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm group">
             <div className="h-32 bg-slate-100 relative">
               {assessment.thumbnail_url && <img src={assessment.thumbnail_url} alt="" className="w-full h-full object-cover" />}
               <div className="absolute top-2 right-2 flex gap-2">
@@ -459,6 +473,20 @@ const AssignAssessmentsTab: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'table' | 'simplified'>('table');
   const [assessmentSearchQuery, setAssessmentSearchQuery] = useState('');
+  const [filterOptions, setFilterOptions] = useState<any>({});
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [filters, setFilters] = useState<FilterState>({
+    department: [],
+    company: [],
+    designation: [],
+    employmentType: [],
+    industry: [],
+    leadershipRole: [],
+    location: [],
+    persona: [],
+    team: [],
+    grade: [],
+  });
 
   useEffect(() => {
     fetchData();
@@ -467,12 +495,14 @@ const AssignAssessmentsTab: React.FC = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [assessmentsData, { data: usersData }] = await Promise.all([
+      const [assessmentsData, { data: usersData }, filterValues] = await Promise.all([
         externalAssessmentService.getAssessments(),
-        supabase.from('profiles').select('id, fullname, email, role, department, avatarurl')
+        supabase.from('profiles').select('id, fullname, email, role, department, company, designation, employment_type, industry, leadership_role, location, persona, team, avatarurl, user_id'),
+        courseAssignmentService.getUniqueFilterValues()
       ]);
       setAssessments(assessmentsData);
       setUsers(usersData || []);
+      setFilterOptions(filterValues);
     } catch (err) {
       console.error(err);
     } finally {
@@ -489,19 +519,75 @@ const AssignAssessmentsTab: React.FC = () => {
     return counts;
   }, [users]);
 
+  const toggleFilter = (filterType: keyof FilterState, value: string) => {
+    setFilters(prev => {
+      const newFilters = { ...prev };
+      if (newFilters[filterType].includes(value)) {
+        newFilters[filterType] = newFilters[filterType].filter(v => v !== value);
+      } else {
+        newFilters[filterType] = [...newFilters[filterType], value];
+      }
+
+      if (filterType === 'department') {
+        setActiveDepartment('All');
+      }
+
+      return newFilters;
+    });
+  };
+
   const filteredUsers = React.useMemo(() => {
     let filtered = users;
-    if (activeDepartment !== 'All') {
+
+    // Apply department filter only if NOT searching
+    if (!searchQuery && activeDepartment !== 'All') {
       filtered = filtered.filter(u => (u.department || 'Other') === activeDepartment);
     }
+
+    if (showAdvancedSearch) {
+      if (filters.department.length > 0) {
+        filtered = filtered.filter(u => filters.department.includes(u.department));
+      }
+      if (filters.company.length > 0) {
+        filtered = filtered.filter(u => filters.company.includes(u.company));
+      }
+      if (filters.designation.length > 0) {
+        filtered = filtered.filter(u => filters.designation.includes(u.designation));
+      }
+      if (filters.employmentType.length > 0) {
+        filtered = filtered.filter(u => filters.employmentType.includes(u.employment_type));
+      }
+      if (filters.industry.length > 0) {
+        filtered = filtered.filter(u => filters.industry.includes(u.industry));
+      }
+      if (filters.leadershipRole.length > 0) {
+        filtered = filtered.filter(u => filters.leadershipRole.includes(u.leadership_role));
+      }
+      if (filters.location.length > 0) {
+        filtered = filtered.filter(u => filters.location.includes(u.location));
+      }
+      if (filters.persona.length > 0) {
+        filtered = filtered.filter(u => filters.persona.includes(u.persona));
+      }
+      if (filters.team.length > 0) {
+        filtered = filtered.filter(u => filters.team.includes(u.team));
+      }
+      if (filters.grade.length > 0) {
+        filtered = filtered.filter(u => filters.grade.includes(u.grade));
+      }
+    }
+
     if (searchQuery) {
+      const query = searchQuery.toLowerCase();
       filtered = filtered.filter(u =>
-        u.fullname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.email?.toLowerCase().includes(searchQuery.toLowerCase())
+        u.fullname?.toLowerCase().includes(query) ||
+        u.email?.toLowerCase().includes(query) ||
+        u.department?.toLowerCase().includes(query) ||
+        u.user_id?.toLowerCase().includes(query)
       );
     }
     return filtered;
-  }, [users, activeDepartment, searchQuery]);
+  }, [users, activeDepartment, searchQuery, filters, showAdvancedSearch]);
 
   const handleAssign = async () => {
     if (!selectedAssessmentId || selectedUserIds.length === 0) {
@@ -547,200 +633,9 @@ const AssignAssessmentsTab: React.FC = () => {
     );
   }, [assessments, assessmentSearchQuery]);
 
-  const SimplifiedAssignView = () => (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-2 space-y-6">
-        {/* User Filters */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={() => setActiveDepartment('All')}
-            className={`px-4 py-2 text-sm font-semibold rounded-full transition-colors ${activeDepartment === 'All' ? 'bg-[#4f46e5] text-white' : 'bg-white text-black border border-black'}`}
-          >
-            All Users ({users.length})
-          </button>
-          {Object.entries(departmentCounts).map(([department, count]) => (
-            <button
-              key={department}
-              onClick={() => setActiveDepartment(department)}
-              className={`px-4 py-2 text-sm font-semibold rounded-full transition-colors ${activeDepartment === department ? 'bg-[#4f46e5] text-white' : 'bg-white text-black border border-black'}`}
-            >
-              {department} ({count})
-            </button>
-          ))}
-        </div>
-
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex flex-wrap justify-between items-center gap-4">
-              <h3 className="font-semibold text-gray-900">
-                Users - {activeDepartment} ({filteredUsers.length} Users)
-              </h3>
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <span className="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
-                  <input
-                    type="text"
-                    placeholder="Search User"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-64 pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4f46e5] text-sm"
-                  />
-                </div>
-                <label className="flex items-center gap-2 cursor-pointer text-sm">
-                  <input
-                    type="checkbox"
-                    onChange={() => {
-                      const allInFilteredSelected = filteredUsers.length > 0 && filteredUsers.every(u => selectedUserIds.includes(u.id));
-                      if (allInFilteredSelected) {
-                        // Unselect all in current filtered list
-                        setSelectedUserIds(prev => prev.filter(id => !filteredUsers.some(u => u.id === id)));
-                      } else {
-                        // Select all in current filtered list
-                        setSelectedUserIds(prev => {
-                          const newIds = new Set([...prev, ...filteredUsers.map(u => u.id)]);
-                          return Array.from(newIds);
-                        });
-                      }
-                    }}
-                    checked={filteredUsers.length > 0 && filteredUsers.every(u => selectedUserIds.includes(u.id))}
-                    className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-[#4f46e5]"
-                  />
-                  Select All
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div className="max-h-[600px] overflow-y-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-6">
-              {filteredUsers.map(user => (
-                <div
-                  key={user.id}
-                  onClick={() => toggleUserSelection(user.id)}
-                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedUserIds.includes(user.id)
-                    ? 'border-[#4f46e5] bg-[#4f46e5]/5'
-                    : 'border-gray-100 hover:border-gray-200'
-                    }`}
-                >
-                  <UserAvatar user={user} />
-                  <div className="text-center">
-                    <h4 className="font-bold text-gray-900 text-sm truncate">{user.fullname || 'Anonymous'}</h4>
-                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                    <div className="mt-2 flex flex-wrap justify-center gap-1">
-                      {user.department && (
-                        <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full">
-                          {user.department}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {filteredUsers.length === 0 && (
-                <div className="col-span-full py-12 text-center text-gray-500">
-                  No users found in this department
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Sidebar - Assessment Selection */}
-      <div className="space-y-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-6 shadow-sm">
-          <h3 className="font-bold text-gray-900 mb-4">Select Assessment</h3>
-
-          <div className="relative mb-4">
-            <span className="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
-            <input
-              type="text"
-              placeholder="Search assessments..."
-              value={assessmentSearchQuery}
-              onChange={(e) => setAssessmentSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4f46e5] outline-none text-sm"
-            />
-          </div>
-
-          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-            {filteredAssessments.length === 0 ? (
-              <p className="text-gray-500 text-sm italic">No assessments found</p>
-            ) : (
-              filteredAssessments.map(assessment => (
-                <div
-                  key={assessment.id}
-                  onClick={() => setSelectedAssessmentId(assessment.id)}
-                  className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${selectedAssessmentId === assessment.id
-                    ? 'border-[#4f46e5] bg-[#4f46e5]/5'
-                    : 'border-gray-100 hover:border-gray-200'
-                    }`}
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-bold text-gray-900 text-sm">{assessment.title}</h4>
-                      <p className="text-[10px] text-gray-500">{assessment.provider} • {assessment.duration} mins</p>
-                    </div>
-                    {selectedAssessmentId === assessment.id && (
-                      <span className="material-symbols-rounded text-[#4f46e5] text-lg">check_circle</span>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Valid Until (Optional)
-              </label>
-              <input
-                type="date"
-                value={validUntil}
-                onChange={(e) => setValidUntil(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4f46e5] outline-none text-sm"
-              />
-            </div>
-
-            <div className="flex flex-col gap-2 mb-6">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600">Selected Users:</span>
-                <span className="font-bold text-gray-900">{selectedUserIds.length}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600">Assessment:</span>
-                <span className="font-bold text-gray-900 truncate max-w-[150px]">
-                  {assessments.find(a => a.id === selectedAssessmentId)?.title || 'None'}
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={handleAssign}
-              disabled={submitting || selectedUserIds.length === 0 || !selectedAssessmentId}
-              className="w-full bg-[#4f46e5] text-white font-bold py-3 rounded-lg shadow-lg hover:bg-[#4338ca] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {submitting ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Assigning...
-                </>
-              ) : (
-                <>
-                  <span className="material-symbols-rounded">assignment_turned_in</span>
-                  Assign Assessment
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 mb-4">
+      <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-gray-200 mb-4">
         <h3 className="font-semibold text-gray-900">Assign Assessments</h3>
         <div className="flex items-center gap-2">
           <button
@@ -768,26 +663,383 @@ const AssignAssessmentsTab: React.FC = () => {
         </div>
       </div>
 
-      {viewMode === 'simplified' ? <SimplifiedAssignView /> : (
-        <div className="space-y-6">
-          <div className="flex items-center gap-2 flex-wrap">
+      <div className="space-y-6">
+        {/* User Filters - Common for both views */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setActiveDepartment('All')}
+            className={`px-4 py-2 text-sm font-semibold rounded-full flex items-center gap-2 transition-colors ${activeDepartment === 'All' ? 'bg-[#4f46e5] text-white' : 'bg-white text-black border border-black'}`}
+          >
+            All Users ({users.length})
+          </button>
+          {Object.entries(departmentCounts).map(([department, count]) => (
             <button
-              onClick={() => setActiveDepartment('All')}
-              className={`px-4 py-2 text-sm font-semibold rounded-full flex items-center gap-2 transition-colors ${activeDepartment === 'All' ? 'bg-[#4f46e5] text-white' : 'bg-white text-black border border-black'}`}
+              key={department}
+              onClick={() => setActiveDepartment(department)}
+              className={`px-4 py-2 text-sm font-semibold rounded-full flex items-center gap-2 transition-colors ${activeDepartment === department ? 'bg-[#4f46e5] text-white' : 'bg-white text-black border border-black'}`}
             >
-              All Users (Learners & Admins) ({users.length})
+              {department} ({count})
             </button>
-            {Object.entries(departmentCounts).map(([department, count]) => (
-              <button
-                key={department}
-                onClick={() => setActiveDepartment(department)}
-                className={`px-4 py-2 text-sm font-semibold rounded-full flex items-center gap-2 transition-colors ${activeDepartment === department ? 'bg-[#4f46e5] text-white' : 'bg-white text-black border border-black'}`}
-              >
-                {department} ({count})
-              </button>
-            ))}
-          </div>
+          ))}
+        </div>
 
+        {viewMode === 'simplified' ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+                <div className="p-6 border-b border-gray-200">
+                  <h3 className="font-semibold text-gray-900 mb-4">
+                    Users - {activeDepartment} ({filteredUsers.length} Users)
+                  </h3>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="relative flex-1">
+                      <span className="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                      <input
+                        type="text"
+                        placeholder="Search User"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-10 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4f46e5] text-sm"
+                      />
+                      {searchQuery && (
+                        <button
+                          onClick={() => setSearchQuery('')}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                          title="Clear search"
+                        >
+                          <span className="material-symbols-rounded text-lg">close</span>
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-4 flex-wrap">
+                      <button
+                        onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+                        className="text-sm font-medium text-[#4f46e5] hover:underline whitespace-nowrap"
+                      >
+                        Advanced Search
+                      </button>
+                      <label className="flex items-center gap-2 cursor-pointer text-sm whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          onChange={() => {
+                            const allInFilteredSelected = filteredUsers.length > 0 && filteredUsers.every(u => selectedUserIds.includes(u.id));
+                            if (allInFilteredSelected) {
+                              setSelectedUserIds(prev => prev.filter(id => !filteredUsers.some(u => u.id === id)));
+                            } else {
+                              setSelectedUserIds(prev => {
+                                const newIds = new Set([...prev, ...filteredUsers.map(u => u.id)]);
+                                return Array.from(newIds);
+                              });
+                            }
+                          }}
+                          checked={filteredUsers.length > 0 && filteredUsers.every(u => selectedUserIds.includes(u.id))}
+                          className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-[#4f46e5]"
+                        />
+                        Select All
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {showAdvancedSearch && (
+                  <div className="p-6 border-b border-gray-200 bg-gray-50">
+                    <h3 className="font-semibold text-gray-900 mb-4 text-sm">Advanced Search</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                      {filterOptions.departments?.length > 0 && (
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Department</label>
+                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                            {filterOptions.departments.map((dept: string) => (
+                              <label key={dept} className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.department.includes(dept)}
+                                  onChange={() => toggleFilter('department', dept)}
+                                  className="w-3.5 h-3.5 text-[#4f46e5] rounded border-gray-300 focus:ring-[#4f46e5]"
+                                />
+                                <span className="text-xs text-gray-600 group-hover:text-gray-900">{dept}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {filterOptions.companies?.length > 0 && (
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Company</label>
+                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                            {filterOptions.companies.map((comp: string) => (
+                              <label key={comp} className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.company.includes(comp)}
+                                  onChange={() => toggleFilter('company', comp)}
+                                  className="w-3.5 h-3.5 text-[#4f46e5] rounded border-gray-300 focus:ring-[#4f46e5]"
+                                />
+                                <span className="text-xs text-gray-600 group-hover:text-gray-900">{comp}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {filterOptions.designations?.length > 0 && (
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Designation</label>
+                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                            {filterOptions.designations.map((des: string) => (
+                              <label key={des} className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.designation.includes(des)}
+                                  onChange={() => toggleFilter('designation', des)}
+                                  className="w-3.5 h-3.5 text-[#4f46e5] rounded border-gray-300 focus:ring-[#4f46e5]"
+                                />
+                                <span className="text-xs text-gray-600 group-hover:text-gray-900">{des}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {filterOptions.locations?.length > 0 && (
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Location</label>
+                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                            {filterOptions.locations.map((loc: string) => (
+                              <label key={loc} className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.location.includes(loc)}
+                                  onChange={() => toggleFilter('location', loc)}
+                                  className="w-3.5 h-3.5 text-[#4f46e5] rounded border-gray-300 focus:ring-[#4f46e5]"
+                                />
+                                <span className="text-xs text-gray-600 group-hover:text-gray-900">{loc}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {filterOptions.employmentTypes?.length > 0 && (
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Employment Type</label>
+                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                            {filterOptions.employmentTypes.map((type: string) => (
+                              <label key={type} className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.employmentType.includes(type)}
+                                  onChange={() => toggleFilter('employmentType', type)}
+                                  className="w-3.5 h-3.5 text-[#4f46e5] rounded border-gray-300 focus:ring-[#4f46e5]"
+                                />
+                                <span className="text-xs text-gray-600 group-hover:text-gray-900">{type}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {filterOptions.industries?.length > 0 && (
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Industry</label>
+                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                            {filterOptions.industries.map((ind: string) => (
+                              <label key={ind} className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.industry.includes(ind)}
+                                  onChange={() => toggleFilter('industry', ind)}
+                                  className="w-3.5 h-3.5 text-[#4f46e5] rounded border-gray-300 focus:ring-[#4f46e5]"
+                                />
+                                <span className="text-xs text-gray-600 group-hover:text-gray-900">{ind}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {filterOptions.leadershipRoles?.length > 0 && (
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Leadership Role</label>
+                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                            {filterOptions.leadershipRoles.map((role: string) => (
+                              <label key={role} className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.leadershipRole.includes(role)}
+                                  onChange={() => toggleFilter('leadershipRole', role)}
+                                  className="w-3.5 h-3.5 text-[#4f46e5] rounded border-gray-300 focus:ring-[#4f46e5]"
+                                />
+                                <span className="text-xs text-gray-600 group-hover:text-gray-900">{role}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {filterOptions.personas?.length > 0 && (
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Persona</label>
+                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                            {filterOptions.personas.map((pers: string) => (
+                              <label key={pers} className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.persona.includes(pers)}
+                                  onChange={() => toggleFilter('persona', pers)}
+                                  className="w-3.5 h-3.5 text-[#4f46e5] rounded border-gray-300 focus:ring-[#4f46e5]"
+                                />
+                                <span className="text-xs text-gray-600 group-hover:text-gray-900">{pers}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {filterOptions.teams?.length > 0 && (
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Team</label>
+                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                            {filterOptions.teams.map((team: string) => (
+                              <label key={team} className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.team.includes(team)}
+                                  onChange={() => toggleFilter('team', team)}
+                                  className="w-3.5 h-3.5 text-[#4f46e5] rounded border-gray-300 focus:ring-[#4f46e5]"
+                                />
+                                <span className="text-xs text-gray-600 group-hover:text-gray-900">{team}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="max-h-[600px] overflow-y-auto">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-6">
+                    {filteredUsers.map(user => (
+                      <div
+                        key={user.id}
+                        onClick={() => toggleUserSelection(user.id)}
+                        className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedUserIds.includes(user.id)
+                          ? 'border-[#4f46e5] bg-[#4f46e5]/5'
+                          : 'border-gray-100 hover:border-gray-200'
+                          }`}
+                      >
+                        <UserAvatar user={user} />
+                        <div className="text-center">
+                          <h4 className="font-bold text-gray-900 text-sm truncate">{user.fullname || 'Anonymous'}</h4>
+                          {user.user_id && (
+                            <p className="text-xs text-gray-600 truncate font-medium">{user.user_id}</p>
+                          )}
+                          <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                          <div className="mt-2 flex flex-wrap justify-center gap-1">
+                            {user.department && (
+                              <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full">
+                                {user.department}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {filteredUsers.length === 0 && (
+                      <div className="col-span-full py-12 text-center text-gray-500">
+                        No users found matching your criteria
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Sidebar - Assessment Selection */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-6 shadow-sm">
+                <h3 className="font-bold text-gray-900 mb-4">Select Assessment</h3>
+
+                <div className="relative mb-4">
+                  <span className="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                  <input
+                    type="text"
+                    placeholder="Search assessments..."
+                    value={assessmentSearchQuery}
+                    onChange={(e) => setAssessmentSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4f46e5] outline-none text-sm"
+                  />
+                </div>
+
+                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+                  {filteredAssessments.length === 0 ? (
+                    <p className="text-gray-500 text-sm italic">No assessments found</p>
+                  ) : (
+                    filteredAssessments.map(assessment => (
+                      <div
+                        key={assessment.id}
+                        onClick={() => setSelectedAssessmentId(assessment.id)}
+                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${selectedAssessmentId === assessment.id
+                          ? 'border-[#4f46e5] bg-[#4f46e5]/5'
+                          : 'border-gray-100 hover:border-gray-200'
+                          }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-bold text-gray-900 text-sm">{assessment.title}</h4>
+                            <p className="text-[10px] text-gray-500">{assessment.provider} • {assessment.duration} mins</p>
+                          </div>
+                          {selectedAssessmentId === assessment.id && (
+                            <span className="material-symbols-rounded text-[#4f46e5] text-lg">check_circle</span>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Valid Until (Optional)
+                    </label>
+                    <input
+                      type="date"
+                      value={validUntil}
+                      onChange={(e) => setValidUntil(e.target.value)}
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4f46e5] outline-none text-sm"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2 mb-6">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600">Selected Users:</span>
+                      <span className="font-bold text-gray-900">{selectedUserIds.length}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600">Assessment:</span>
+                      <span className="font-bold text-gray-900 truncate max-w-[150px]">
+                        {assessments.find(a => a.id === selectedAssessmentId)?.title || 'None'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleAssign}
+                    disabled={submitting || selectedUserIds.length === 0 || !selectedAssessmentId}
+                    className="w-full bg-[#4f46e5] text-white font-bold py-3 rounded-lg shadow-lg hover:bg-[#4338ca] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {submitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Assigning...
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-rounded">assignment_turned_in</span>
+                        Assign Assessment
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-1 space-y-6">
               <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
@@ -821,12 +1073,12 @@ const AssignAssessmentsTab: React.FC = () => {
                   type="date"
                   value={validUntil}
                   onChange={(e) => setValidUntil(e.target.value)}
-                  className="w-full bg-gray-50 border text-[#ffffff] border-gray-200 rounded-lg px-4 py-2 text-sm mb-6"
+                  className="w-full bg-gray-50 border text-[#000000] border-gray-200 rounded-lg px-4 py-2 text-sm mb-6"
                 />
                 <button
                   onClick={handleAssign}
                   disabled={submitting || !selectedAssessmentId || selectedUserIds.length === 0}
-                  className="w-full bg-[#4f46e5] text-[#ffffff] px-4 py-3 rounded-xl font-bold transition-transform active:scale-95 shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+                  className="w-full bg-indigo-600 text-[#ffffff] px-4 py-3 rounded-xl font-bold transition-transform active:scale-95 shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
                 >
                   <span className="material-symbols-rounded">person_add</span>
                   Assign to {selectedUserIds.length} Users
@@ -836,33 +1088,224 @@ const AssignAssessmentsTab: React.FC = () => {
 
             <div className="lg:col-span-2">
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-gray-100 flex flex-wrap justify-between items-center gap-4">
-                  <h3 className="text-lg font-bold text-gray-900">Select Users</h3>
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="text"
-                      placeholder="Search User"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm bg-gray-50"
-                    />
-                    <div className="flex gap-2">
+                <div className="p-6 border-b border-gray-100">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">Select Users</h3>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="relative flex-1">
+                      <span className="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                      <input
+                        type="text"
+                        placeholder="Search User"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-10 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm bg-gray-50"
+                      />
+                      {searchQuery && (
+                        <button
+                          onClick={() => setSearchQuery('')}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                          title="Clear search"
+                        >
+                          <span className="material-symbols-rounded text-lg">close</span>
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
-                        onClick={() => setSelectedUserIds(filteredUsers.map(u => u.id))}
-                        className="text-xs font-bold text-[white] hover:underline"
+                        onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+                        className="text-sm font-medium text-[#4f46e5] hover:underline whitespace-nowrap"
                       >
-                        Select All
+                        Advanced Search
                       </button>
-                      <span className="text-gray-300">|</span>
-                      <button
-                        onClick={() => setSelectedUserIds([])}
-                        className="text-xs font-bold text-gray-500 hover:underline"
-                      >
-                        Clear
-                      </button>
+                      <div className="flex gap-2 flex-wrap">
+                        <button
+                          onClick={() => setSelectedUserIds(filteredUsers.map(u => u.id))}
+                          className="text-xs font-bold text-[#ffffff] bg-indigo-600 px-2 py-2 rounded-lg hover:underline"
+                        >
+                          Select All
+                        </button>
+                        <span className="text-gray-300">|</span>
+                        <button
+                          onClick={() => setSelectedUserIds([])}
+                          className="text-xs font-bold text-gray-500 hover:underline"
+                        >
+                          Clear
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
+
+                {showAdvancedSearch && (
+                  <div className="p-6 border-b border-gray-200 bg-gray-50">
+                    <h3 className="font-semibold text-gray-900 mb-4 text-sm">Advanced Search</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                      {filterOptions.departments?.length > 0 && (
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Department</label>
+                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                            {filterOptions.departments.map((dept: string) => (
+                              <label key={dept} className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.department.includes(dept)}
+                                  onChange={() => toggleFilter('department', dept)}
+                                  className="w-3.5 h-3.5 text-[#4f46e5] rounded border-gray-300 focus:ring-[#4f46e5]"
+                                />
+                                <span className="text-xs text-gray-600 group-hover:text-gray-900">{dept}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {filterOptions.companies?.length > 0 && (
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Company</label>
+                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                            {filterOptions.companies.map((comp: string) => (
+                              <label key={comp} className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.company.includes(comp)}
+                                  onChange={() => toggleFilter('company', comp)}
+                                  className="w-3.5 h-3.5 text-[#4f46e5] rounded border-gray-300 focus:ring-[#4f46e5]"
+                                />
+                                <span className="text-xs text-gray-600 group-hover:text-gray-900">{comp}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {filterOptions.designations?.length > 0 && (
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Designation</label>
+                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                            {filterOptions.designations.map((des: string) => (
+                              <label key={des} className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.designation.includes(des)}
+                                  onChange={() => toggleFilter('designation', des)}
+                                  className="w-3.5 h-3.5 text-[#4f46e5] rounded border-gray-300 focus:ring-[#4f46e5]"
+                                />
+                                <span className="text-xs text-gray-600 group-hover:text-gray-900">{des}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {filterOptions.locations?.length > 0 && (
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Location</label>
+                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                            {filterOptions.locations.map((loc: string) => (
+                              <label key={loc} className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.location.includes(loc)}
+                                  onChange={() => toggleFilter('location', loc)}
+                                  className="w-3.5 h-3.5 text-[#4f46e5] rounded border-gray-300 focus:ring-[#4f46e5]"
+                                />
+                                <span className="text-xs text-gray-600 group-hover:text-gray-900">{loc}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {filterOptions.employmentTypes?.length > 0 && (
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Employment Type</label>
+                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                            {filterOptions.employmentTypes.map((type: string) => (
+                              <label key={type} className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.employmentType.includes(type)}
+                                  onChange={() => toggleFilter('employmentType', type)}
+                                  className="w-3.5 h-3.5 text-[#4f46e5] rounded border-gray-300 focus:ring-[#4f46e5]"
+                                />
+                                <span className="text-xs text-gray-600 group-hover:text-gray-900">{type}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {filterOptions.industries?.length > 0 && (
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Industry</label>
+                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                            {filterOptions.industries.map((ind: string) => (
+                              <label key={ind} className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.industry.includes(ind)}
+                                  onChange={() => toggleFilter('industry', ind)}
+                                  className="w-3.5 h-3.5 text-[#4f46e5] rounded border-gray-300 focus:ring-[#4f46e5]"
+                                />
+                                <span className="text-xs text-gray-600 group-hover:text-gray-900">{ind}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {filterOptions.leadershipRoles?.length > 0 && (
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Leadership Role</label>
+                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                            {filterOptions.leadershipRoles.map((role: string) => (
+                              <label key={role} className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.leadershipRole.includes(role)}
+                                  onChange={() => toggleFilter('leadershipRole', role)}
+                                  className="w-3.5 h-3.5 text-[#4f46e5] rounded border-gray-300 focus:ring-[#4f46e5]"
+                                />
+                                <span className="text-xs text-gray-600 group-hover:text-gray-900">{role}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {filterOptions.personas?.length > 0 && (
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Persona</label>
+                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                            {filterOptions.personas.map((pers: string) => (
+                              <label key={pers} className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.persona.includes(pers)}
+                                  onChange={() => toggleFilter('persona', pers)}
+                                  className="w-3.5 h-3.5 text-[#4f46e5] rounded border-gray-300 focus:ring-[#4f46e5]"
+                                />
+                                <span className="text-xs text-gray-600 group-hover:text-gray-900">{pers}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {filterOptions.teams?.length > 0 && (
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Team</label>
+                          <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                            {filterOptions.teams.map((team: string) => (
+                              <label key={team} className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.team.includes(team)}
+                                  onChange={() => toggleFilter('team', team)}
+                                  className="w-3.5 h-3.5 text-[#4f46e5] rounded border-gray-300 focus:ring-[#4f46e5]"
+                                />
+                                <span className="text-xs text-gray-600 group-hover:text-gray-900">{team}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <div className="max-h-[600px] overflow-y-auto custom-scrollbar">
                   <table className="w-full">
                     <thead className="bg-gray-50 text-left">
@@ -904,8 +1347,8 @@ const AssignAssessmentsTab: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
@@ -1108,58 +1551,68 @@ const AssessmentResultsTab: React.FC = () => {
             <tr>
               <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase">Learner / Admin</th>
               <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase">Assessment</th>
-              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase">Score / Level</th>
+              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase text-center">Score</th>
+              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase text-center">Level</th>
+              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase">Submitted</th>
               <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase">Status</th>
-              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase">Date</th>
               <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {data.map(item => (
-              <tr key={item.id} className="text-sm">
+            {data.map((row) => (
+              <tr key={row.id} className="text-sm hover:bg-gray-50/50 transition-colors">
                 <td className="px-6 py-4">
-                  <p className="font-bold text-gray-900">{item.user?.fullname}</p>
-                  <p className="text-[10px] text-gray-500">{item.user?.email}</p>
-                </td>
-                <td className="px-6 py-4">
-                  <p className="font-bold text-gray-900">{item.assessment?.name}</p>
-                  <p className="text-[10px] text-gray-500">{item.assessment?.provider}</p>
-                </td>
-                <td className="px-6 py-4">
-                  {item.is_pending ? (
-                    <span className="text-gray-400 italic">Not started</span>
-                  ) : (
-                    <div className="flex flex-col">
-                      {item.score !== undefined && <span className="font-bold">Score: {item.score}</span>}
-                      {item.cefr_level && <span className="text-primary font-bold">Level: {item.cefr_level}</span>}
+                  <div className="flex items-center gap-2">
+                    <div>
+                      <p className="font-bold text-gray-900 flex items-center gap-2">
+                        {row.user?.fullname}
+                        {row.user?.role === 'admin' && (
+                          <span className="bg-indigo-100 text-indigo-700 text-[9px] px-1.5 py-0.5 rounded uppercase">Admin</span>
+                        )}
+                      </p>
+                      <p className="text-[10px] text-gray-500">{row.user?.email}</p>
                     </div>
-                  )}
+                  </div>
                 </td>
                 <td className="px-6 py-4">
-                  {item.is_pending ? (
-                    <span className="text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider bg-gray-100 text-gray-600">
-                      Pending
-                    </span>
-                  ) : (
-                    <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${item.verification_status === 'approved' ? 'bg-green-100 text-green-700' :
-                      item.verification_status === 'rejected' ? 'bg-red-100 text-red-700' :
-                        'bg-yellow-100 text-yellow-700'
-                      }`}>
-                      {item.verification_status}
-                    </span>
-                  )}
+                  <p className="font-bold text-gray-900">{row.assessment?.name}</p>
+                  <p className="text-[10px] text-gray-500">{row.assessment?.provider}</p>
+                </td>
+                <td className="px-6 py-4 text-center font-bold text-indigo-600">
+                  {row.is_pending ? '-' : row.score}
+                </td>
+                <td className="px-6 py-4 text-center font-medium">
+                  {row.is_pending ? '-' : row.determined_level}
                 </td>
                 <td className="px-6 py-4 text-gray-500">
-                  {new Date(item.submitted_at || item.assigned_at).toLocaleString()}
+                  {row.submitted_at ? new Date(row.submitted_at).toLocaleDateString() : 'Pending'}
                 </td>
                 <td className="px-6 py-4">
-                  {!item.is_pending && (
+                  <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${row.verification_status === 'approved' ? 'bg-green-100 text-green-700' :
+                    row.verification_status === 'rejected' ? 'bg-red-100 text-red-700' :
+                      'bg-yellow-100 text-yellow-700'
+                    }`}>
+                    {row.verification_status}
+                  </span>
+                </td>
+                <td className="px-6 py-4">
+                  {!row.is_pending && row.verification_status === 'pending' && (
                     <button
-                      onClick={() => setSelectedResult(item)}
-                      className="text-primary hover:bg-primary/10 px-3 py-1 rounded border border-primary/20 transition-colors font-bold text-xs"
+                      onClick={() => setSelectedResult(row)}
+                      className="bg-indigo-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-indigo-700 transition-colors"
                     >
-                      Review
+                      Verify
                     </button>
+                  )}
+                  {!row.is_pending && row.certificate_url && (
+                    <a
+                      href={row.certificate_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-indigo-600 hover:underline text-xs font-bold ml-2"
+                    >
+                      View Cert
+                    </a>
                   )}
                 </td>
               </tr>
@@ -1168,74 +1621,68 @@ const AssessmentResultsTab: React.FC = () => {
         </table>
         {data.length === 0 && !loading && (
           <div className="py-20 text-center">
-            <span className="material-symbols-rounded text-5xl text-gray-300 mb-4">history_edu</span>
-            <p className="text-gray-500">No data available.</p>
+            <p className="text-gray-500">No results found.</p>
           </div>
         )}
       </div>
 
+      {/* Verification Modal */}
       {selectedResult && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-              <h3 className="text-xl font-bold text-gray-900">Submission</h3>
-              <button onClick={() => setSelectedResult(null)} className="text-gray-500 hover:text-gray-700">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg p-6 animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-bold">Verify Assessment Result</h3>
+              <button onClick={() => setSelectedResult(null)} className="text-gray-400 hover:text-gray-600">
                 <span className="material-symbols-rounded">close</span>
               </button>
             </div>
-            <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase">Learner / Admin</p>
-                  <p className="font-bold text-gray-900">{selectedResult.user?.fullname}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase">Assessment</p>
-                  <p className="font-bold text-gray-900">{selectedResult.assessment?.name}</p>
-                </div>
-              </div>
 
-              <div className="bg-slate-50 p-4 rounded-xl space-y-2">
-                {selectedResult.result_url && (
-                  <a href={selectedResult.result_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-primary hover:underline text-sm font-bold">
-                    <span className="material-symbols-rounded text-base">link</span>
-                    View Result Page
-                  </a>
-                )}
-                {selectedResult.certificate_url && (
-                  <a href={selectedResult.certificate_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-green-600 hover:underline text-sm font-bold">
-                    <span className="material-symbols-rounded text-base">workspace_premium</span>
-                    View Certificate
-                  </a>
-                )}
+            <div className="space-y-4 mb-6">
+              <div className="grid grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded-xl">
+                <div>
+                  <p className="text-gray-500 uppercase text-[10px] font-bold">Learner</p>
+                  <p className="font-bold">{selectedResult.user?.fullname}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 uppercase text-[10px] font-bold">Assessment</p>
+                  <p className="font-bold">{selectedResult.assessment?.name}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 uppercase text-[10px] font-bold">Score</p>
+                  <p className="font-bold text-indigo-600">{selectedResult.score}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 uppercase text-[10px] font-bold">Level</p>
+                  <p className="font-bold">{selectedResult.determined_level}</p>
+                </div>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Admin Remarks</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Remarks / Feedback (Optional)</label>
                 <textarea
                   value={remarks}
                   onChange={(e) => setRemarks(e.target.value)}
                   className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm h-24"
-                  placeholder="Add remarks or feedback..."
+                  placeholder="Provide feedback or internal notes..."
                 ></textarea>
               </div>
+            </div>
 
-              <div className="flex gap-3 pt-4">
-                <button
-                  onClick={() => handleVerify('rejected')}
-                  disabled={verifying}
-                  className="flex-1 bg-red-100 hover:bg-red-200 text-red-700 py-3 rounded-xl font-bold transition-all"
-                >
-                  Reject
-                </button>
-                <button
-                  onClick={() => handleVerify('approved')}
-                  disabled={verifying}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold transition-all shadow-lg shadow-green-200"
-                >
-                  Approve Result
-                </button>
-              </div>
+            <div className="flex gap-3">
+              <button
+                disabled={verifying}
+                onClick={() => handleVerify('rejected')}
+                className="flex-1 px-4 py-2 rounded-lg font-bold border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
+              >
+                Reject
+              </button>
+              <button
+                disabled={verifying}
+                onClick={() => handleVerify('approved')}
+                className="flex-1 px-4 py-2 rounded-lg font-bold bg-green-600 text-white hover:bg-green-700 transition-colors shadow-lg shadow-green-600/20"
+              >
+                Approve Result
+              </button>
             </div>
           </div>
         </div>
@@ -1245,4 +1692,3 @@ const AssessmentResultsTab: React.FC = () => {
 };
 
 export default AdminAssessmentsPage;
-

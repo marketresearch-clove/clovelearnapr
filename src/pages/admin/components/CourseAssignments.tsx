@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../../../lib/supabaseClient';
 import Loader from '../../../../components/Loader';
 import { courseAssignmentService } from '../../../../lib/courseAssignmentService';
@@ -63,6 +63,8 @@ const CourseAssignments: React.FC = () => {
   const [filterDepartment, setFilterDepartment] = useState('all');
   const [filterUser, setFilterUser] = useState('all');
   const [filterCategory, setFilterCategory] = useState<string[]>([]);
+  const [courseSearchQuery, setCourseSearchQuery] = useState('');
+  const [courseSortOption, setCourseSortOption] = useState<'popular' | 'recent' | 'name'>('popular');
   const [sortDueDate, setSortDueDate] = useState<'none' | 'asc' | 'desc'>('none');
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [editingAssignment, setEditingAssignment] = useState<CourseAssignment | null>(null);
@@ -397,6 +399,30 @@ const CourseAssignments: React.FC = () => {
     }
   });
 
+  const filteredCourses = useMemo(() => {
+    const filtered = availableCourses.filter(course => {
+      const matchesSearch = (course.title || '').toLowerCase().includes(courseSearchQuery.toLowerCase());
+      const matchesCategory =
+        filterCategory.length === 0 ||
+        filterCategory.includes(course.category || '');
+      return matchesSearch && matchesCategory;
+    });
+
+    return [...filtered].sort((a, b) => {
+      if (courseSortOption === 'name') {
+        return (a.title || '').localeCompare(b.title || '');
+      }
+      if (courseSortOption === 'recent') {
+        const dateA = a.updated_at ? new Date(a.updated_at).getTime() : 0;
+        const dateB = b.updated_at ? new Date(b.updated_at).getTime() : 0;
+        return dateB - dateA;
+      }
+      const popularityA = Number(a.totalstudents || 0);
+      const popularityB = Number(b.totalstudents || 0);
+      return popularityB - popularityA;
+    });
+  }, [availableCourses, courseSearchQuery, filterCategory, courseSortOption]);
+
   // Group assignments by user
   const groupedAssignments = filteredAssignments.reduce((acc: any, assignment) => {
     const userId = assignment.userid;
@@ -520,11 +546,10 @@ const CourseAssignments: React.FC = () => {
                   setError(null);
                   fetchAssignments();
                 }}
-                className="flex-1 sm:flex-none bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors font-medium"
+                className="flex-1 sm:flex-none bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors font-medium"
                 title="Refresh assignments from database"
               >
-                <span className="material-symbols-rounded">refresh</span>
-                Refresh
+                <span className="material-symbols-rounded text-sm">refresh</span>
               </button>
               <button
                 onClick={handleExport}
@@ -572,7 +597,7 @@ const CourseAssignments: React.FC = () => {
             <select
               value={filterDepartment}
               onChange={(e) => setFilterDepartment(e.target.value)}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm"
+              className="px-4 py-2 pr-8 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm"
             >
               <option value="all">All Departments</option>
               {availableDepartments.map(dept => (
@@ -644,7 +669,7 @@ const CourseAssignments: React.FC = () => {
             <select
               value={sortDueDate}
               onChange={(e) => setSortDueDate(e.target.value as 'none' | 'asc' | 'desc')}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm"
+              className="px-4 py-2 pr-8 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm"
             >
               <option value="none">Sort by Due Date</option>
               <option value="asc">Earliest First</option>
@@ -664,24 +689,24 @@ const CourseAssignments: React.FC = () => {
                   setItemsPerPage(Number(e.target.value));
                   setCurrentPage(1);
                 }}
-                className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                className="px-3 py-2 pr-8 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               >
-                <option value={10}>10 per page</option>
-                <option value={20}>20 per page</option>
-                <option value={30}>30 per page</option>
-                <option value={50}>50 per page</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={30}>30</option>
+                <option value={50}>50</option>
               </select>
             </div>
           )}
 
           {/* User Groups Display */}
           {loading ? (
-            <div className="bg-white rounded-lg border border-gray-200 p-20">
+            <div className="bg-white rounded-2xl border border-gray-200 p-20">
               <Loader size="lg" message="Loading assignments..." />
               <p className="text-xs text-center text-gray-500 mt-2">This may take a moment if there are many assignments</p>
             </div>
           ) : filteredAssignments.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+            <div className="text-center py-12 bg-white rounded-2xl border border-gray-200">
               <span className="material-symbols-rounded text-4xl text-gray-400 block mb-2">assignment_ind</span>
               <p className="text-gray-600 font-medium">No assignments found</p>
               <p className="text-sm text-gray-500 mt-1">
@@ -696,7 +721,7 @@ const CourseAssignments: React.FC = () => {
               {paginatedUserGroups.map((group) => {
                 const isExpanded = expandedUsers.has(group.userId);
                 return (
-                  <div key={group.userId} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <div key={group.userId} className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
                     {/* User Header */}
                     <div className="bg-indigo-50 border-b border-indigo-200 px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-indigo-100 transition-colors" onClick={() => toggleUserExpand(group.userId)}>
                       <div className="flex items-center gap-3 flex-1">
@@ -863,9 +888,14 @@ const CourseAssignments: React.FC = () => {
               <input
                 type="text"
                 placeholder="Search courses..."
+                value={courseSearchQuery}
+                onChange={(e) => setCourseSearchQuery(e.target.value)}
                 className="flex-1 sm:flex-none px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               />
-              <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
+              <button
+                onClick={() => { }}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+              >
                 <span className="material-symbols-rounded text-base inline mr-1">search</span>
                 Search
               </button>
@@ -894,7 +924,18 @@ const CourseAssignments: React.FC = () => {
                       const courseCount = availableCourses.filter(c => c.category === category).length;
                       return (
                         <label key={category} className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 rounded cursor-pointer">
-                          <input type="checkbox" className="w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer" />
+                          <input
+                            type="checkbox"
+                            checked={filterCategory.includes(category)}
+                            onChange={() => {
+                              if (filterCategory.includes(category)) {
+                                setFilterCategory(filterCategory.filter(c => c !== category));
+                              } else {
+                                setFilterCategory([...filterCategory, category]);
+                              }
+                            }}
+                            className="w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer"
+                          />
                           <span className="flex-1 text-sm font-medium text-gray-700">{category}</span>
                           <span className="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full font-semibold">{courseCount}</span>
                         </label>
@@ -905,20 +946,28 @@ const CourseAssignments: React.FC = () => {
               )}
             </div>
 
-            <select className="px-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 font-medium outline-none focus:ring-2 focus:ring-blue-500">
-              <option>Sort by: Popular</option>
-              <option>Sort by: Recent</option>
-              <option>Sort by: Name</option>
+            <select
+              value={courseSortOption}
+              onChange={(e) => setCourseSortOption(e.target.value as 'popular' | 'recent' | 'name')}
+              className="px-4 py-2.5 pr-8 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 font-medium outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="popular">Sort by: Popular</option>
+              <option value="recent">Sort by: Recent</option>
+              <option value="name">Sort by: Name</option>
             </select>
           </div>
 
           {/* Courses Grid */}
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            {availableCourses.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+            {filteredCourses.length === 0 ? (
               <div className="p-12 text-center text-gray-500">
                 <span className="material-symbols-rounded text-5xl block mb-4 text-gray-300">school</span>
-                <p className="font-medium mb-2">No courses available</p>
-                <p className="text-sm">Courses will appear here once they are created</p>
+                <p className="font-medium mb-2">No courses match your search or filters</p>
+                {availableCourses.length === 0 ? (
+                  <p className="text-sm">Courses will appear here once they are created</p>
+                ) : (
+                  <p className="text-sm">Try adjusting your search or category filter.</p>
+                )}
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -934,7 +983,7 @@ const CourseAssignments: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {availableCourses.map((course) => (
+                    {filteredCourses.map((course) => (
                       <tr key={course.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4">
                           <div>

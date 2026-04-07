@@ -404,7 +404,7 @@ const AdminSearchBar: React.FC<AdminSearchBarProps> = ({ onUserSelect }) => {
         <>
             <div className="relative hidden md:block w-full max-w-2xl" ref={searchRef}>
                 {/* Main Search Input */}
-                <div className="flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+                <div className="flex items-center gap-3 px-2 py-1 bg-white border border-gray-200 rounded-xl shadow-sm">
                     <span className="material-symbols-rounded text-gray-400">search</span>
                     <input
                         ref={inputRef}
@@ -419,7 +419,7 @@ const AdminSearchBar: React.FC<AdminSearchBarProps> = ({ onUserSelect }) => {
                                 setIsOpen(true);
                             }
                         }}
-                        className="flex-1 bg-transparent border-none text-sm text-gray-900 placeholder-gray-500 focus:outline-none"
+                        className="flex-1 bg-transparent border-none rounded-xl text-sm text-gray-900 placeholder-gray-500 focus:outline-none"
                         placeholder={searchCriteria ? `Search ${currentCriteriaLabel?.toLowerCase()}...` : 'Start typing to search...'}
                     />
                     {searchCriteria && (

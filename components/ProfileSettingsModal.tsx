@@ -22,6 +22,7 @@ const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({ isOpen, onC
     mobile_number: '',
     user_id: '',
     designation: '',
+    linkedin_profile_url: '',
     avatarurl: ''
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -76,6 +77,7 @@ const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({ isOpen, onC
           mobile_number: data.mobile_number || '',
           user_id: data.user_id || '',
           designation: data.designation || '',
+          linkedin_profile_url: data.linkedin_profile_url || '',
           avatarurl: data.avatarurl || ''
         });
       }
@@ -134,6 +136,7 @@ const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({ isOpen, onC
         mobile_number: profile.mobile_number,
         user_id: profile.user_id,
         designation: profile.designation,
+        linkedin_profile_url: profile.linkedin_profile_url,
         avatarurl: profile.avatarurl
       });
       onClose();
@@ -282,6 +285,18 @@ const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({ isOpen, onC
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn Profile URL</label>
+                <input
+                  type="url"
+                  name="linkedin_profile_url"
+                  value={profile.linkedin_profile_url}
+                  onChange={handleInputChange}
+                  placeholder="https://linkedin.com/in/username"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
               </div>
 
               <div className="pt-4 flex justify-end gap-3">

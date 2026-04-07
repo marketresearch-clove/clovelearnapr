@@ -426,7 +426,7 @@ const ModulesLessonsEditor: React.FC<ModulesLessonsEditorProps> = ({ courseData,
                   title: 'Quiz Assessment',
                   content: '',
                   data: {
-                    questions: [{ id: 1, question: '', type: 'multiple-choice', options: ['', '', '', ''], correctAnswer: 0 }],
+                    questions: [{ id: 1, question: '', type: 'multiple-choice', options: ['', '', '', ''], correctAnswer: 0, hint: '' }],
                     duration: 30,
                     passingScore: 70
                   }

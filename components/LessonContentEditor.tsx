@@ -1167,7 +1167,7 @@ const QuizContentEditor: React.FC<{ block: ContentBlock; content: string; onChan
   onUpdate,
 }) => {
   const [questions, setQuestions] = useState<any[]>(
-    block.data?.questions || [{ id: 1, question: '', type: 'multiple-choice', options: ['', '', '', ''], correctAnswer: 0 }]
+    block.data?.questions || [{ id: 1, question: '', type: 'multiple-choice', options: ['', '', '', ''], correctAnswer: 0, hint: undefined }]
   );
   const [duration, setDuration] = useState(block.data?.duration || 30);
   const [passingScore, setPassingScore] = useState(block.data?.passingScore || 70);
@@ -1179,6 +1179,7 @@ const QuizContentEditor: React.FC<{ block: ContentBlock; content: string; onChan
       type: 'multiple-choice',
       options: ['', '', '', ''],
       correctAnswer: 0,
+      hint: undefined,
     };
     setQuestions([...questions, newQuestion]);
   };
@@ -1333,6 +1334,27 @@ const QuizContentEditor: React.FC<{ block: ContentBlock; content: string; onChan
                 <option value="true-false">True/False</option>
                 <option value="short-answer">Short Answer</option>
               </select>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-medium text-gray-700">Hint</label>
+                <button
+                  type="button"
+                  onClick={() => handleUpdateQuestion(question.id, { hint: question.hint !== undefined ? undefined : '' })}
+                  className="text-xs font-medium text-primary-600 hover:text-primary-800"
+                >
+                  {question.hint !== undefined ? 'Remove Hint' : 'Add Hint'}
+                </button>
+              </div>
+              {question.hint !== undefined && (
+                <textarea
+                  rows={3}
+                  value={question.hint}
+                  onChange={(e) => handleUpdateQuestion(question.id, { hint: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition resize-none text-sm"
+                />
+              )}
             </div>
 
             {question.type !== 'short-answer' && (

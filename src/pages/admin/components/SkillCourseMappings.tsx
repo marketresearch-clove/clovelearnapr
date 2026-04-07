@@ -469,7 +469,7 @@ const SkillCourseMappings: React.FC = () => {
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            className="px-3 py-2 pr-8 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
           >
             <option value="all">All Categories</option>
             {categories.map(cat => (
@@ -497,7 +497,7 @@ const SkillCourseMappings: React.FC = () => {
           <select
             value={filterRequired}
             onChange={(e) => setFilterRequired(e.target.value)}
-            className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            className="px-3 py-2 pr-8 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
           >
             <option value="all">All Requirements</option>
             <option value="yes">Required</option>
@@ -547,7 +547,7 @@ const SkillCourseMappings: React.FC = () => {
               const skillCount = courseMappings.length;
 
               return (
-                <div key={courseId} className="border border-blue-200 rounded-xl overflow-hidden shadow-sm\">
+                <div key={courseId} className="border border-blue-200 rounded-2xl overflow-hidden shadow-sm">
                   {/* Course header */}
                   <button
                     onClick={() => toggleCourse(courseId)}
@@ -633,7 +633,7 @@ const SkillCourseMappings: React.FC = () => {
                                 <td className="py-3 px-3 text-sm text-gray-900">
                                   {mapping.expiry_date ? new Date(mapping.expiry_date).toLocaleDateString() : '—'}
                                 </td>
-                                <td className="py-3 pl-3 pr-5 text-right">
+                                <td className="py-3 pl-3 pr-8 text-right">
                                   <div className="relative inline-block">
                                     <button
                                       onClick={() => setOpenMenuId(openMenuId === mapping.id ? null : mapping.id)}
@@ -642,7 +642,7 @@ const SkillCourseMappings: React.FC = () => {
                                       <span className="material-symbols-rounded text-sm">more_horiz</span>
                                     </button>
                                     {openMenuId === mapping.id && (
-                                      <div className="absolute right-0 mt-1 w-36 bg-white dark:bg-gray-700 rounded-lg shadow-lg z-10 border border-gray-200 dark:border-gray-600">
+                                      <div className="absolute right-0 mt-1 w-36 bg-white dark:bg-gray-700 rounded-2xl shadow-lg z-10 border border-gray-200 dark:border-gray-600">
                                         <button
                                           onClick={() => { setEditingMapping(mapping); setIsEditModalOpen(true); setOpenMenuId(null); }}
                                           className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-t-lg"

@@ -266,8 +266,8 @@ const SkillFamilies: React.FC = () => {
           <button
             key={tab}
             className={`px-4 py-2 text-sm font-semibold whitespace-nowrap transition-colors relative ${activeTab === tab
-                ? 'text-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
+              ? 'text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
               }`}
             onClick={() => setActiveTab(tab)}
           >
@@ -279,7 +279,7 @@ const SkillFamilies: React.FC = () => {
         ))}
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded-2xl">
         <table className="w-full">
           <thead>
             <tr className="text-left bg-blue-100 border-b-2 border-blue-300">
@@ -333,7 +333,7 @@ const SkillFamilies: React.FC = () => {
                       </span>
                     </button>
                   </td>
-                  <td className="py-4 pr-2 text-right">
+                  <td className="py-4 pr-6 text-right">
                     <div className="relative inline-block">
                       <button
                         onClick={() => setOpenMenuId(openMenuId === family.id ? null : family.id)}
@@ -342,7 +342,7 @@ const SkillFamilies: React.FC = () => {
                         <span className="material-symbols-rounded">more_horiz</span>
                       </button>
                       {openMenuId === family.id && (
-                        <div className="absolute right-0 mt-1 w-40 bg-white rounded-lg shadow-lg z-10 border border-gray-300">
+                        <div className="absolute right-0 mt-1 w-40 bg-white rounded-2xl shadow-lg z-10 border border-gray-300">
                           <button
                             onClick={() => handleEditClick(family)}
                             className="block w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-blue-50 first:rounded-t-lg transition-colors"

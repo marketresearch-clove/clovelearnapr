@@ -51,6 +51,12 @@ const CommunityPage: React.FC = () => {
   const [isEditorCollapsed, setIsEditorCollapsed] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
+  const handleLinkedInClick = () => {
+    if (userProfile?.linkedin_profile_url) {
+      window.open(userProfile.linkedin_profile_url, '_blank', 'noopener noreferrer');
+    }
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -81,7 +87,7 @@ const CommunityPage: React.FC = () => {
         // Fetch user profile
         const { data: profile, error } = await supabase
           .from('profiles')
-          .select('fullname, designation, avatarurl')
+          .select('fullname, designation, avatarurl, linkedin_profile_url')
           .eq('id', user.id)
           .single();
 
@@ -716,6 +722,16 @@ const CommunityPage: React.FC = () => {
                 </span>
               )}
             </div>
+            {userProfile?.linkedin_profile_url && (
+              <button
+                onClick={handleLinkedInClick}
+                className="mt-3 inline-flex items-center gap-2 px-3 py-2 rounded-full border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors"
+                type="button"
+              >
+                <FaIcons.FaLinkedin className="h-4 w-4 text-sky-600" />
+                <span className="text-xs font-semibold">LinkedIn Profile</span>
+              </button>
+            )}
 
             <div className="flex justify-center gap-4 mt-4 pt-4 border-t border-border-light dark:border-border-dark">
               <div className="text-center px-4 border-r border-border-light dark:border-border-dark">

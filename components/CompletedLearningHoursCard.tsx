@@ -96,7 +96,7 @@ const CompletedLearningHoursCard: React.FC = () => {
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-medium text-gray-800">Completed Learning hrs</h2>
+        <h2 className="text-lg font-medium text-gray-800">Completed Learning Hrs</h2>
         <span className="material-symbols-rounded text-gray-400 text-base">info</span>
       </div>
       <div className="flex items-center space-x-6">

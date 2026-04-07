@@ -544,7 +544,7 @@ const SkillAssignments: React.FC = () => {
           <select
             value={filterVisibility}
             onChange={(e) => setFilterVisibility(e.target.value)}
-            className="flex-shrink-0 px-4 py-2 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            className="flex-shrink-0 px-4 py-2 pr-8 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
           >
             <option value="all">All Visibility</option>
             <option value="visible">Visible</option>
@@ -554,7 +554,7 @@ const SkillAssignments: React.FC = () => {
           <select
             value={filterFamily}
             onChange={(e) => setFilterFamily(e.target.value)}
-            className="flex-shrink-0 px-4 py-2 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            className="flex-shrink-0 px-4 py-2 pr-8 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
           >
             <option value="all">All Families</option>
             {families.map(family => (
@@ -565,7 +565,7 @@ const SkillAssignments: React.FC = () => {
           <select
             value={filterLevel}
             onChange={(e) => setFilterLevel(e.target.value)}
-            className="flex-shrink-0 px-4 py-2 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            className="flex-shrink-0 px-4 py-2 pr-8 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
           >
             <option value="all">All Levels</option>
             {levels.map(level => (
@@ -589,7 +589,7 @@ const SkillAssignments: React.FC = () => {
           <select
             value={filterDepartment}
             onChange={(e) => setFilterDepartment(e.target.value)}
-            className="flex-shrink-0 px-4 py-2 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            className="flex-shrink-0 px-4 py-2 pr-8 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
           >
             <option value="all">All Departments</option>
             {departments.map(dept => (
@@ -647,7 +647,7 @@ const SkillAssignments: React.FC = () => {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded-2xl">
         <table className="w-full">
           <thead>
             <tr className="text-left bg-emerald-100 border-b-2 border-emerald-300">

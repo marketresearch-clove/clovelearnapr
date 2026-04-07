@@ -8,6 +8,7 @@ interface QuizQuestion {
   type: 'multiple-choice' | 'true-false' | 'short-answer';
   options: string[];
   correctAnswer: number;
+  hint?: string;
 }
 
 interface InlineQuizRendererProps {
@@ -178,20 +179,19 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
     return (
       <div className="w-full h-full bg-white flex items-center justify-center relative">
         <div className="max-w-2xl w-full p-8 text-center">
-          <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
-            previousResult.passed 
-              ? 'bg-green-100 text-green-600' 
+          <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 ${previousResult.passed
+              ? 'bg-green-100 text-green-600'
               : 'bg-red-100 text-red-600'
-          }`}>
+            }`}>
             <span className="material-symbols-rounded text-4xl">
               {previousResult.passed ? 'check_circle' : 'cancel'}
             </span>
           </div>
-          
+
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
             {previousResult.passed ? 'Quiz Passed!' : 'Quiz Completed'}
           </h2>
-          
+
           <div className="my-6 space-y-2">
             <p className="text-gray-800">
               <span className="font-semibold text-2xl text-gray-900">{previousResult.pointsearned}/{previousResult.totalpoints}</span> points earned
@@ -222,20 +222,19 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
     return (
       <div className="w-full h-full bg-white flex items-center justify-center relative">
         <div className="max-w-2xl w-full p-8 text-center">
-          <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
-            result.passed 
-              ? 'bg-green-100 text-green-600' 
+          <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 ${result.passed
+              ? 'bg-green-100 text-green-600'
               : 'bg-red-100 text-red-600'
-          }`}>
+            }`}>
             <span className="material-symbols-rounded text-4xl">
               {result.passed ? 'check_circle' : 'cancel'}
             </span>
           </div>
-          
+
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
             {result.passed ? 'Quiz Passed!' : 'Quiz Completed'}
           </h2>
-          
+
           <div className="my-6 space-y-2">
             <p className="text-gray-800">
               <span className="font-semibold text-2xl text-gray-900">{result.score}/{result.totalQuestions}</span> questions correct
@@ -282,7 +281,7 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
 
   return (
     <div className="w-full h-full bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4 overflow-y-auto relative">
-      
+
       {!isStarted && (
         <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-slate-100/40 backdrop-blur-md">
           <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200">
@@ -294,7 +293,7 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
               {description && (
                 <p className="text-gray-800 mb-8 text-lg">{description}</p>
               )}
-              
+
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                   <span className="material-symbols-rounded text-indigo-600 block mb-1">timer</span>
@@ -333,7 +332,7 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
       )}
 
       <div className={`w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-500 ${!isStarted ? 'blur-lg scale-95 opacity-50 select-none pointer-events-none' : ''}`}>
-        
+
         {/* Header */}
         <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 px-8 py-6 text-white">
           <div className="flex items-center justify-between mb-4">
@@ -349,7 +348,7 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
 
           {/* Progress Bar */}
           <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden">
-            <div 
+            <div
               className="bg-white h-full rounded-full transition-all duration-300"
               style={{ width: `${progressPercent}%` }}
             ></div>
@@ -378,17 +377,15 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
                   <button
                     key={index}
                     onClick={() => handleOptionSelect(index)}
-                    className={`w-full text-left p-5 rounded-xl border-2 transition-all duration-200 flex items-center gap-4 group ${
-                      isSelected 
-                        ? 'bg-indigo-50 border-indigo-400 ring-1 ring-indigo-300' 
+                    className={`w-full text-left p-5 rounded-xl border-2 transition-all duration-200 flex items-center gap-4 group ${isSelected
+                        ? 'bg-indigo-50 border-indigo-400 ring-1 ring-indigo-300'
                         : 'bg-slate-50 border-slate-200 hover:border-indigo-300 hover:bg-slate-100'
-                    }`}
+                      }`}
                   >
-                    <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
-                      isSelected 
-                        ? 'border-indigo-600 bg-indigo-600' 
+                    <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${isSelected
+                        ? 'border-indigo-600 bg-indigo-600'
                         : 'border-slate-400 group-hover:border-indigo-400'
-                    }`}>
+                      }`}>
                       {isSelected && <span className="material-symbols-rounded text-white text-sm">check</span>}
                     </div>
                     <span className={`text-base ${isSelected ? 'text-indigo-900 font-semibold' : 'text-gray-900'}`}>
@@ -398,6 +395,13 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
                 );
               })}
             </div>
+
+            {currentQ?.hint && (
+              <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm font-semibold text-slate-900 mb-1">Hint</p>
+                <p className="text-sm text-slate-700">{currentQ.hint}</p>
+              </div>
+            )}
           </div>
 
           {/* Navigation */}

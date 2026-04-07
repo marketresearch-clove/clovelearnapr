@@ -308,10 +308,10 @@ const AcknowledgementsPage: React.FC = () => {
         <div className="space-y-5">
 
           {/* Template Configuration Section */}
-          <div className="bg-white rounded-xl border border-gray-300">
+          <div className="bg-white rounded-lg border border-gray-300">
             <button
               onClick={() => setShowTemplateConfig(!showTemplateConfig)}
-              className="w-full flex items-center justify-between px-5 py-3.5 bg-blue-100 hover:bg-blue-150 transition-colors text-left border-b border-gray-300"
+              className="w-full flex items-center justify-between px-5 py-3.5 bg-blue-100 hover:bg-blue-150 transition-colors text-left border-b rounded-lg border-gray-300"
             >
               <div className="flex items-center gap-3">
                 <span className="material-symbols-rounded text-blue-700">palette</span>
@@ -439,7 +439,7 @@ const AcknowledgementsPage: React.FC = () => {
           </div>
 
           {/* View Toggle + Filters */}
-          <div className="bg-white rounded-xl border border-gray-300 p-4 space-y-3">
+          <div className="bg-white rounded-lg border border-gray-300 p-4 space-y-3">
             {/* View mode */}
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide mr-2">View by:</span>
@@ -486,13 +486,13 @@ const AcknowledgementsPage: React.FC = () => {
               </select>
 
               <select value={filterDept} onChange={e => setFilterDept(e.target.value)}
-                className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900">
+                className="pl-3 pr-5 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900">
                 <option value="all">All Departments</option>
                 {departments.map(d => <option key={d} value={d}>{d}</option>)}
               </select>
 
               <select value={filterUser} onChange={e => setFilterUser(e.target.value)}
-                className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900">
+                className="pl-3 pr-5 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900">
                 <option value="all">All Employees</option>
                 {users.map(u => <option key={u} value={u}>{u}</option>)}
               </select>
@@ -510,7 +510,7 @@ const AcknowledgementsPage: React.FC = () => {
 
           {/* Content */}
           {Object.keys(grouped).length === 0 ? (
-            <div className="text-center py-16 bg-white rounded-xl border border-gray-300">
+            <div className="text-center py-16 bg-white rounded-lg border border-gray-300">
               <span className="material-symbols-rounded text-5xl text-gray-400 block mb-3">policy</span>
               <p className="text-gray-600 font-medium">No acknowledgements found</p>
               <p className="text-sm text-gray-600 mt-1">Acknowledgements appear here after learners sign policy lessons.</p>
@@ -546,7 +546,7 @@ const GroupCard: React.FC<{
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="bg-white rounded-xl border border-gray-300 overflow-hidden">
+    <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
       {/* Group header */}
       <button
         onClick={() => setCollapsed(c => !c)}

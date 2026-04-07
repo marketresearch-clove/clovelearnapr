@@ -313,7 +313,7 @@ const CareerManagement: React.FC = () => {
               <th className="pb-3 font-semibold text-dark-600 dark:text-grey-900">Next Role</th>
               <th className="pb-3 font-semibold text-dark-600 dark:text-grey-900">Skills Required</th>
               <th className="pb-3 font-semibold text-dark-600 dark:text-grey-900">Created At</th>
-              <th className="pb-3 pr-2 text-right font-semibold text-dark-600 dark:text-grey-900">Actions</th>
+              <th className="pb-3 pr-8 text-right font-semibold text-dark-600 dark:text-grey-900">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -345,7 +345,7 @@ const CareerManagement: React.FC = () => {
                   <td className="py-4 text-dark-600 dark:text-dark">
                     {path.created_at ? new Date(path.created_at).toLocaleDateString() : '-'}
                   </td>
-                  <td className="py-4 pr-2 text-right">
+                  <td className="py-4 pr-8 text-right">
                     <div className="relative inline-block">
                       <button
                         onClick={() => setOpenMenuId(openMenuId === path.id ? null : path.id)}
@@ -354,7 +354,7 @@ const CareerManagement: React.FC = () => {
                         <span className="material-symbols-rounded">more_horiz</span>
                       </button>
                       {openMenuId === path.id && (
-                        <div className="absolute right-0 mt-1 w-40 bg-dark-50 dark:bg-gray-700 rounded-lg shadow-lg z-10 border border-dark-200 dark:border-dark-600">
+                        <div className="absolute right-0 mt-1 w-40 bg-dark-50 dark:bg-gray-700 rounded-2xl shadow-lg z-10 border border-dark-200 dark:border-dark-600">
                           <button
                             onClick={() => handleEditClick(path)}
                             className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 first:rounded-t-lg"

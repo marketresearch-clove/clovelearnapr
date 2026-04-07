@@ -439,6 +439,7 @@ const AdminAnalyticsPage: React.FC = () => {
                 return {
                   course_id: course.id,
                   course_name: course.title || 'Unknown',
+                  category: course.category || 'Uncategorized',
                   enrollment_count: course.totalstudents || 0,
                   completion_rate: completionRate,
                   avg_score: avgScore,
@@ -608,7 +609,7 @@ const AdminAnalyticsPage: React.FC = () => {
                 <span className="material-symbols-rounded text-blue-500">bar_chart</span>
                 Top 10 Departments
               </h4>
-              <div className="flex bg-gray-100 p-1 rounded-lg">
+              <div className="flex bg-gray-100 p-1 rounded-xl">
                 {[
                   { id: 'userCount', label: 'User Count' },
                   { id: 'totalXP', label: 'XP' },
@@ -618,7 +619,7 @@ const AdminAnalyticsPage: React.FC = () => {
                   <button
                     key={metric.id}
                     onClick={() => setDepartmentFilterMetric(metric.id)}
-                    className={`px-3 py-1 text-[10px] font-bold uppercase rounded-md transition-all ${departmentFilterMetric === metric.id
+                    className={`px-3 py-1 text-[10px] font-bold uppercase rounded-xl transition-all ${departmentFilterMetric === metric.id
                       ? 'bg-white text-primary shadow-sm'
                       : 'text-gray-500 hover:text-gray-700'
                       }`}
@@ -941,7 +942,7 @@ const EngagementDashboard: React.FC<{ engagementData: any[], engagementMetrics: 
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h5 className="text-sm font-semibold text-gray-800">Session Duration</h5>
             <span className="material-symbols-rounded text-blue-500">schedule</span>
@@ -950,7 +951,7 @@ const EngagementDashboard: React.FC<{ engagementData: any[], engagementMetrics: 
           <p className="text-xs text-gray-500 mt-2">per active user</p>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h5 className="text-sm font-semibold text-gray-800">Peak Activity</h5>
             <span className="material-symbols-rounded text-orange-500">trending_up</span>
@@ -959,7 +960,7 @@ const EngagementDashboard: React.FC<{ engagementData: any[], engagementMetrics: 
           <p className="text-xs text-gray-500 mt-2">peak activity hour</p>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h5 className="text-sm font-semibold text-gray-800">Quality Score</h5>
             <span className="material-symbols-rounded text-green-500">verified_user</span>
@@ -973,7 +974,7 @@ const EngagementDashboard: React.FC<{ engagementData: any[], engagementMetrics: 
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h5 className="text-sm font-semibold text-gray-800">Users Online</h5>
             <span className="material-symbols-rounded text-indigo-500">people</span>
@@ -1119,13 +1120,13 @@ const EngagementDashboard: React.FC<{ engagementData: any[], engagementMetrics: 
           {filteredData.length > 0 && (
             <div className="mt-8 pt-6 border-t border-gray-100">
               <div className="grid grid-cols-3 gap-4">
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100">
                   <p className="text-xs font-semibold text-blue-600 uppercase mb-1">Total Lessons</p>
                   <p className="text-2xl font-bold text-blue-900">
                     {filteredData.reduce((sum: number, d: any) => sum + (d.lessons_completed || 0), 0)}
                   </p>
                 </div>
-                <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-100">
+                <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
                   <p className="text-xs font-semibold text-emerald-600 uppercase mb-1">Average/Day</p>
                   <p className="text-2xl font-bold text-emerald-900">
                     {Math.round(
@@ -1133,7 +1134,7 @@ const EngagementDashboard: React.FC<{ engagementData: any[], engagementMetrics: 
                     )}
                   </p>
                 </div>
-                <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+                <div className="bg-indigo-50 p-4 rounded-2xl border border-indigo-100">
                   <p className="text-xs font-semibold text-indigo-600 uppercase mb-1">Peak Day</p>
                   <p className="text-2xl font-bold text-indigo-900">
                     {Math.max(...filteredData.map((d: any) => d.lessons_completed || 0), 0)}
@@ -1175,49 +1176,144 @@ const EngagementDashboard: React.FC<{ engagementData: any[], engagementMetrics: 
   );
 };
 
-const CourseDashboard = ({ courseStats }: any) => (
-  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-      <h4 className="font-bold text-gray-900 mb-6">Course Performance Ranking</h4>
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-              <th className="pb-4">Course</th>
-              <th className="pb-4 text-center">Enrollments</th>
-              <th className="pb-4 text-center">Completion</th>
-              <th className="pb-4 text-center">Avg Score</th>
-              <th className="pb-4 text-center">Feedback</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {courseStats.map((c: any) => (
-              <tr key={c.course_id} className="hover:bg-gray-50 transition-colors">
-                <td className="py-4 text-sm font-bold text-gray-900">{c.course_name}</td>
-                <td className="py-4 text-center text-sm text-gray-900">{c.enrollment_count}</td>
-                <td className="py-4 text-center">
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="w-12 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-primary " style={{ width: `${c.completion_rate}%` }}></div>
-                    </div>
-                    <span className="text-xs font-bold text-gray-900">{c.completion_rate}%</span>
-                  </div>
-                </td>
-                <td className="py-4 text-center text-sm font-bold text-primary">{c.avg_score}%</td>
-                <td className="py-4 text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <span className="material-symbols-rounded text-orange-400 text-sm">star</span>
-                    <span className="text-sm font-bold text-gray-900">{c.feedback_score}</span>
-                  </div>
-                </td>
+const CourseDashboard = ({ courseStats }: any) => {
+  const [searchFilter, setSearchFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [sortBy, setSortBy] = useState<'enrollments' | 'completion' | 'score' | 'feedback'>('enrollments');
+
+  // Get unique categories
+  const categories: string[] = ['All', ...new Set((courseStats?.map((c: any) => c.category).filter(Boolean) || []) as string[])].sort();
+
+  // Filter and sort courses
+  const filteredCourses = courseStats
+    .filter((c: any) => {
+      const searchMatch = c.course_name.toLowerCase().includes(searchFilter.toLowerCase());
+      const categoryMatch = categoryFilter === 'All' || c.category === categoryFilter;
+      return searchMatch && categoryMatch;
+    })
+    .sort((a: any, b: any) => {
+      switch (sortBy) {
+        case 'enrollments':
+          return b.enrollment_count - a.enrollment_count;
+        case 'completion':
+          return b.completion_rate - a.completion_rate;
+        case 'score':
+          return b.avg_score - a.avg_score;
+        case 'feedback':
+          return b.feedback_score - a.feedback_score;
+        default:
+          return 0;
+      }
+    });
+
+  return (
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <div className="flex flex-col gap-4 mb-6">
+          <h4 className="font-bold text-gray-900">Course Performance Ranking</h4>
+
+          {/* Filter Controls */}
+          <div className="flex flex-col md:flex-row gap-3">
+            {/* Search */}
+            <input
+              type="text"
+              placeholder="Search courses..."
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+
+            {/* Category Dropdown */}
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            >
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+
+            {/* Sort Dropdown */}
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            >
+              <option value="enrollments">Sort by Enrollments</option>
+              <option value="completion">Sort by Completion Rate</option>
+              <option value="score">Sort by Avg Score</option>
+              <option value="feedback">Sort by Feedback</option>
+            </select>
+
+            {/* Clear Filters Button */}
+            {(searchFilter || categoryFilter !== 'All') && (
+              <button
+                onClick={() => {
+                  setSearchFilter('');
+                  setCategoryFilter('All');
+                }}
+                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
+          {/* Results Count */}
+          <p className="text-xs text-gray-500">
+            Showing {filteredCourses.length} of {courseStats.length} courses
+          </p>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                <th className="pb-4">Course</th>
+                <th className="pb-4 text-center">Enrollments</th>
+                <th className="pb-4 text-center">Completion</th>
+                <th className="pb-4 text-center">Avg Score</th>
+                <th className="pb-4 text-center">Feedback</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {filteredCourses.length > 0 ? (
+                filteredCourses.map((c: any) => (
+                  <tr key={c.course_id} className="hover:bg-gray-50 transition-colors">
+                    <td className="py-4 text-sm font-bold text-gray-900">{c.course_name}</td>
+                    <td className="py-4 text-center text-sm text-gray-900">{c.enrollment_count}</td>
+                    <td className="py-4 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-12 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-primary " style={{ width: `${c.completion_rate}%` }}></div>
+                        </div>
+                        <span className="text-xs font-bold text-gray-900">{c.completion_rate}%</span>
+                      </div>
+                    </td>
+                    <td className="py-4 text-center text-sm font-bold text-primary">{c.avg_score}%</td>
+                    <td className="py-4 text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <span className="material-symbols-rounded text-orange-400 text-sm">star</span>
+                        <span className="text-sm font-bold text-gray-900">{c.feedback_score}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-gray-400 text-sm italic">
+                    No courses match your filters
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const AssessmentDashboard = ({ distribution }: any) => (
   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -1392,10 +1488,10 @@ const SkillsDashboard = ({ skillMatrix }: any) => {
   const [skillFilter, setSkillFilter] = useState('All');
   const [userSearch, setUserSearch] = useState('');
 
-  // Dropdown lists always populated from full dataset
-  const departments = ['All', ...new Set(skillMatrix?.map((s: any) => s.department) || [])].sort();
-  const families = ['All', ...new Set(skillMatrix?.map((s: any) => s.skill_family) || [])].sort();
-  const skillsList = ['All', ...new Set(skillMatrix?.map((s: any) => s.skill_name) || [])].sort();
+  // Dropdown lists always populated from full dataset - "All" always first
+  const departments = ['All', ...new Set(skillMatrix?.map((s: any) => s.department) || [])].sort((a: any, b: any) => a === 'All' ? -1 : b === 'All' ? 1 : a.localeCompare(b));
+  const families = ['All', ...new Set(skillMatrix?.map((s: any) => s.skill_family) || [])].sort((a: any, b: any) => a === 'All' ? -1 : b === 'All' ? 1 : a.localeCompare(b));
+  const skillsList = ['All', ...new Set(skillMatrix?.map((s: any) => s.skill_name) || [])].sort((a: any, b: any) => a === 'All' ? -1 : b === 'All' ? 1 : a.localeCompare(b));
 
   const filteredMatrix = skillMatrix?.filter((s: any) => {
     const matchDept = deptFilter === 'All' || (s?.department === deptFilter);
@@ -1499,7 +1595,7 @@ const SkillsDashboard = ({ skillMatrix }: any) => {
                 <button
                   key={v.id}
                   onClick={() => setMatrixMetric(v.id as any)}
-                  className={`px-4 py-2 text-[10px] font-bold uppercase rounded-md transition-all ${matrixMetric === v.id ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`px-4 py-2 text-[10px] font-bold uppercase rounded-xl transition-all ${matrixMetric === v.id ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                   {v.label}
                 </button>
@@ -1519,7 +1615,7 @@ const SkillsDashboard = ({ skillMatrix }: any) => {
                 <button
                   key={v.id}
                   onClick={() => setRowType(v.id as any)}
-                  className={`px-3 py-2 text-[10px] font-bold uppercase rounded-md transition-all ${rowType === v.id ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`px-3 py-2 text-[10px] font-bold uppercase rounded-xl transition-all ${rowType === v.id ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                   {v.label}
                 </button>
@@ -1537,7 +1633,7 @@ const SkillsDashboard = ({ skillMatrix }: any) => {
                 <button
                   key={v.id}
                   onClick={() => setColType(v.id as any)}
-                  className={`px-4 py-2 text-[10px] font-bold uppercase rounded-md transition-all ${colType === v.id ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`px-4 py-2 text-[10px] font-bold uppercase rounded-xl transition-all ${colType === v.id ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                   {v.label}
                 </button>
@@ -1603,7 +1699,7 @@ const SkillsDashboard = ({ skillMatrix }: any) => {
       </div>
 
       {/* Table Section */}
-      <div className="overflow-x-auto border border-gray-100 rounded-xl">
+      <div className="overflow-x-auto border border-gray-100 rounded-2xl">
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-50/50">
@@ -1862,7 +1958,7 @@ const CareerPathDashboard = ({ careerPaths, achievements }: { careerPaths: any[]
             <select
               value={departmentFilter}
               onChange={(e) => setDepartmentFilter(e.target.value)}
-              className="text-xs bg-white border border-gray-100 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-primary/20"
+              className="text-xs bg-white border border-gray-100 rounded-lg px-3 py-2 pr-8 outline-none focus:ring-2 focus:ring-primary/20"
             >
               {departments.map((dept: any) => (
                 <option key={dept as string} value={dept as string}>{dept === 'All' ? 'All Departments' : dept}</option>
@@ -1874,7 +1970,7 @@ const CareerPathDashboard = ({ careerPaths, achievements }: { careerPaths: any[]
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="text-xs bg-white border border-gray-100 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-primary/20"
+              className="text-xs bg-white border border-gray-100 rounded-lg px-3 py-2 pr-8 outline-none focus:ring-2 focus:ring-primary/20"
             >
               <option value="assigned_at">Recently Assigned</option>
               <option value="due_date">Due Date</option>
@@ -1882,16 +1978,16 @@ const CareerPathDashboard = ({ careerPaths, achievements }: { careerPaths: any[]
               <option value="user_name">User Name</option>
             </select>
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col pr-4">
             <span className="text-[9px] font-bold text-gray-400 uppercase mb-1">Search</span>
-            <div className="flex items-center gap-2 bg-white border border-gray-100 rounded-lg px-3 py-2 outline-none focus-within:ring-2 focus-within:ring-primary/20">
+            <div className="flex items-center gap-2 bg-white border border-gray-100 rounded-xl px-1.5 py-1.5 outline-none focus-within:ring-2  focus-within:ring-primary/20">
               <span className="material-symbols-rounded text-gray-400 text-sm">search</span>
               <input
                 type="text"
                 placeholder="Search by name or role..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 outline-none text-xs"
+                className="flex-1 outline-none text-xs rounded-lg"
               />
             </div>
           </div>
@@ -1908,7 +2004,7 @@ const CareerPathDashboard = ({ careerPaths, achievements }: { careerPaths: any[]
                 <button
                   key={cp.id}
                   onClick={() => setSelectedPath(cp)}
-                  className={`w-full text-left p-4 rounded-lg border-2 transition-all ${selectedPath?.id === cp.id
+                  className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${selectedPath?.id === cp.id
                     ? 'border-primary bg-primary/5'
                     : 'border-gray-100 hover:border-primary/50'
                     }`}
@@ -1959,21 +2055,21 @@ const CareerPathDashboard = ({ careerPaths, achievements }: { careerPaths: any[]
               <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                 <h5 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Career Path Overview</h5>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="p-4 bg-gray-50 rounded-2xl">
                     <p className="text-[10px] text-gray-500 uppercase font-bold">Readiness Score</p>
                     <p className="text-3xl font-black text-primary mt-1">{selectedPath.readiness_percentage || 0}%</p>
                   </div>
-                  <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="p-4 bg-gray-50 rounded-2xl">
                     <p className="text-[10px] text-gray-500 uppercase font-bold">Target Date</p>
                     <p className="text-sm font-bold text-gray-900 mt-1">
                       {selectedPath.target_date ? new Date(selectedPath.target_date).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
-                  <div className="p-4 bg-green-50 rounded-lg">
+                  <div className="p-4 bg-green-50 rounded-2xl">
                     <p className="text-[10px] text-green-600 uppercase font-bold">Required Met</p>
                     <p className="text-3xl font-black text-green-600 mt-1">{skillAnalysis.met.length}/{skillAnalysis.required.length}</p>
                   </div>
-                  <div className="p-4 bg-red-50 rounded-lg">
+                  <div className="p-4 bg-red-50 rounded-2xl">
                     <p className="text-[10px] text-red-600 uppercase font-bold">Skill Gaps</p>
                     <p className="text-3xl font-black text-red-600 mt-1">{skillAnalysis.gaps.length}</p>
                   </div>
@@ -1995,7 +2091,7 @@ const CareerPathDashboard = ({ careerPaths, achievements }: { careerPaths: any[]
                     </div>
                     <div className="space-y-2">
                       {skillAnalysis.met.map((skill: any, i: number) => (
-                        <div key={i} className="p-3 bg-green-50 rounded-lg">
+                        <div key={i} className="p-3 bg-green-50 rounded-2xl">
                           <div className="flex justify-between items-start gap-2">
                             <div className="flex-1">
                               <p className="font-bold text-gray-900 text-xs">{skill.name}</p>
@@ -2023,7 +2119,7 @@ const CareerPathDashboard = ({ careerPaths, achievements }: { careerPaths: any[]
                     </div>
                     <div className="space-y-2">
                       {skillAnalysis.inProgress.map((skill: any, i: number) => (
-                        <div key={i} className="p-3 bg-orange-50 rounded-lg">
+                        <div key={i} className="p-3 bg-orange-50 rounded-2xl">
                           <div className="flex justify-between items-start gap-2 mb-2">
                             <div className="flex-1">
                               <p className="font-bold text-gray-900 text-xs">{skill.name}</p>
@@ -2060,7 +2156,7 @@ const CareerPathDashboard = ({ careerPaths, achievements }: { careerPaths: any[]
                     </div>
                     <div className="space-y-2">
                       {skillAnalysis.gaps.map((skill: any, i: number) => (
-                        <div key={i} className="p-3 bg-red-50 rounded-lg border-l-2 border-red-500">
+                        <div key={i} className="p-3 bg-red-50 rounded-2xl border-l-2 border-red-500">
                           <div className="flex justify-between items-start gap-2">
                             <div className="flex-1">
                               <p className="font-bold text-gray-900 text-xs">{skill.name}</p>
@@ -2087,7 +2183,7 @@ const CareerPathDashboard = ({ careerPaths, achievements }: { careerPaths: any[]
                     </div>
                     <div className="space-y-2">
                       {skillAnalysis.additional.slice(0, 5).map((skill: any, i: number) => (
-                        <div key={i} className="p-3 bg-blue-50 rounded-lg">
+                        <div key={i} className="p-3 bg-blue-50 rounded-2xl">
                           <div className="flex justify-between items-start gap-2">
                             <div className="flex-1">
                               <p className="font-bold text-gray-900 text-xs">{skill.skill_name}</p>

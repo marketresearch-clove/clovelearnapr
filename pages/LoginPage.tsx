@@ -6,11 +6,10 @@ import { supabase } from '../lib/supabaseClient';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { signIn, signUp, userRole, user } = useAuth();
+  const { signIn, userRole, user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotView, setIsForgotView] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -47,23 +46,12 @@ const LoginPage: React.FC = () => {
     setLoading(true);
 
     try {
-      if (isSignUp) {
-        const { data, error } = await signUp(email, password);
-        if (error) throw error;
-
-        if (data?.user && !data.session) {
-          setError('Please check your email and confirm your account before logging in.');
-          setLoading(false);
-          return;
-        }
-      } else {
-        await signIn(email, password);
-      }
+      await signIn(email, password);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
 
       if (errorMessage.includes('Invalid login credentials')) {
-        setError('Invalid email or password. Please check your credentials or sign up if you haven\'t created an account yet.');
+        setError('Invalid email or password. Please check your credentials.');
       } else if (errorMessage.includes('Email not confirmed')) {
         setError('Please confirm your email address before logging in. Check your inbox for the confirmation email.');
       } else {
@@ -108,12 +96,12 @@ const LoginPage: React.FC = () => {
               <span className="material-symbols-rounded text-on-primary text-2xl">landscape</span>
             </div>
             <h2 className="text-2xl font-bold font-heading text-slate-900">
-              {isForgotView ? 'Reset Password' : (isSignUp ? 'Create Account' : 'Welcome Back')}
+              {isForgotView ? 'Reset Password' : 'Welcome Back'}
             </h2>
             <p className="text-slate-500 mt-2">
               {isForgotView
                 ? 'Enter your email to receive a reset link'
-                : (isSignUp ? 'Sign up to get started' : 'Enter your credentials to access your account')}
+                : 'Enter your credentials to access your account'}
             </p>
           </div>
 
@@ -226,27 +214,10 @@ const LoginPage: React.FC = () => {
                 disabled={loading}
                 className="w-full bg-primary text-on-primary py-3 rounded font-semibold shadow-lg shadow-primary/30 hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Loading...' : (isSignUp ? 'Sign Up' : 'Sign In')}
-                <span className="material-symbols-rounded text-lg">{isSignUp ? 'person_add' : 'login'}</span>
+                {loading ? 'Loading...' : 'Sign In'}
+                <span className="material-symbols-rounded text-lg">login</span>
               </button>
             </form>
-          )}
-
-          {!isForgotView && (
-            <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-              <p className="text-slate-500 text-sm">
-                {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
-                <button
-                  onClick={() => {
-                    setIsSignUp(!isSignUp);
-                    setError('');
-                  }}
-                  className="text-primary font-semibold hover:underline"
-                >
-                  {isSignUp ? 'Sign In' : 'Create Account'}
-                </button>
-              </p>
-            </div>
           )}
         </div>
       </div>

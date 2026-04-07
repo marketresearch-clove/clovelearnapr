@@ -7,6 +7,7 @@ interface ModuleStat {
   description: string;
   courseid?: string;
   course_name?: string;
+  category?: string;
   total_users_enrolled: number;
   users_completed: number;
   avg_completion_percentage: number;
@@ -22,6 +23,7 @@ const ModulesTable: React.FC = () => {
   const [sortBy, setSortBy] = useState<'completion' | 'enrolled' | 'hours' | 'name'>('completion');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCourse, setSelectedCourse] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   useEffect(() => {
     fetchModules();
@@ -46,9 +48,18 @@ const ModulesTable: React.FC = () => {
         .select('*');
 
       if (error) throw error;
+
+      if (data && data.length > 0) {
+        console.log('✅ Modules loaded:', data.length, 'modules');
+        console.log('📊 Sample module data:', data[0]);
+        console.log('🏷️ Available courses:', new Set(data.map(m => m.course_name).filter(Boolean)));
+        console.log('📑 Available categories:', new Set(data.map(m => m.category).filter(Boolean)));
+      }
+
       setModules(data || []);
     } catch (error) {
-      console.error('Error fetching module stats:', error);
+      console.error('❌ Error fetching module stats:', error);
+      setModules([]);
     } finally {
       setLoading(false);
     }
@@ -56,8 +67,22 @@ const ModulesTable: React.FC = () => {
 
   // Get unique courses
   const courses = useMemo(() => {
-    const courseSet = new Set(modules.map(m => m.course_name).filter(Boolean));
+    const courseSet = new Set(
+      modules
+        .map(m => m.course_name?.trim())
+        .filter(Boolean)
+    );
     return Array.from(courseSet).sort();
+  }, [modules]);
+
+  // Get unique categories
+  const categories = useMemo(() => {
+    const categorySet = new Set(
+      modules
+        .map(m => m.category?.trim())
+        .filter(Boolean)
+    );
+    return Array.from(categorySet).sort();
   }, [modules]);
 
   // Sort and filter modules
@@ -66,9 +91,12 @@ const ModulesTable: React.FC = () => {
       const matchesSearch = (module.module_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (module.description || '').toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesCourse = selectedCourse === 'all' || module.course_name === selectedCourse;
+      const moduleCourse = (module.course_name || '').trim();
+      const moduleCategory = (module.category || '').trim();
+      const matchesCourse = !selectedCourse || selectedCourse === 'all' || moduleCourse === selectedCourse;
+      const matchesCategory = !selectedCategory || selectedCategory === 'all' || moduleCategory === selectedCategory;
 
-      return matchesSearch && matchesCourse;
+      return matchesSearch && matchesCourse && matchesCategory;
     });
 
     return filtered.sort((a, b) => {
@@ -85,7 +113,7 @@ const ModulesTable: React.FC = () => {
           return 0;
       }
     });
-  }, [modules, sortBy, searchQuery, selectedCourse]);
+  }, [modules, sortBy, searchQuery, selectedCourse, selectedCategory]);
 
   if (loading) {
     return (
@@ -117,50 +145,53 @@ const ModulesTable: React.FC = () => {
         <select
           value={selectedCourse}
           onChange={(e) => setSelectedCourse(e.target.value)}
-          className="px-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm text-gray-700"
+          className="px-4 py-2 pr-8 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm text-gray-700"
         >
-          <option value="all">All Courses</option>
-          {courses.map((course) => (
-            <option key={course} value={course}>{course}</option>
-          ))}
+          <option value="all">All Courses {courses.length > 0 ? `(${courses.length})` : ''}</option>
+          {courses.length > 0 ? (
+            courses.map((course) => (
+              <option key={course} value={course}>{course}</option>
+            ))
+          ) : (
+            <option disabled>No courses available</option>
+          )}
         </select>
 
-        {/* Sort Controls */}
-        <div className="flex gap-2 flex-wrap">
-          {(['completion', 'enrolled', 'hours', 'name'] as const).map((sort) => (
+        {/* Category Filter */}
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="px-4 py-2 pr-8 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm text-gray-700"
+        >
+          <option value="all">All Categories {categories.length > 0 ? `(${categories.length})` : ''}</option>
+          {categories.length > 0 ? (
+            categories.map((category) => (
+              <option key={category} value={category}>{category}</option>
+            ))
+          ) : (
+            <option disabled>No categories available</option>
+          )}
+        </select>
+
+        {/* Metric Filter Controls */}
+        <div className="flex bg-gray-100 p-1 rounded-xl w-fit">
+          {[
+            { id: 'completion', label: 'Completion', icon: 'analytics' },
+            { id: 'enrolled', label: 'Enrolled', icon: 'group' },
+            { id: 'hours', label: 'Hours', icon: 'schedule' },
+            { id: 'name', label: 'Name', icon: 'description' }
+          ].map((metric: any) => (
             <button
-              key={sort}
-              onClick={() => setSortBy(sort)}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 whitespace-nowrap ${
-                sortBy === sort
-                  ? 'bg-primary text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              key={metric.id}
+              onClick={() => setSortBy(metric.id as any)}
+              className={`px-4 py-2 text-[11px] font-bold uppercase rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap ${sortBy === metric.id
+                ? 'bg-white text-primary shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+                }`}
+              title={`Sort by ${metric.label}`}
             >
-              {sort === 'completion' && (
-                <>
-                  <span className="material-symbols-rounded text-lg">analytics</span>
-                  <span>Completion</span>
-                </>
-              )}
-              {sort === 'enrolled' && (
-                <>
-                  <span className="material-symbols-rounded text-lg">group</span>
-                  <span>Enrolled</span>
-                </>
-              )}
-              {sort === 'hours' && (
-                <>
-                  <span className="material-symbols-rounded text-lg">schedule</span>
-                  <span>Hours</span>
-                </>
-              )}
-              {sort === 'name' && (
-                <>
-                  <span className="material-symbols-rounded text-lg">description</span>
-                  <span>Name</span>
-                </>
-              )}
+              <span className="material-symbols-rounded text-base">{metric.icon}</span>
+              <span>{metric.label}</span>
             </button>
           ))}
         </div>
@@ -168,7 +199,7 @@ const ModulesTable: React.FC = () => {
 
       {/* Stats Summary */}
       {filteredAndSortedModules.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100">
           <div className="text-center">
             <div className="text-2xl font-bold text-primary">{filteredAndSortedModules.length}</div>
             <div className="text-xs text-gray-600 mt-1">Total Modules</div>
@@ -200,7 +231,7 @@ const ModulesTable: React.FC = () => {
           filteredAndSortedModules.map((module) => (
             <div
               key={module.moduleid}
-              className="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-lg hover:border-primary/30 transition-all duration-300"
+              className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:border-primary/30 transition-all duration-300"
             >
               {/* Header */}
               <div className="mb-4">
@@ -214,7 +245,7 @@ const ModulesTable: React.FC = () => {
                   <span className="text-gray-600 font-medium">Completion Rate</span>
                   <span className="text-gray-900 font-bold">{module.avg_completion_percentage || 0}%</span>
                 </div>
-                <div className="w-full h-2 bg-gray-300 rounded-full overflow-hidden">
+                <div className="w-full h-1.5 bg-gray-300 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-primary to-blue-500 rounded-full transition-all duration-500"
                     style={{ width: `${module.avg_completion_percentage || 0}%` }}

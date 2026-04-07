@@ -12,6 +12,7 @@ export interface UserProfile {
   mobile_number?: string;
   user_id?: string;
   designation?: string;
+  linkedin_profile_url?: string;
   user_status?: string;
 }
 
@@ -52,7 +53,7 @@ export const userService = {
   async getUsers(role?: string) {
     try {
       let query = supabase.from('profiles').select('*');
-      
+
       if (role) {
         query = query.eq('role', role);
       }

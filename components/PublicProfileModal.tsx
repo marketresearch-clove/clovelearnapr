@@ -110,6 +110,16 @@ const PublicProfileModal: React.FC<PublicProfileModalProps> = ({ userId, onClose
                 <span className="bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Instructor</span>
               )}
             </div>
+            {profile.linkedin_profile_url && (
+              <button
+                onClick={() => window.open(profile.linkedin_profile_url, '_blank', 'noopener noreferrer')}
+                className="mt-3 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-slate-700 hover:bg-slate-100 transition-colors"
+                type="button"
+              >
+                <FaIcons.FaLinkedin className="h-4 w-4 text-sky-600" />
+                <span className="text-sm font-semibold">View LinkedIn</span>
+              </button>
+            )}
             <p className="text-primary-600 dark:text-primary-400 font-semibold text-sm">
               {profile.designation || (profile.role === 'admin' ? 'Administrator' : profile.role === 'instructor' ? 'Instructor' : 'Learner')}
             </p>

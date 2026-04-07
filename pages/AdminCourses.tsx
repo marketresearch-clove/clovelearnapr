@@ -722,7 +722,7 @@ const AdminCourses: React.FC = () => {
             <p className="text-gray-600 mt-1">Create and manage all course content</p>
           </div>
           {activeTab === 'courses' && (
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
               <button
                 onClick={() => {
                   // Clear course-related caches
@@ -734,18 +734,18 @@ const AdminCourses: React.FC = () => {
                   // Reload data
                   fetchCourses();
                 }}
-                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-sm flex items-center gap-2 transition-colors"
+                className="px-2.5 sm:px-4 py-1.5 sm:py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-sm flex items-center justify-center sm:justify-start gap-1 sm:gap-2 transition-colors text-sm sm:text-base"
                 title="Clear cache and reload course data"
               >
                 <span className="material-symbols-outlined text-base">refresh</span>
-                Refresh Data
+                <span className="hidden sm:inline">Refresh Data</span>
               </button>
               <button
                 onClick={() => setShowBuilder(true)}
-                className="btn-create-course"
+                className="px-2.5 sm:px-4 py-1.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-sm flex items-center justify-center sm:justify-start gap-1 sm:gap-2 transition-colors text-sm sm:text-base font-medium shadow-lg hover:shadow-xl"
               >
                 <span className="material-symbols-outlined">add</span>
-                Create New Course
+                <span className="hidden sm:inline">Create New Course</span>
               </button>
             </div>
           )}
@@ -808,7 +808,7 @@ const AdminCourses: React.FC = () => {
                     setFilterCategory(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="px-3 py-2 border border-gray-300 rounded-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                  className="px-3 py-2 pl-3 pr-8 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
                 >
                   <option value="">All Categories</option>
                   {categories.map(cat => (
@@ -823,7 +823,7 @@ const AdminCourses: React.FC = () => {
                     setFilterStatus(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="px-3 py-2 border border-gray-300 rounded-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                  className="px-3 py-2 pl-3 pr-8 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
                 >
                   <option value="">All Status</option>
                   <option value="draft">Draft</option>
@@ -837,7 +837,7 @@ const AdminCourses: React.FC = () => {
                     setFilterLevel(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="px-3 py-2 border border-gray-300 rounded-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                  className="px-3 py-2 pl-3 pr-8 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
                 >
                   <option value="">All Levels</option>
                   {levels.map(lvl => (
@@ -849,7 +849,7 @@ const AdminCourses: React.FC = () => {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                  className="px-3 py-2 border border-gray-300 rounded-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                  className="px-3 py-2 pl-3 pr-8 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
                 >
                   <option value="title">Sort: Title</option>
                   <option value="students">Sort: Learners</option>
@@ -861,7 +861,7 @@ const AdminCourses: React.FC = () => {
                 {/* Sort Order */}
                 <button
                   onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                  className="px-3 py-2 border border-gray-300 rounded-sm bg-white text-gray-900 hover:bg-gray-100 transition-colors flex items-center justify-center gap-1 text-sm"
+                  className="px-3 py-2 pr-3 border border-gray-300 rounded-lg bg-white text-gray-900 hover:bg-gray-100 transition-colors flex items-center justify-center gap-1 text-sm"
                   title={sortOrder === 'asc' ? 'Sort Ascending' : 'Sort Descending'}
                 >
                   <span className="material-symbols-outlined text-base">
@@ -876,7 +876,7 @@ const AdminCourses: React.FC = () => {
                     setItemsPerPage(Number(e.target.value));
                     setCurrentPage(1);
                   }}
-                  className="px-3 py-2 border border-gray-300 rounded-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                  className="px-3 py-2 pl-3 pr-8 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
                 >
                   <option value={5}>5 per page</option>
                   <option value={10}>10 per page</option>
@@ -887,16 +887,16 @@ const AdminCourses: React.FC = () => {
                 {/* Reset button */}
                 <button
                   onClick={handleResetFilters}
-                  className="px-3 py-2 bg-gray-200 text-gray-900 rounded-sm hover:bg-gray-300 transition-colors text-sm"
+                  className="px-3 py-2 pr-3 border border-gray-300 rounded-lg bg-white text-gray-900 hover:bg-gray-100 transition-colors flex items-center justify-center gap-1 text-xs"
                   title="Reset all filters"
                 >
-                  <span className="material-symbols-outlined">refresh</span>
+                  <span className="material-symbols-outlined text-sm">refresh</span>
                 </button>
 
                 {/* Column Visibility Toggle */}
                 <button
                   onClick={() => setShowColumnSettings(!showColumnSettings)}
-                  className="px-3 py-2 bg-indigo-100 text-indigo-700 rounded-sm hover:bg-indigo-200 transition-colors flex items-center gap-1 text-sm"
+                  className="px-3 py-2 pr-3 border border-gray-300 rounded-lg bg-indigo-100 text-indigo-700  hover:bg-indigo-200 transition-colors flex items-center gap-1 text-xs"
                   title="Toggle visible columns"
                 >
                   <span className="material-symbols-outlined text-base">view_column</span>

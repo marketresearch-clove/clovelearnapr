@@ -126,21 +126,25 @@ const ConcernRaiseWidget: React.FC<ConcernRaiseWidgetProps> = ({ userId, userEma
     return (
         <div className="space-y-2 md:space-y-4">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl md:rounded-2xl p-3 md:p-6 border border-blue-200">
-                <div className="flex items-start gap-2 md:gap-4">
-                    <div className="bg-blue-600 p-2 md:p-3 rounded-lg md:rounded-xl flex-shrink-0">
-                        <span className="material-symbols-outlined text-white text-lg md:text-2xl">workspace_premium</span>
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl md:rounded-2x1 p-3 md:p-6 border border-blue-200">
+                <div className="flex items-start gap-2 md:gap-2">
+                    <div className="bg-blue-600 p-2 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="material-symbols-outlined text-white text-lg md:text-2xl">
+                            workspace_premium
+                        </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-slate-900 mb-1 text-xs md:text-sm">Dear Learners</h3>
+                        <h3 className="font-bold text-slate-900 mb-1 text-xs md:text-sm">
+                            Dear Learners
+                        </h3>
                         <p className="text-[10px] md:text-xs text-slate-700 mb-2 md:mb-4 line-clamp-2">
                             Always Update Your Profile With Latest Information.
                         </p>
                         <button
                             onClick={() => setShowForm(true)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1 md:py-1.5 px-3 md:px-4 rounded-lg text-xs md:text-sm transition-colors"
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1 md:py-1.5 px-3 md:px-4 rounded text-xs md:text-sm transition-colors"
                         >
-                            Raise Concern
+                            Raise Issue
                         </button>
                     </div>
                 </div>

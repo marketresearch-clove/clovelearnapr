@@ -199,7 +199,7 @@ const Skills: React.FC = () => {
         ))}
       </div>
 
-      <div className="overflow-x-auto bg-white rounded-lg border border-gray-300">
+      <div className="overflow-x-auto bg-white rounded-2xl border border-gray-300">
         <table className="w-full">
           <thead className="bg-blue-100 border-b-2 border-blue-300">
             <tr className="text-left">

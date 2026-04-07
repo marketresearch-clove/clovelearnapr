@@ -110,12 +110,19 @@ const UsersTable: React.FC = () => {
     try {
       setLoading(true);
 
-      // Fetch profiles first
+      // Fetch profiles first - with explicit ordering to debug
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, fullname, designation, location, department, role');
+        .select('id, fullname, designation, location, department, role')
+        .order('fullname', { ascending: true });
 
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error('Profiles fetch error:', profilesError);
+        throw profilesError;
+      }
+
+      console.log('📊 Profiles fetched:', profiles?.length, 'profiles');
+      console.log('👥 Departments found:', new Set(profiles?.map((p: any) => p.department).filter(Boolean)));
 
       // Fetch all statistics with retry logic
       let stats = [];
@@ -124,8 +131,11 @@ const UsersTable: React.FC = () => {
           .from('user_statistics')
           .select('userid, totalpoints, totallearninghours, coursescompleted, totalcoursesenrolled');
 
-        if (!statsError && statsData) {
+        if (statsError) {
+          console.warn('Stats error:', statsError);
+        } else if (statsData) {
           stats = statsData;
+          console.log('📈 Statistics fetched:', statsData.length, 'records');
         }
       } catch (e) {
         console.warn('Error fetching user statistics:', e);
@@ -150,6 +160,7 @@ const UsersTable: React.FC = () => {
         };
       });
 
+      console.log('✅ Users with stats loaded:', usersWithStats.length);
       setUsers(usersWithStats);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -224,7 +235,7 @@ const UsersTable: React.FC = () => {
           <select
             value={selectedDepartment}
             onChange={(e) => setSelectedDepartment(e.target.value)}
-            className="px-4 py-2 bg-white dark:bg-white border border-gray-200 dark:border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm text-gray-700 dark:text-gray-700"
+            className="px-4 py-2 pr-8 bg-white dark:bg-white border border-gray-200 dark:border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm text-gray-700 dark:text-gray-700"
           >
             <option value="all">All Departments</option>
             {departments.map((dept) => (
@@ -255,42 +266,25 @@ const UsersTable: React.FC = () => {
           </select>
         </div>
 
-        {/* Sort Controls */}
-        <div className="flex gap-2 flex-wrap">
-          {(['completion', 'points', 'hours', 'name'] as const).map((sort) => (
+        {/* Metric Filter Controls */}
+        <div className="flex bg-gray-100 p-1 rounded-xl w-fit">
+          {[
+            { id: 'completion', label: 'Completion', icon: 'analytics' },
+            { id: 'points', label: 'Grade', icon: 'grade' },
+            { id: 'hours', label: 'Schedule', icon: 'schedule' },
+            { id: 'name', label: 'Person', icon: 'person' }
+          ].map((metric: any) => (
             <button
-              key={sort}
-              onClick={() => setSortBy(sort)}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 whitespace-nowrap ${
-                sortBy === sort
-                  ? 'bg-primary text-white'
-                  : 'bg-gray-50 dark:bg-white text-gray-700 dark:text-gray-700 hover:bg-gray-200 dark:hover:bg-slate-700'
-              }`}
+              key={metric.id}
+              onClick={() => setSortBy(metric.id as any)}
+              className={`px-4 py-2 text-[11px] font-bold uppercase rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap ${sortBy === metric.id
+                ? 'bg-white text-primary shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+                }`}
+              title={`Sort by ${metric.label}`}
             >
-              {sort === 'completion' && (
-                <>
-                  <span className="material-symbols-rounded text-lg">analytics</span>
-                  <span>Completion</span>
-                </>
-              )}
-              {sort === 'points' && (
-                <>
-                  <span className="material-symbols-rounded text-lg">grade</span>
-                  <span>Points</span>
-                </>
-              )}
-              {sort === 'hours' && (
-                <>
-                  <span className="material-symbols-rounded text-lg">schedule</span>
-                  <span>Hours</span>
-                </>
-              )}
-              {sort === 'name' && (
-                <>
-                  <span className="material-symbols-rounded text-lg">person</span>
-                  <span>Name</span>
-                </>
-              )}
+              <span className="material-symbols-rounded text-base">{metric.icon}</span>
+              <span>{metric.label}</span>
             </button>
           ))}
         </div>
@@ -298,7 +292,7 @@ const UsersTable: React.FC = () => {
 
       {/* Stats Summary */}
       {filteredAndSortedUsers.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-white dark:to-gray-50 rounded-xl border border-blue-100 dark:border-gray-200">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-white dark:to-gray-50 rounded-2xl border border-blue-100 dark:border-gray-200">
           <div className="text-center">
             <div className="text-2xl font-bold text-primary">{filteredAndSortedUsers.length}</div>
             <div className="text-xs text-gray-700 dark:text-gray-700 mt-1">Total Users</div>
@@ -339,7 +333,7 @@ const UsersTable: React.FC = () => {
             return (
               <div
                 key={user.id}
-                className="bg-white dark:bg-white rounded-xl border border-gray-100 dark:border-gray-200 p-5 hover:shadow-lg hover:border-primary/30 transition-all duration-300"
+                className="bg-white dark:bg-white rounded-2xl border border-gray-100 dark:border-gray-200 p-5 hover:shadow-lg hover:border-primary/30 transition-all duration-300"
               >
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
@@ -388,7 +382,7 @@ const UsersTable: React.FC = () => {
                     <span className="text-gray-700 dark:text-gray-700 font-medium">Course Progress</span>
                     <span className="text-gray-900 dark:text-gray-900 font-bold">{stats.coursescompleted}/{stats.totalcoursesenrolled}</span>
                   </div>
-                  <div className="w-full h-2 bg-gray-200 dark:bg-gray-100 rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-100 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-primary to-blue-500 rounded-full transition-all duration-500"
                       style={{ width: `${completionRate}%` }}

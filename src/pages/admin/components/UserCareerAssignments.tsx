@@ -321,7 +321,7 @@ const UserCareerAssignments: React.FC = () => {
           <select
             value={filterDepartment}
             onChange={(e) => setFilterDepartment(e.target.value)}
-            className="px-4 py-2 bg-white text-gray-900 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 pr-8 bg-white text-gray-900 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">All Departments</option>
             {departments.map(dep => (
@@ -343,7 +343,7 @@ const UserCareerAssignments: React.FC = () => {
               setAssignFormData({ targetUserIds: [], departmentFilter: 'all', careerPathId: '', targetDate: '' });
               setIsAssignModalOpen(true);
             }}
-            className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
+            className="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
           >
             <span className="material-symbols-rounded">add</span>
             Assign Career Path
@@ -361,7 +361,7 @@ const UserCareerAssignments: React.FC = () => {
               <th className="pb-3 font-semibold text-gray-600">Readiness</th>
               <th className="pb-3 font-semibold text-gray-600">Status</th>
               <th className="pb-3 font-semibold text-gray-600">Assigned At</th>
-              <th className="pb-3 pr-2 text-right font-semibold text-gray-600">Actions</th>
+              <th className="pb-3 pr-8 text-right font-semibold text-gray-600">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -415,7 +415,7 @@ const UserCareerAssignments: React.FC = () => {
                   <td className="py-4 text-gray-600">
                     {item.assigned_at ? new Date(item.assigned_at).toLocaleDateString() : '-'}
                   </td>
-                  <td className="py-4 pr-2 text-right">
+                  <td className="py-4 pr-8 text-right">
                     <div className="relative inline-block">
                       <button
                         onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)}
@@ -424,7 +424,7 @@ const UserCareerAssignments: React.FC = () => {
                         <span className="material-symbols-rounded">more_horiz</span>
                       </button>
                       {openMenuId === item.id && (
-                        <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg z-10 border border-gray-200">
+                        <div className="absolute right-0 mt-1 w-48 bg-white rounded-2xl shadow-lg z-10 border border-gray-200">
                           <button
                             onClick={() => handleViewProgress(item)}
                             className="block w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-gray-50 first:rounded-t-lg font-medium"
@@ -695,7 +695,7 @@ const UserCareerAssignments: React.FC = () => {
             <div className="p-4 border-t border-gray-200 bg-gray-50 flex justify-end">
               <button
                 onClick={() => setShowProgressModal(false)}
-                className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-lg"
+                className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-lg"
               >
                 Close View
               </button>

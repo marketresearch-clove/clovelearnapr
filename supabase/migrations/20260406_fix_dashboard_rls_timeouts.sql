@@ -22,11 +22,13 @@ DROP POLICY IF EXISTS "Admins can delete courses" ON courses;
 
 -- SIMPLE POLICY: All authenticated users can read all courses
 -- No complex visibility checks that cause timeouts
+DROP POLICY IF EXISTS "Authenticated users can read courses" ON courses;
 CREATE POLICY "Authenticated users can read courses"
 ON courses FOR SELECT
 USING (auth.role() = 'authenticated');
 
 -- Policy: Admins can create courses
+DROP POLICY IF EXISTS "Admins can insert courses" ON courses;
 CREATE POLICY "Admins can insert courses"
 ON courses FOR INSERT
 WITH CHECK (
@@ -38,6 +40,7 @@ WITH CHECK (
 );
 
 -- Policy: Admins can update courses
+DROP POLICY IF EXISTS "Admins can update courses" ON courses;
 CREATE POLICY "Admins can update courses"
 ON courses FOR UPDATE
 USING (
@@ -56,6 +59,7 @@ WITH CHECK (
 );
 
 -- Policy: Admins can delete courses
+DROP POLICY IF EXISTS "Admins can delete courses" ON courses;
 CREATE POLICY "Admins can delete courses"
 ON courses FOR DELETE
 USING (
@@ -95,6 +99,7 @@ DROP POLICY IF EXISTS "Instructors can read course lesson progress" ON lesson_pr
 
 -- Simple policies that won't cause timeouts
 -- Policy 1: Users can read/write their own progress (authenticated role)
+DROP POLICY IF EXISTS "Users manage own lesson progress" ON lesson_progress;
 CREATE POLICY "Users manage own lesson progress"
 ON lesson_progress FOR ALL
 USING (
@@ -107,12 +112,14 @@ WITH CHECK (
 );
 
 -- Policy 2: Service role (triggers, backend) can manage all progress
+DROP POLICY IF EXISTS "Service role manages lesson progress" ON lesson_progress;
 CREATE POLICY "Service role manages lesson progress"
 ON lesson_progress FOR ALL
 USING (auth.role() = 'service_role')
 WITH CHECK (auth.role() = 'service_role');
 
 -- Policy 3: Admins can read all lesson progress
+DROP POLICY IF EXISTS "Admins can read all lesson progress" ON lesson_progress;
 CREATE POLICY "Admins can read all lesson progress"
 ON lesson_progress FOR SELECT
 USING (
@@ -138,6 +145,7 @@ DROP POLICY IF EXISTS "Users can read lessons for visible courses" ON lessons;
 DROP POLICY IF EXISTS "Enrolled users can read course lessons" ON lessons;
 
 -- Simple policy: All authenticated users can read lessons
+DROP POLICY IF EXISTS "Authenticated users can read lessons" ON lessons;
 CREATE POLICY "Authenticated users can read lessons"
 ON lessons FOR SELECT
 USING (auth.role() = 'authenticated');
@@ -146,9 +154,40 @@ USING (auth.role() = 'authenticated');
 DROP POLICY IF EXISTS "Only admins can insert lessons" ON lessons;
 DROP POLICY IF EXISTS "Only admins can update lessons" ON lessons;
 DROP POLICY IF EXISTS "Only admins can delete lessons" ON lessons;
+DROP POLICY IF EXISTS "Admins can manage lessons" ON lessons;
 
-CREATE POLICY "Admins can manage lessons"
-ON lessons FOR ALL
+DROP POLICY IF EXISTS "Admins can insert lessons" ON lessons;
+CREATE POLICY "Admins can insert lessons"
+ON lessons FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM profiles 
+    WHERE profiles.id = auth.uid() 
+    AND profiles.role = 'admin'
+  )
+);
+
+DROP POLICY IF EXISTS "Admins can update lessons" ON lessons;
+CREATE POLICY "Admins can update lessons"
+ON lessons FOR UPDATE
+USING (
+  EXISTS (
+    SELECT 1 FROM profiles 
+    WHERE profiles.id = auth.uid() 
+    AND profiles.role = 'admin'
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM profiles 
+    WHERE profiles.id = auth.uid() 
+    AND profiles.role = 'admin'
+  )
+);
+
+DROP POLICY IF EXISTS "Admins can delete lessons" ON lessons;
+CREATE POLICY "Admins can delete lessons"
+ON lessons FOR DELETE
 USING (
   EXISTS (
     SELECT 1 FROM profiles 
@@ -160,6 +199,56 @@ USING (
 -- Optimize courseid queries
 CREATE INDEX IF NOT EXISTS idx_lessons_courseid
 ON lessons(courseid);
+
+-- ============================================================================
+-- FIX LEADERBOARD TABLE - ENSURE SIMPLE RLS FOR TRIGGERS
+-- ============================================================================
+
+ALTER TABLE IF EXISTS leaderboard ENABLE ROW LEVEL SECURITY;
+
+DO $$
+DECLARE
+  r text;
+BEGIN
+  FOR r IN (SELECT policyname FROM pg_policies WHERE tablename = 'leaderboard')
+  LOOP
+    EXECUTE 'DROP POLICY IF EXISTS "' || r || '" ON leaderboard';
+  END LOOP;
+END $$;
+
+DROP POLICY IF EXISTS "Authenticated users can read leaderboard" ON leaderboard;
+CREATE POLICY "Authenticated users can read leaderboard"
+ON leaderboard FOR SELECT
+USING (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Users can insert own leaderboard entry" ON leaderboard;
+CREATE POLICY "Users can insert own leaderboard entry"
+ON leaderboard FOR INSERT
+WITH CHECK (auth.uid() = userid);
+
+DROP POLICY IF EXISTS "Users can update own leaderboard entry" ON leaderboard;
+CREATE POLICY "Users can update own leaderboard entry"
+ON leaderboard FOR UPDATE
+USING (auth.uid() = userid)
+WITH CHECK (auth.uid() = userid);
+
+DROP POLICY IF EXISTS "Admins can manage leaderboard" ON leaderboard;
+CREATE POLICY "Admins can manage leaderboard"
+ON leaderboard FOR ALL
+USING (
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE profiles.id = auth.uid()
+      AND profiles.role = 'admin'
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE profiles.id = auth.uid()
+      AND profiles.role = 'admin'
+  )
+);
 
 -- ============================================================================
 -- VERIFY SIMPLIFIED RLS POLICIES

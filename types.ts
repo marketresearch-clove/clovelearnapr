@@ -31,10 +31,11 @@ export interface Flashcard {
 export interface QuizQuestion {
   id: number;
   question: string;
-  type: 'multiple-choice';
+  type: 'multiple-choice' | 'true-false' | 'short-answer';
   options: string[];
   correctAnswer: number;
   explanation: string;
+  hint?: string;
 }
 
 export interface QuizData {

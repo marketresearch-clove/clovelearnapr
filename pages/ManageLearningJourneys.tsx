@@ -221,24 +221,24 @@ const AssignCareerPathsTab: React.FC = () => {
           ))}
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200">
+        <div className="bg-white rounded-2xl border border-gray-200">
           <div className="p-6 border-b border-gray-200">
-            <div className="flex flex-wrap justify-between items-center gap-4">
-              <h3 className="font-semibold text-gray-900">
-                Users - {activeDepartment} ({filteredUsers.length} Users)
-              </h3>
-              <div className="flex items-center gap-4">
-                <input
-                  type="text"
-                  placeholder="Search User"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-                />
-                <button onClick={() => setShowAdvancedSearch(!showAdvancedSearch)} className="text-sm font-medium text-indigo-600 hover:underline">
+            <h3 className="font-semibold text-gray-900 mb-4">
+              Users - {activeDepartment} ({filteredUsers.length} Users)
+            </h3>
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+              <input
+                type="text"
+                placeholder="Search User"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm sm:flex-1"
+              />
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
+                <button onClick={() => setShowAdvancedSearch(!showAdvancedSearch)} className="text-sm font-medium text-indigo-600 hover:underline whitespace-nowrap">
                   Advanced Search
                 </button>
-                <label className="flex items-center gap-2 cursor-pointer text-sm">
+                <label className="flex items-center gap-2 cursor-pointer text-sm whitespace-nowrap">
                   <input
                     type="checkbox"
                     onChange={toggleAllUsers}
@@ -445,7 +445,7 @@ const AssignCareerPathsTab: React.FC = () => {
                 <div
                   key={user.id}
                   onClick={() => toggleUser(user.id)}
-                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedUsers.includes(user.id)
+                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedUsers.includes(user.id)
                     ? 'border-indigo-600 bg-indigo-50'
                     : 'border-gray-200 hover:border-indigo-200'
                     }`}
@@ -476,7 +476,7 @@ const AssignCareerPathsTab: React.FC = () => {
 
       {/* Sidebar - Career Paths List */}
       <div className="space-y-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-6">
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 sticky top-6">
           <h3 className="font-bold text-gray-900 mb-4">Select Career Paths</h3>
 
           <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
@@ -1280,62 +1280,6 @@ const ManageLearningJourneys: React.FC = () => {
     }
   };
 
-  const SimplifiedCareerPathsView = () => (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-        <div className="w-full sm:w-80">
-          <div className="relative">
-            <span className="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
-            <input
-              type="text"
-              placeholder="Search career paths..."
-              value={careerPathsSearchQuery}
-              onChange={(e) => setCareerPathsSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredCareerPaths.map(path => (
-          <div key={path.id} className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="font-bold text-gray-900 text-lg line-clamp-2">{path.source_role}</h3>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-gray-400">→</span>
-                  <p className="text-sm text-indigo-600 font-semibold">{path.target_role}</p>
-                </div>
-              </div>
-            </div>
-
-            <p className="text-gray-600 text-sm mb-6 flex-1">
-              {path.description || 'Career path for skill development and progression.'}
-            </p>
-
-            <div className="border-t border-gray-200 pt-4 mt-auto">
-              <button
-                onClick={() => handleViewCareerPathDetails(path)}
-                className="w-full py-2 px-4 bg-white border border-gray-200 text-gray-700 font-bold rounded-lg hover:bg-white hover:text-indigo-600 hover:border-indigo-200 transition-all flex items-center justify-center gap-2"
-              >
-                <span className="material-symbols-rounded">info</span>
-                View Details
-              </button>
-            </div>
-          </div>
-        ))}
-
-        {filteredCareerPaths.length === 0 && (
-          <div className="col-span-full text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
-            <span className="material-symbols-rounded text-4xl text-gray-400 mb-2">trending_up</span>
-            <p className="text-gray-500">No career paths found matching your search.</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
   // Helper functions for career path skill management
   const addSkillToCareerPath = (skillId: string) => {
     const skill = availableSkillsForCareerPath.find(s => s.id === skillId);
@@ -1445,7 +1389,7 @@ const ManageLearningJourneys: React.FC = () => {
           </div>
 
           {/* Tabs */}
-          <div className="border-b border-gray-200">
+          <div className="border-b border-gray-200 ">
             <nav className="-mb-px flex space-x-8">
               <button
                 onClick={() => setActiveTab('assign')}
@@ -1530,24 +1474,24 @@ const ManageLearningJourneys: React.FC = () => {
                 </div>
 
                 {/* Users List */}
-                <div className="bg-white rounded-xl border border-gray-200">
+                <div className="bg-white rounded-2xl border border-gray-200">
                   <div className="p-6 border-b border-gray-200">
-                    <div className="flex flex-wrap justify-between items-center gap-4">
-                      <h3 className="font-semibold text-gray-900">
-                        Users - {activeDepartment} ({filteredUsers.length} Users)
-                      </h3>
-                      <div className="flex items-center gap-4">
-                        <input
-                          type="text"
-                          placeholder="Search User"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-                        />
-                        <button onClick={() => setShowAdvancedSearch(!showAdvancedSearch)} className="text-sm font-medium text-indigo-600 hover:underline">
+                    <h3 className="font-semibold text-gray-900 mb-4">
+                      Users - {activeDepartment} ({filteredUsers.length} Users)
+                    </h3>
+                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                      <input
+                        type="text"
+                        placeholder="Search User"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm sm:flex-1"
+                      />
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
+                        <button onClick={() => setShowAdvancedSearch(!showAdvancedSearch)} className="text-sm font-medium text-indigo-600 hover:underline whitespace-nowrap">
                           Advanced Search
                         </button>
-                        <label className="flex items-center gap-2 cursor-pointer text-sm">
+                        <label className="flex items-center gap-2 cursor-pointer text-sm whitespace-nowrap">
                           <input
                             type="checkbox"
                             onChange={toggleAllUsers}
@@ -1755,7 +1699,7 @@ const ManageLearningJourneys: React.FC = () => {
                         <div
                           key={user.id}
                           onClick={() => toggleUser(user.id)}
-                          className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedUsers.includes(user.id)
+                          className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedUsers.includes(user.id)
                             ? 'border-indigo-600 bg-indigo-50'
                             : 'border-gray-200 hover:border-indigo-200'
                             }`}
@@ -1786,7 +1730,7 @@ const ManageLearningJourneys: React.FC = () => {
 
               {/* Sidebar - Journeys List */}
               <div className="space-y-6">
-                <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-6">
+                <div className="bg-white rounded-2xl border border-gray-200 p-6 sticky top-6">
                   <h3 className="font-bold text-gray-900 mb-4">Select Journeys</h3>
 
                   <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
@@ -1868,7 +1812,7 @@ const ManageLearningJourneys: React.FC = () => {
 
           {activeTab === 'manage' && (
             <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
                 <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto flex-1">
                   <div className="relative w-full sm:w-80">
                     <span className="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-white-400">search</span>
@@ -1883,7 +1827,7 @@ const ManageLearningJourneys: React.FC = () => {
                   <select
                     value={filterJourneyType}
                     onChange={(e) => setFilterJourneyType(e.target.value)}
-                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="px-4 py-2 pr-8 bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
                   >
                     <option value="all">All Types</option>
                     <option value="Standard">Standard</option>
@@ -1902,7 +1846,7 @@ const ManageLearningJourneys: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredJourneys.map(journey => (
-                  <div key={journey.id} className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col shadow-sm hover:shadow-md transition-shadow">
+                  <div key={journey.id} className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col shadow-sm hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-start mb-4">
                       <div>
                         <h3 className="font-bold text-gray-900 text-lg">{journey.title}</h3>
@@ -1957,7 +1901,7 @@ const ManageLearningJourneys: React.FC = () => {
           {activeTab === 'careerPaths' && <CareerManagement />}
           {activeTab === 'careerProgress' && (
             <div className="space-y-6">
-              <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200">
+              <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-gray-200">
                 <h3 className="font-semibold text-gray-900">Manage Career Paths</h3>
                 <div className="flex items-center gap-2">
                   <button
@@ -1984,7 +1928,61 @@ const ManageLearningJourneys: React.FC = () => {
                   </button>
                 </div>
               </div>
-              {careerPathsViewMode === 'simplified' ? <SimplifiedCareerPathsView /> : <UserCareerAssignments />}
+              {careerPathsViewMode === 'simplified' ? (
+                <div className="space-y-6">
+                  <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
+                    <div className="w-full sm:w-80">
+                      <div className="relative">
+                        <span className="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                        <input
+                          type="text"
+                          placeholder="Search career paths..."
+                          value={careerPathsSearchQuery}
+                          onChange={(e) => setCareerPathsSearchQuery(e.target.value)}
+                          className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredCareerPaths.map(path => (
+                      <div key={path.id} className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="font-bold text-gray-900 text-lg line-clamp-2">{path.source_role}</h3>
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="text-gray-400">→</span>
+                              <p className="text-sm text-indigo-600 font-semibold">{path.target_role}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <p className="text-gray-600 text-sm mb-6 flex-1">
+                          {path.description || 'Career path for skill development and progression.'}
+                        </p>
+
+                        <div className="border-t border-gray-200 pt-4 mt-auto">
+                          <button
+                            onClick={() => handleViewCareerPathDetails(path)}
+                            className="w-full py-2 px-4 bg-white border border-gray-200 text-gray-700 font-bold rounded-lg hover:bg-white hover:text-indigo-600 hover:border-indigo-200 transition-all flex items-center justify-center gap-2"
+                          >
+                            <span className="material-symbols-rounded">info</span>
+                            View Details
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {filteredCareerPaths.length === 0 && (
+                      <div className="col-span-full text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
+                        <span className="material-symbols-rounded text-4xl text-gray-400 mb-2">trending_up</span>
+                        <p className="text-gray-500">No career paths found matching your search.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : <UserCareerAssignments />}
             </div>
           )}
           {activeTab === 'userCareerAssignments' && <AssignCareerPathsTab />}

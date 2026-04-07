@@ -20,15 +20,15 @@ const SkillManagementPage: React.FC = () => {
 
   return (
     <AdminLayout title="Skill Management">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="border-b border-gray-200 overflow-x-auto">
           <div className="flex min-w-max">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 className={`px-6 py-4 text-sm font-medium transition-colors relative ${activeTab === tab.id
-                    ? 'text-blue-600'
-                    : 'text-gray-500 hover:text-gray-700'
+                  ? 'text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
                   }`}
                 onClick={() => setActiveTab(tab.id)}
               >

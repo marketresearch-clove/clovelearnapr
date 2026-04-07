@@ -499,11 +499,21 @@ const ManageCourseAssignments: React.FC<ManageCourseAssignmentsProps> = ({ hideL
     }
   };
 
+  const uniqueCourseCategories = useMemo(() => {
+    return [
+      ...new Set(
+        courses
+          .map(course => String(course.category || '').trim())
+          .filter(category => category.length > 0)
+      )
+    ];
+  }, [courses]);
+
   const getFilteredCourses = () => {
     // Always show hidden courses in admin assignment panel for admins to assign to specific users
     return courses
       .filter(course => course.title.toLowerCase().includes(courseSearchQuery.toLowerCase()))
-      .filter(course => courseFilterCategories.length === 0 || courseFilterCategories.includes(course.category));
+      .filter(course => courseFilterCategories.length === 0 || courseFilterCategories.includes(String(course.category || '').trim()));
   };
 
   const handleCourseScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -631,24 +641,26 @@ const ManageCourseAssignments: React.FC<ManageCourseAssignmentsProps> = ({ hideL
           </div>
 
           {/* Users List */}
-          <div className="bg-white rounded-xl border border-gray-200">
+          <div className="bg-white rounded-2xl border border-gray-200">
             <div className="p-6 border-b border-gray-200">
-              <div className="flex flex-wrap justify-between items-center gap-4">
-                <h3 className="font-semibold text-gray-900">
-                  Courselet Users - {activeDepartment} ({filteredUsers.length} Users)
-                </h3>
-                <div className="flex items-center gap-4">
+              <h3 className="font-semibold text-gray-900 mb-4">
+                Users - {activeDepartment} ({filteredUsers.length} Users)
+              </h3>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
                   <input
                     type="text"
                     placeholder="Search User"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                    className="w-full pl-4 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
                   />
-                  <button onClick={() => setShowAdvancedSearch(!showAdvancedSearch)} className="text-sm font-medium text-primary hover:underline">
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button onClick={() => setShowAdvancedSearch(!showAdvancedSearch)} className="text-sm font-medium text-primary hover:underline whitespace-nowrap">
                     Advanced Search
                   </button>
-                  <label className="flex items-center gap-2 cursor-pointer text-sm">
+                  <label className="flex items-center gap-2 cursor-pointer text-sm whitespace-nowrap">
                     <input
                       type="checkbox"
                       onChange={toggleAllUsers}
@@ -854,7 +866,7 @@ const ManageCourseAssignments: React.FC<ManageCourseAssignmentsProps> = ({ hideL
               {loading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                   {[...Array(8)].map((_, i) => (
-                    <div key={i} className="p-4 rounded-lg border-2 border-gray-200 bg-white animate-pulse">
+                    <div key={i} className="p-4 rounded-2xl border-2 border-gray-200 bg-white animate-pulse">
                       <div className="w-16 h-16 mx-auto mb-2 bg-gray-300 rounded-full"></div>
                       <div className="h-4 bg-gray-300 rounded mb-2"></div>
                       <div className="h-3 bg-gray-200 rounded w-3/4 mx-auto"></div>
@@ -872,7 +884,7 @@ const ManageCourseAssignments: React.FC<ManageCourseAssignmentsProps> = ({ hideL
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {filteredUsers.slice(userPage * usersPerPage, (userPage + 1) * usersPerPage).map(user => (
                       <label key={user.id} className="cursor-pointer relative">
-                        <div className={`p-4 rounded-lg border-2 ${selectedUsers.includes(user.id) ? 'border-primary bg-blue-100' : 'border-gray-200 bg-white'} text-center transition-all hover:shadow-lg hover:border-primary`}>
+                        <div className={`p-4 rounded-2xl border-2 ${selectedUsers.includes(user.id) ? 'border-primary bg-blue-100' : 'border-gray-200 bg-white'} text-center transition-all hover:shadow-lg hover:border-primary`}>
                           <input
                             type="checkbox"
                             checked={selectedUsers.includes(user.id)}
@@ -887,7 +899,7 @@ const ManageCourseAssignments: React.FC<ManageCourseAssignmentsProps> = ({ hideL
                           <UserAvatar user={user} />
                           <p className="text-sm font-medium text-gray-900 truncate">{user.fullname}</p>
                           <p className="text-xs text-gray-500 truncate">{user.designation || 'No role'}</p>
-                          <p className="text-xs text-gray-500 truncate">User ID: {user.user_id}</p>
+                          <p className="text-xs text-gray-500 truncate">Emp ID: {user.user_id}</p>
                         </div>
                       </label>
                     ))}
@@ -922,7 +934,7 @@ const ManageCourseAssignments: React.FC<ManageCourseAssignmentsProps> = ({ hideL
         </div>
 
         {/* Courses Selection */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 h-fit sticky top-6 flex flex-col max-h-[calc(100vh-120px)]">
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 h-fit sticky top-6 flex flex-col max-h-[calc(100vh-120px)]">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-semibold text-gray-900">
               Courses ({selectedCourses.length} selected)
@@ -932,7 +944,7 @@ const ManageCourseAssignments: React.FC<ManageCourseAssignmentsProps> = ({ hideL
                 console.log('[ManageCourseAssignments] Refreshing course data...');
                 loadInitialData();
               }}
-              className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 hover:text-gray-900"
+              className="p-1.5 hover:bg-gray-100 rounded-2xl transition-colors text-gray-600 hover:text-gray-900"
               title="Refresh course list"
             >
               <span className="material-symbols-outlined text-base">refresh</span>
@@ -952,23 +964,26 @@ const ManageCourseAssignments: React.FC<ManageCourseAssignmentsProps> = ({ hideL
               value={courseFilterCategories}
               onChange={(e) => {
                 const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-                // Remove empty string if present and set categories accordingly
                 const filteredOptions = selectedOptions.filter(opt => opt !== '');
                 setCourseFilterCategories(filteredOptions);
               }}
               className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm bg-white min-w-[180px]"
-              size={1}
+              size={Math.min(uniqueCourseCategories.length || 1, 6)}
             >
-              <option value="">All Categories</option>
-              {[...new Set(courses.map(c => c.category))].map(category => (
-                <option key={category} value={category}>{category}</option>
+              <option value="" disabled>
+                Categories
+              </option>
+              {uniqueCourseCategories.map(category => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
               ))}
             </select>
           </div>
 
           {/* Course Summary Info */}
-          <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm font-medium text-blue-900">
+          <div className="mb-4 p-3 bg-indigo-80 rounded-lg border border-indigo-200">
+            <p className="text-sm font-medium text-indigo-900">
               📚 Total Courses: {getFilteredCourses().length}
               {getFilteredCourses().filter(c => !c.is_hidden).length > 0 && (
                 <span className="ml-3">✓ Visible: {getFilteredCourses().filter(c => !c.is_hidden).length}</span>
@@ -987,7 +1002,7 @@ const ManageCourseAssignments: React.FC<ManageCourseAssignmentsProps> = ({ hideL
             <button
               onClick={toggleAllCourses}
               disabled={getFilteredCourses().length === 0}
-              className="flex-1 px-4 py-2 bg-blue-100 text-blue-600 hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2 bg-indigo-100 text-indigo-600 hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2"
             >
               <input
                 type="checkbox"
