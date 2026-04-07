@@ -41,7 +41,7 @@ const ResetPassword = () => {
                             access_token: accessToken,
                             refresh_token: refreshToken
                         });
-                        
+
                         if (!error && data.session) {
                             console.log("ResetPassword: Session established manually from hash");
                             setIsLoading(false);
@@ -124,7 +124,7 @@ const ResetPassword = () => {
                 <div className="flex flex-col items-center gap-4 text-center">
                     <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary-600 border-t-transparent"></div>
                     <p className="text-slate-500 text-sm">Verifying recovery link...</p>
-                    <button 
+                    <button
                         onClick={() => navigate('/')}
                         className="mt-6 text-primary-600 hover:underline text-sm font-medium"
                     >
@@ -139,7 +139,7 @@ const ResetPassword = () => {
         <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
             <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-100">
                 <div className="text-center mb-8">
-                    <div className="w-12 h-12 bg-primary-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary-500/30">
+                    <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary-500/30">
                         <span className="material-symbols-rounded text-white text-2xl">landscape</span>
                     </div>
                     <h2 className="text-2xl font-bold font-heading text-slate-900">Create New Password</h2>
@@ -211,7 +211,7 @@ const ResetPassword = () => {
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full bg-primary-600 text-white py-3 rounded-lg font-semibold shadow-lg shadow-primary-500/30 hover:bg-primary-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isSubmitting ? 'Updating...' : 'Reset Password'}
                         <span className="material-symbols-rounded text-lg">key</span>

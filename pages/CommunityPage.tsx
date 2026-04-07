@@ -364,7 +364,7 @@ const CommunityPage: React.FC = () => {
                 </div>
                 <button
                   onClick={() => setIsEditorCollapsed(false)}
-                  className="bg-primary-600 text-white rounded-full size-10 flex items-center justify-center hover:bg-primary-700 transition-colors shadow-md"
+                  className="bg-indigo-600 text-white rounded-full size-10 flex items-center justify-center hover:bg-primary-700 transition-colors shadow-md"
                 >
                   <span className="material-symbols-outlined">add</span>
                 </button>
@@ -444,7 +444,7 @@ const CommunityPage: React.FC = () => {
                       disabled={(!newPostContent.trim() && !selectedFile) || isUploading}
                       className={`flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded h-10 px-6 text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors ${(!newPostContent.trim() && !selectedFile) || isUploading
                         ? 'bg-slate-300 cursor-not-allowed'
-                        : 'bg-primary-600 hover:bg-primary-700'
+                        : 'bg-indigo-600 hover:bg-primary-700'
                         }`}
                     >
                       {isUploading ? (
@@ -558,7 +558,7 @@ const CommunityPage: React.FC = () => {
                             </button>
                             <button
                               onClick={() => handleUpdatePost(post.id)}
-                              className="px-3 py-1 text-sm bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors"
+                              className="px-3 py-1 text-sm bg-indigo-600 text-white rounded hover:bg-primary-700 transition-colors"
                             >
                               Save
                             </button>
@@ -826,105 +826,110 @@ const CommunityPage: React.FC = () => {
               </div>
               <button
                 onClick={() => setIsEditorCollapsed(false)}
-                className="bg-primary-600 text-white rounded-full size-12 flex items-center justify-center hover:bg-primary-700 transition-colors shadow-lg active:scale-95"
+                className="bg-indigo-600 text-white rounded-full size-12 flex items-center justify-center hover:bg-primary-700 transition-colors shadow-lg active:scale-95"
               >
                 <span className="material-symbols-outlined text-2xl">add</span>
               </button>
             </div>
           ) : (
-            <div className="p-6 pb-10 flex flex-col h-full overflow-y-auto">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="font-bold text-lg">Create Post</h3>
+            <div className="flex flex-col h-full">
+              {/* Mobile Create Post Header - Sticky */}
+              <div className="fixed top-14 left-0 right-0 bg-white dark:bg-neutral-dark border-b border-slate-100 dark:border-neutral-800 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-50 shrink-0 lg:hidden">
+                <h3 className="font-bold text-base sm:text-lg">Create Post</h3>
                 <button
                   onClick={() => setIsEditorCollapsed(true)}
-                  className="p-2 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-full"
+                  className="p-2 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-full transition-colors active:scale-95 flex items-center justify-center min-w-10 min-h-10 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+                  aria-label="Close post editor"
+                  title="Close post editor"
                 >
-                  <span className="material-symbols-outlined">close</span>
+                  <span className="material-symbols-outlined text-xl font-bold">close</span>
                 </button>
               </div>
 
-              <div className="flex items-start gap-4 mb-4">
-                <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" style={{ backgroundImage: `url("${userProfile?.avatarurl || userProfile?.avatar_url || `https://i.pravatar.cc/150?u=${user?.id}`}")` }} />
-                <div className="flex-1 flex flex-col gap-2">
-                  <textarea
-                    value={newPostContent}
-                    onChange={(e) => setNewPostContent(e.target.value)}
-                    className="form-textarea w-full resize-none bg-neutral-light dark:bg-background-dark border-border-light dark:border-border-dark rounded-xl p-4 h-40 focus:ring-primary focus:border-primary placeholder:text-text-light-secondary dark:placeholder:text-text-dark-secondary text-base"
-                    placeholder="What's on your mind?"
-                    autoFocus
-                  />
-                  {previewUrl && (
-                    <div className="relative w-fit mt-2">
-                      <img src={previewUrl} alt="Preview" className="max-h-60 rounded-xl border border-slate-200" />
-                      <button
-                        onClick={() => {
-                          setSelectedFile(null);
-                          setPreviewUrl(null);
-                        }}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow-md"
-                      >
-                        <span className="material-symbols-outlined text-sm">close</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex justify-between items-center mt-auto pt-6 border-t border-slate-100 dark:border-neutral-800">
-                <div className="flex items-center gap-6 text-text-light-secondary dark:text-text-dark-secondary">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                  />
-                  <button onClick={handleFileUpload} className="p-2 hover:text-primary transition-colors flex flex-col items-center gap-1">
-                    <span className="material-symbols-outlined text-2xl">image</span>
-                    <span className="text-[10px]">Photo</span>
-                  </button>
-                  <button onClick={handleFileUpload} className="p-2 hover:text-primary transition-colors flex flex-col items-center gap-1">
-                    <span className="material-symbols-outlined text-2xl">attach_file</span>
-                    <span className="text-[10px]">File</span>
-                  </button>
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                      className={`p-2 hover:text-primary transition-colors flex flex-col items-center gap-1 ${showEmojiPicker ? 'text-primary' : ''}`}
-                    >
-                      <span className="material-symbols-outlined text-2xl">emoji_emotions</span>
-                      <span className="text-[10px]">Emoji</span>
-                    </button>
-                    {showEmojiPicker && (
-                      <div className="absolute bottom-16 left-0 z-50 shadow-2xl rounded-2xl overflow-hidden">
-                        <div
-                          className="fixed inset-0 z-40"
-                          onClick={() => setShowEmojiPicker(false)}
-                        />
-                        <div className="relative z-50">
-                          <EmojiPicker onEmojiClick={handleEmojiClick} width={300} height={350} />
-                        </div>
+              <div className="pt-36 sm:pt-20 p-4 sm:p-6 pb-10 flex flex-col flex-1 overflow-y-auto">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" style={{ backgroundImage: `url("${userProfile?.avatarurl || userProfile?.avatar_url || `https://i.pravatar.cc/150?u=${user?.id}`}")` }} />
+                  <div className="flex-1 flex flex-col gap-2">
+                    <textarea
+                      value={newPostContent}
+                      onChange={(e) => setNewPostContent(e.target.value)}
+                      className="form-textarea w-full resize-none bg-neutral-light dark:bg-background-dark border-border-light dark:border-border-dark rounded-xl p-4 h-60 focus:ring-primary focus:border-primary placeholder:text-text-light-secondary dark:placeholder:text-text-dark-secondary text-base"
+                      placeholder="What's on your mind?"
+                      autoFocus
+                    />
+                    {previewUrl && (
+                      <div className="relative w-fit mt-2">
+                        <img src={previewUrl} alt="Preview" className="max-h-60 rounded-xl border border-slate-200" />
+                        <button
+                          onClick={() => {
+                            setSelectedFile(null);
+                            setPreviewUrl(null);
+                          }}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow-md"
+                        >
+                          <span className="material-symbols-outlined text-sm">close</span>
+                        </button>
                       </div>
                     )}
                   </div>
                 </div>
-                <button
-                  onClick={() => {
-                    handleCreatePost();
-                    setIsEditorCollapsed(true);
-                  }}
-                  disabled={(!newPostContent.trim() && !selectedFile) || isUploading}
-                  className={`flex min-w-[100px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 text-white text-sm font-bold leading-normal tracking-[0.015em] transition-all active:scale-95 ${(!newPostContent.trim() && !selectedFile) || isUploading
-                    ? 'bg-slate-300 cursor-not-allowed'
-                    : 'bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-600/20'
-                    }`}
-                >
-                  {isUploading ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <span className="truncate">Post Now</span>
-                  )}
-                </button>
+
+                <div className="flex justify-between items-center mt-auto pt-6 border-t border-slate-100 dark:border-neutral-800">
+                  <div className="flex items-center gap-6 text-text-light-secondary dark:text-text-dark-secondary">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                    />
+                    <button onClick={handleFileUpload} className="p-2 hover:text-primary transition-colors flex flex-col items-center gap-1">
+                      <span className="material-symbols-outlined text-2xl">image</span>
+                      <span className="text-[10px]">Photo</span>
+                    </button>
+                    <button onClick={handleFileUpload} className="p-2 hover:text-primary transition-colors flex flex-col items-center gap-1">
+                      <span className="material-symbols-outlined text-2xl">attach_file</span>
+                      <span className="text-[10px]">File</span>
+                    </button>
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        className={`p-2 hover:text-primary transition-colors flex flex-col items-center gap-1 ${showEmojiPicker ? 'text-primary' : ''}`}
+                      >
+                        <span className="material-symbols-outlined text-2xl">emoji_emotions</span>
+                        <span className="text-[10px]">Emoji</span>
+                      </button>
+                      {showEmojiPicker && (
+                        <div className="absolute bottom-16 left-0 z-50 shadow-2xl rounded-2xl overflow-hidden">
+                          <div
+                            className="fixed inset-0 z-40"
+                            onClick={() => setShowEmojiPicker(false)}
+                          />
+                          <div className="relative z-50">
+                            <EmojiPicker onEmojiClick={handleEmojiClick} width={300} height={350} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      handleCreatePost();
+                      setIsEditorCollapsed(true);
+                    }}
+                    disabled={(!newPostContent.trim() && !selectedFile) || isUploading}
+                    className={`flex min-w-[100px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 text-white text-sm font-bold leading-normal tracking-[0.015em] transition-all active:scale-95 ${(!newPostContent.trim() && !selectedFile) || isUploading
+                      ? 'bg-slate-300 cursor-not-allowed'
+                      : 'bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20'
+                      }`}
+                  >
+                    {isUploading ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <span className="truncate">Post</span>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           )}

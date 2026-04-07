@@ -318,7 +318,7 @@ const LearningJourneyTab: React.FC<{ onSkillClick: () => void; onCourseClick: ()
             <div className="flex items-center gap-2 mb-2">
               <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-orange-400 rounded-full"
+                  className="h-full bg-indigo-400 rounded-full"
                   style={{ width: `${assignment.progress}%` }}
                 />
               </div>
@@ -335,7 +335,7 @@ const LearningJourneyTab: React.FC<{ onSkillClick: () => void; onCourseClick: ()
                   e.stopPropagation();
                   handleStartJourney(assignment.id);
                 }}
-                className="w-full mb-3 px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold rounded transition-colors"
+                className="w-full mb-3 px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold rounded transition-colors"
               >
                 Start Journey
               </button>
@@ -368,7 +368,7 @@ const LearningJourneyTab: React.FC<{ onSkillClick: () => void; onCourseClick: ()
               style={{ width: `${totalLineWidth}px` }}
             >
               <div
-                className="h-full bg-orange-500 transition-all duration-500"
+                className="h-full bg-indigo-500 transition-all duration-500"
                 style={{ width: `${filledWidth}px` }}
               ></div>
             </div>
@@ -378,8 +378,8 @@ const LearningJourneyTab: React.FC<{ onSkillClick: () => void; onCourseClick: ()
               {modules.map((item, index) => (
                 <div key={item.id} className="flex flex-col items-center w-64 flex-shrink-0 group">
                   {/* Milestone Dot */}
-                  <div className={`w-6 h-6 rounded-full border-4 mb-6 relative z-10 transition-colors ${item.status === 'completed' ? 'bg-orange-500 border-orange-500' :
-                    item.status === 'unlocked' ? 'bg-white border-orange-500' :
+                  <div className={`w-6 h-6 rounded-full border-4 mb-6 relative z-10 transition-colors ${item.status === 'completed' ? 'bg-indigo-500 border-indigo-500' :
+                    item.status === 'unlocked' ? 'bg-white border-indigo-500' :
                       'bg-white border-gray-300'
                     }`}>
                     {item.status === 'completed' && (
@@ -393,7 +393,7 @@ const LearningJourneyTab: React.FC<{ onSkillClick: () => void; onCourseClick: ()
                   <div className="mb-4 relative w-full">
                     {item.unlock_date ? (
                       <>
-                        <div className="bg-orange-500 text-white font-bold py-1 px-4 rounded-t text-center w-20 mx-auto text-xs">
+                        <div className="bg-indigo-500 text-white font-bold py-1 px-4 rounded-t text-center w-20 mx-auto text-xs">
                           {new Date(item.unlock_date).toLocaleString('default', { month: 'short' })}
                         </div>
                         <div className="bg-white border border-gray-200 font-bold py-1 px-4 rounded-b text-center w-20 mx-auto shadow-sm text-sm">
@@ -415,7 +415,7 @@ const LearningJourneyTab: React.FC<{ onSkillClick: () => void; onCourseClick: ()
                   {/* Module Card */}
                   <div
                     onClick={() => handleModuleClick(item)}
-                    className={`w-full bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow border relative group-hover:-translate-y-1 transition-transform duration-300 cursor-pointer ${item.status === 'locked' ? 'border-gray-200 opacity-75 cursor-not-allowed' : 'border-orange-100'
+                    className={`w-full bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow border relative group-hover:-translate-y-1 transition-transform duration-300 cursor-pointer ${item.status === 'locked' ? 'border-gray-200 opacity-75 cursor-not-allowed' : 'border-indigo-100'
                       }`}>
                     <div className="p-4 h-full flex flex-col">
                       <h4 className="font-bold text-gray-800 mb-2 line-clamp-2 h-12 text-sm">{item.module.title}</h4>
@@ -567,7 +567,7 @@ const CareerPathTab: React.FC<{ setActiveTab: (tab: any) => void }> = ({ setActi
               <h3 className="text-2xl font-black text-slate-900 mb-4 leading-tight">{careerPath.target_role_name}</h3>
 
               <div className="mb-10">
-                <span className={`inline-block px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${careerPath.status === 'Ready for Promotion' ? 'bg-green-500 text-white' : 'bg-primary-600 text-white'
+                <span className={`inline-block px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${careerPath.status === 'Ready for Promotion' ? 'bg-green-500 text-white' : 'bg-indigo-600 text-white'
                   }`}>
                   {careerPath.status}
                 </span>
@@ -582,7 +582,7 @@ const CareerPathTab: React.FC<{ setActiveTab: (tab: any) => void }> = ({ setActi
 
               <div className="w-full bg-slate-200/50 rounded-full h-2 mb-10 overflow-hidden">
                 <div
-                  className="h-full bg-primary-600 rounded-full transition-all duration-1000 ease-out shadow-sm"
+                  className="h-full bg-indigo-600 rounded-full transition-all duration-1000 ease-out shadow-sm"
                   style={{ width: `${careerPath.readiness_percentage}%` }}
                 />
               </div>
@@ -615,7 +615,7 @@ const CareerPathTab: React.FC<{ setActiveTab: (tab: any) => void }> = ({ setActi
 
                 <button
                   onClick={() => setActiveTab('journey')}
-                  className="w-full py-5 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-2xl transition-all shadow-xl shadow-primary-100 flex items-center justify-center gap-2 group"
+                  className="w-full py-5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl transition-all shadow-xl shadow-indigo-100 flex items-center justify-center gap-2 group"
                 >
                   Continue Learning
                   <span className="material-symbols-rounded group-hover:translate-x-1 transition-transform">arrow_forward</span>
@@ -767,7 +767,7 @@ const CareerPathTab: React.FC<{ setActiveTab: (tab: any) => void }> = ({ setActi
                     'grid-cols-1'
                   }`}>
                   {/* Beginner Card */}
-                  <div className={`p-4 rounded-xl border-2 transition-all ${selectedSkillForView.user_achieved_level === 'Beginner' ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-transparent bg-white dark:bg-gray-800'
+                  <div className={`p-4 rounded-lg border-2 transition-all ${selectedSkillForView.user_achieved_level === 'Beginner' ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-transparent bg-white dark:bg-gray-800'
                     }`}>
                     <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Beginner</p>
                     <p className="text-xl font-bold text-slate-900 dark:text-white">
@@ -858,7 +858,7 @@ const CareerPathTab: React.FC<{ setActiveTab: (tab: any) => void }> = ({ setActi
               <div className="mt-8">
                 <button
                   onClick={() => setShowSkillDetailsModal(false)}
-                  className="w-full py-4 bg-slate-900 dark:bg-primary-600 text-white font-bold rounded-2xl hover:bg-black dark:hover:bg-primary-700 transition-all shadow-lg"
+                  className="w-full py-4 bg-slate-900 dark:bg-indigo-600 text-white font-bold rounded-2xl hover:bg-black dark:hover:bg-primary-700 transition-all shadow-lg"
                 >
                   Got it
                 </button>
@@ -971,7 +971,7 @@ const SkillDetailModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full mb-2 inline-block">General Negotiation Skills</span>
                   <p className="text-xs text-slate-500 line-clamp-2">Join this course and become better at negotiation by learning about the 5 stages of a successful negotiation.</p>
                   <div className="w-full bg-slate-100 h-1 rounded-full mt-3">
-                    <div className="bg-primary-600 h-1 rounded-full w-[20%]"></div>
+                    <div className="bg-indigo-600 h-1 rounded-full w-[20%]"></div>
                   </div>
                 </div>
               </div>
@@ -980,8 +980,8 @@ const SkillDetailModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             {/* Recommended Section */}
             <div>
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-slate-800 text-lg border-b-2 border-primary-600 inline-block pb-1">Top 5 Recommended</h3>
-                <button className="bg-primary-600 text-white text-xs font-bold px-4 py-2 rounded-full hover:bg-primary-700">Discover more</button>
+                <h3 className="font-bold text-slate-800 text-lg border-b-2 border-indigo-600 inline-block pb-1">Top 5 Recommended</h3>
+                <button className="bg-indigo-600 text-white text-xs font-bold px-4 py-2 rounded-full hover:bg-indigo-700">Discover more</button>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -1007,7 +1007,7 @@ const SkillDetailModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <button className="absolute right-full top-1/2 -translate-y-1/2 mr-4 bg-white rounded-full p-2 shadow-lg hover:bg-slate-50 text-slate-400">
               <span className="material-symbols-rounded">chevron_left</span>
             </button>
-            <button className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary-600 rounded-full p-3 shadow-lg hover:bg-primary-500 text-white z-20">
+            <button className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-indigo-600 rounded-full p-3 shadow-lg hover:bg-primary-500 text-white z-20">
               <span className="material-symbols-rounded">chevron_right</span>
             </button>
 
@@ -1020,7 +1020,7 @@ const SkillDetailModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         {/* Footer Actions */}
         <div className="bg-slate-900 p-4 flex justify-between items-center lg:hidden">
           <button className="text-white px-6 py-2 rounded border border-white/20">Back</button>
-          <button className="bg-primary-600 text-white px-6 py-2 rounded font-bold">Next</button>
+          <button className="bg-indigo-600 text-white px-6 py-2 rounded font-bold">Next</button>
         </div>
       </div>
     </div>
@@ -1190,7 +1190,7 @@ const AssignedCoursesTab: React.FC<{ setActiveTab: (tab: any) => void }> = ({ se
                 </div>
                 <div className="w-full bg-slate-200 rounded-full h-2">
                   <div
-                    className="bg-primary-600 h-2 rounded-full transition-all duration-500"
+                    className="bg-indigo-600 h-2 rounded-full transition-all duration-500"
                     style={{ width: `${course.progress}%` }}
                   ></div>
                 </div>
@@ -1221,7 +1221,7 @@ const AssignedCoursesTab: React.FC<{ setActiveTab: (tab: any) => void }> = ({ se
                       e.stopPropagation();
                       navigate(`/lesson/${course.id}`);
                     }}
-                    className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
                   >
                     <span className="material-symbols-rounded text-base">play_arrow</span>
                     {course.progress > 0 ? 'Continue Learning' : 'Start Course'}
@@ -1311,8 +1311,7 @@ const MyCertificatesTab: React.FC = () => {
   };
 
   const handleDownloadCertificate = (certificateId: string, courseName: string) => {
-    const baseUrl = window.location.href.split('#')[0];
-    window.location.href = `${baseUrl}#/certificate/${certificateId}`;
+    window.location.href = `${window.location.origin}/certificate/${certificateId}`;
   };
 
   if (loading) {
@@ -1330,9 +1329,9 @@ const MyCertificatesTab: React.FC = () => {
           {certificates.map((cert) => (
             <div
               key={cert.id}
-              className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl overflow-hidden hover:shadow-lg transition-all hover:scale-105"
+              className="bg-gradient-to-br from-indigo-50 to-indigo-100 border-2 border-indigo-200 rounded-2xl overflow-hidden hover:shadow-lg transition-all hover:scale-105"
             >
-              <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-6 text-white">
+              <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 p-6 text-white">
                 <div className="flex items-center justify-between mb-3">
                   <span className="material-symbols-rounded text-5xl drop-shadow">workspace_premium</span>
                   <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">Completed</span>
@@ -1361,15 +1360,14 @@ const MyCertificatesTab: React.FC = () => {
                 <div className="flex gap-3 mt-6">
                   <button
                     onClick={() => handleDownloadCertificate(cert.id, cert.course_title)}
-                    className="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-4 py-3 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2"
+                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2"
                   >
                     <span className="material-symbols-rounded text-base">download</span>
                     Download
                   </button>
                   <button
                     onClick={() => {
-                      const baseUrl = window.location.href.split('#')[0];
-                      window.open(`${baseUrl}#/certificate/${cert.id}`, '_blank');
+                      window.open(`${window.location.origin}/certificate/${cert.id}`, '_blank');
                     }}
                     className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-3 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2"
                   >
@@ -1713,7 +1711,7 @@ const AssessmentCard: React.FC<{ assignment: UserExternalAssessment; onClick: ()
       onClick={onClick}
     >
       <div className="flex justify-between items-start mb-4">
-        <div className="p-3 rounded-xl bg-primary-50 text-primary-600 group-hover:bg-primary-600 group-hover:text-white transition-colors">
+        <div className="p-3 rounded-xl bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
           <span className="material-symbols-rounded">assignment</span>
         </div>
         <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getStatusColor()}`}>
@@ -1868,7 +1866,7 @@ const AssessmentLaunchModal: React.FC<{
               {assignment.status === 'assigned' ? (
                 <button
                   onClick={handleStart}
-                  className="w-full py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-primary-200 flex items-center justify-center gap-2"
+                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
                 >
                   Start External Assessment
                   <span className="material-symbols-rounded">open_in_new</span>

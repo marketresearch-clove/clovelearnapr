@@ -573,7 +573,7 @@ const DashboardPage: React.FC = () => {
                         </div>
                         <div className="w-full bg-slate-100 h-2" style={{ borderRadius: '15px' }}>
                           <div
-                            className="bg-primary-600 h-2 transition-all duration-500 ease-out"
+                            className="bg-indigo-600 h-2 transition-all duration-500 ease-out"
                             style={{ width: `${course.progress}%`, borderRadius: '15px' }}
                           ></div>
                         </div>

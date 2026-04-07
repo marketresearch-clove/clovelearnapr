@@ -231,7 +231,7 @@ const AssessmentLaunchModal: React.FC<{
                   <button 
                     onClick={handleStart}
                     disabled={submitting || (assessment.attempt_limit > 0 && assignment.attempt_count >= assessment.attempt_limit)}
-                    className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-slate-300 text-white py-4 rounded-2xl font-bold transition-all shadow-lg shadow-primary-200 flex items-center justify-center gap-2"
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white py-4 rounded-2xl font-bold transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
                   >
                     <span className="material-symbols-rounded">rocket_launch</span>
                     Start Assessment
@@ -311,7 +311,7 @@ const AssessmentLaunchModal: React.FC<{
                   <button 
                     type="submit"
                     disabled={submitting}
-                    className="flex-1 bg-primary-600 hover:bg-primary-700 text-white py-3 rounded-xl font-bold transition-all shadow-lg shadow-primary-200"
+                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-bold transition-all shadow-lg shadow-indigo-200"
                   >
                     Submit Results
                   </button>

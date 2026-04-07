@@ -224,8 +224,8 @@ const buildHierarchyTree = (allProfiles: UserProfile[], selectedDept: string, se
         .map(root => buildNodeTree(root));
 };
 
-const UserCard: React.FC<{ user: UserProfile; isHighlighted?: boolean; size?: 'large' | 'medium' | 'small' }> = ({
-    user, isHighlighted = false, size = 'medium'
+const UserCard: React.FC<{ user: UserProfile; isHighlighted?: boolean; size?: 'large' | 'medium' | 'small'; onDeselect?: () => void }> = ({
+    user, isHighlighted = false, size = 'medium', onDeselect
 }) => {
     const cardW = { large: 224, medium: 192, small: 176 }[size];
     const imgSize = { large: 'w-14 h-14', medium: 'w-12 h-12', small: 'w-10 h-10' }[size];
@@ -239,12 +239,44 @@ const UserCard: React.FC<{ user: UserProfile; isHighlighted?: boolean; size?: 'l
 
     return (
         <div
-            className={`group cursor-pointer transition-all duration-300 ${isHighlighted
+            className={`group cursor-pointer transition-all duration-300 relative ${isHighlighted
                 ? 'bg-white shadow-2xl shadow-blue-600/10 border-2 border-blue-600 ring-8 ring-blue-600/5'
                 : 'bg-white shadow-xl shadow-slate-900/5 hover:scale-105 border border-transparent hover:border-blue-600/20'
                 }`}
             style={{ borderRadius: '15px', width: cardW, padding: size === 'large' ? '12px' : size === 'medium' ? '10px' : '8px', flexShrink: 0 }}
         >
+            {isHighlighted && onDeselect && (
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onDeselect();
+                    }}
+                    title="Deselect user"
+                    style={{
+                        position: 'absolute',
+                        top: -8,
+                        right: -8,
+                        background: '#dc2626',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: 24,
+                        height: 24,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        fontSize: 16,
+                        padding: 0,
+                        zIndex: 10,
+                        transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = '#991b1b'}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = '#dc2626'}
+                >
+                    <span className="material-symbols-rounded" style={{ fontSize: 16 }}>close</span>
+                </button>
+            )}
             <div className="flex items-start justify-between mb-2">
                 <div className="relative">
                     {user.avatar_url || user.avatarurl ? (
@@ -377,7 +409,11 @@ const TreeConnector: React.FC<{
         <svg
             width={width}
             height={height}
-            style={{ display: 'block', flexShrink: 0, overflow: 'visible' }}
+            style={{
+                display: 'block',
+                flexShrink: 0,
+                overflow: 'visible'
+            }}
             className="pointer-events-none"
             viewBox={`0 0 ${width} ${height}`}
             preserveAspectRatio="none"
@@ -486,11 +522,12 @@ const TreeConnector: React.FC<{
 };
 
 // Render hierarchical tree recursively with reliable DOM-measured connectors
-const HierarchyTreeNode: React.FC<{ node: HierarchyNode; isRoot?: boolean; currentUserId?: string; highlightedUserId?: string | null }> = ({
+const HierarchyTreeNode: React.FC<{ node: HierarchyNode; isRoot?: boolean; currentUserId?: string; highlightedUserId?: string | null; onDeselect?: () => void }> = ({
     node,
     isRoot = false,
     currentUserId,
-    highlightedUserId
+    highlightedUserId,
+    onDeselect
 }) => {
     const isCurrentUser = node.user.id === currentUserId;
     const levelInfo = GRADE_LEVEL_MAP[node.user.employee_grade];
@@ -505,18 +542,32 @@ const HierarchyTreeNode: React.FC<{ node: HierarchyNode; isRoot?: boolean; curre
     const measurePositions = useCallback(() => {
         if (!childrenContainerRef.current) return;
 
-        const containerRect = childrenContainerRef.current.getBoundingClientRect();
-        setContainerWidth(containerRect.width);
-
         const xs: number[] = [];
         childWrapperRefs.current.forEach(ref => {
             if (ref) {
-                const childRect = ref.getBoundingClientRect();
-                const containerLeft = containerRect.left;
-                const childCenterX = childRect.left - containerLeft + childRect.width / 2;
+                // offsetLeft is relative to offset parent, not viewport
+                // This works correctly even when parent has CSS transforms (zoom/scale)
+                const childCenterX = ref.offsetLeft + ref.offsetWidth / 2;
                 xs.push(childCenterX);
             }
         });
+
+        // Calculate container width based on actual child positions with padding
+        // This ensures SVG lines extend far enough to connect all cards
+        const containerElement = childrenContainerRef.current;
+        let calculatedWidth = Math.max(containerElement.offsetWidth, containerElement.scrollWidth);
+
+        if (xs.length > 0) {
+            const maxChildX = Math.max(...xs);
+            const minChildX = Math.min(...xs);
+            const contentWidth = maxChildX - minChildX + 240; // Add more padding on both sides for mobile
+            calculatedWidth = Math.max(calculatedWidth, contentWidth);
+        }
+
+        // Ensure minimum width for mobile devices
+        calculatedWidth = Math.max(calculatedWidth, 400);
+
+        setContainerWidth(calculatedWidth);
 
         if (xs.length === node.children.length) {
             const same = childXs.length === xs.length && xs.every((value, index) => Math.abs(value - childXs[index]) < 0.5);
@@ -587,13 +638,14 @@ const HierarchyTreeNode: React.FC<{ node: HierarchyNode; isRoot?: boolean; curre
         : fallbackChildXs;
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 0, gap: 20 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, overflow: 'visible' }}>
             {/* User Card and Role Badge */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
                 <UserCard
                     user={node.user}
                     isHighlighted={isCurrentUser || node.user.id === highlightedUserId}
                     size={isRoot ? 'large' : 'medium'}
+                    onDeselect={node.user.id === highlightedUserId ? onDeselect : undefined}
                 />
                 {levelInfo && (
                     <div style={{
@@ -614,18 +666,19 @@ const HierarchyTreeNode: React.FC<{ node: HierarchyNode; isRoot?: boolean; curre
 
             {/* Children Connector and Layout */}
             {sortedChildren.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 'fit-content', minWidth: '100%', overflow: 'visible' }}>
                     {/* Connector SVG */}
                     <TreeConnector
                         xs={effectiveChildXs}
-                        width={containerWidth || 800}
-                        parentX={containerWidth ? containerWidth / 2 : 400}
+                        width={Math.max(containerWidth, 400) || 800}
+                        parentX={Math.max(containerWidth, 400) ? Math.max(containerWidth, 400) / 2 : 400}
                         childDepts={hasMultipleDepts ? childDepts : undefined}
                     />
 
                     {/* Children Container */}
                     <div
                         ref={childrenContainerRef}
+                        className="hierarchy-tree-wrapper"
                         style={{
                             display: 'flex',
                             gap: 24,
@@ -633,20 +686,24 @@ const HierarchyTreeNode: React.FC<{ node: HierarchyNode; isRoot?: boolean; curre
                             justifyContent: 'center',
                             position: 'relative',
                             flexWrap: 'nowrap',
-                            width: '100%',
-                            minHeight: '1px' // Ensure container is measurable
+                            width: 'fit-content',
+                            minWidth: '100%',
+                            minHeight: '1px', // Ensure container is measurable
+                            overflow: 'visible',
                         }}
                     >
                         {sortedChildren.map((child, i) => (
                             <div
                                 key={child.user.id}
                                 ref={el => { childWrapperRefs.current[i] = el; }}
+                                className="hierarchy-card-wrapper"
                                 style={{ flexShrink: 0 }}
                             >
                                 <HierarchyTreeNode
                                     node={child}
                                     currentUserId={currentUserId}
                                     highlightedUserId={highlightedUserId}
+                                    onDeselect={onDeselect}
                                 />
                             </div>
                         ))}
@@ -729,6 +786,7 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
         if (!hierarchyData || query.trim().length === 0) {
             setSearchResults([]);
             setShowSearchResults(false);
+            setHighlightedUserId(null); // Clear highlighted user when search is cleared
             return;
         }
 
@@ -929,6 +987,16 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
     const currentUserLevel = currentUserNode ? currentUserNode.level : 0;
     const levelInfo = GRADE_LEVEL_MAP[currentUser.employee_grade];
 
+    // Calculate team count (people in the same department)
+    const calculateTeamCount = (): number => {
+        if (!hierarchyData) return 0;
+        // Count all profiles in the same department as current user
+        const teamMembers = hierarchyData.allProfiles.filter(p => p.department === currentUser.department);
+        return teamMembers.length;
+    };
+
+    const currentUserTeamCount = calculateTeamCount();
+
     const dropdownStyle: React.CSSProperties = {
         borderRadius: '20px',
         background: 'rgba(255,255,255,0.95)',
@@ -950,10 +1018,11 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 32, width: '100%', boxSizing: 'border-box' }}>
             {/* Canvas Viewport */}
             <div
                 ref={viewportRef}
+                className="canvas-viewport"
                 style={{
                     position: 'relative',
                     width: '100%',
@@ -961,13 +1030,14 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                     background: '#e8ecf0',
                     border: '1px solid #cbd5e1',
                     borderRadius: 15,
-                    overflow: 'hidden',
+                    overflow: 'auto',
+                    boxSizing: 'border-box',
                 }}
             >
                 {/* Filter Bar — fixed inside viewport, not transformed */}
                 <div
                     style={{
-                        position: 'absolute', top: 0, left: 0, right: 0, zIndex: 60,
+                        position: 'absolute', top: 0, left: 0, right: 0, zIndex: 20,
                         padding: '12px 14px', display: 'flex', justifyContent: 'space-between',
                         alignItems: 'flex-start', pointerEvents: 'none',
                         background: 'linear-gradient(to bottom, rgba(232,236,240,0.95) 60%, transparent)',
@@ -997,7 +1067,7 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                         </select>
 
                         {/* Search Bar */}
-                        <div style={{ position: 'relative' }}>
+                        <div style={{ position: 'relative', zIndex: 20 }}>
                             <div style={{
                                 display: 'flex', alignItems: 'center',
                                 borderRadius: '20px',
@@ -1006,7 +1076,7 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                                 border: '1px solid #e2e8f0',
                                 boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
                                 paddingRight: 8,
-                                overflow: 'hidden'
+                                overflow: 'visible'
                             }}>
                                 <input
                                     ref={searchInputRef}
@@ -1026,7 +1096,33 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                                         minWidth: 140,
                                     }}
                                 />
-                                <span className="material-symbols-rounded" style={{ fontSize: 16, color: '#94a3b8', flexShrink: 0 }}>search</span>
+                                {searchInput.trim().length > 0 || highlightedUserId ? (
+                                    <button
+                                        title="Clear search and deselect user"
+                                        onClick={() => {
+                                            setSearchInput('');
+                                            setHighlightedUserId(null);
+                                            setSearchResults([]);
+                                            setShowSearchResults(false);
+                                        }}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            padding: '4px 2px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            color: '#94a3b8',
+                                            transition: 'color 0.2s'
+                                        }}
+                                        onMouseEnter={e => e.currentTarget.style.color = '#475569'}
+                                        onMouseLeave={e => e.currentTarget.style.color = '#94a3b8'}
+                                    >
+                                        <span className="material-symbols-rounded" style={{ fontSize: 16, flexShrink: 0 }}>close</span>
+                                    </button>
+                                ) : (
+                                    <span className="material-symbols-rounded" style={{ fontSize: 16, color: '#94a3b8', flexShrink: 0 }}>search</span>
+                                )}
                             </div>
 
                             {/* Search Results Dropdown */}
@@ -1046,7 +1142,7 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                                         boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
                                         maxHeight: 320,
                                         overflowY: 'auto',
-                                        zIndex: 1000,
+                                        zIndex: 30,
                                         minWidth: 280,
                                     }}
                                 >
@@ -1181,17 +1277,18 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
+                        overflow: 'visible',
                     }}
                 >
                     {/* Single Organization Tree View */}
                     {hierarchyTrees.length === 0 ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '40px 24px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '40px 24px', width: '100%', boxSizing: 'border-box' }}>
                             <span className="material-symbols-outlined" style={{ fontSize: 48, color: '#cbd5e1' }}>account_tree</span>
                             <p style={{ fontSize: 12, fontWeight: 600, color: '#334155', margin: 0 }}>No hierarchy data available</p>
                             <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>Try adjusting filters or selecting a different user</p>
                         </div>
                     ) : (
-                        <div style={{ display: 'flex', gap: 32, justifyContent: 'center', alignItems: 'flex-start', width: '100%', flexWrap: 'wrap', padding: '24px 0' }}>
+                        <div style={{ display: 'flex', gap: 32, justifyContent: 'center', alignItems: 'flex-start', width: '100%', flexWrap: 'wrap', padding: '24px 0', boxSizing: 'border-box' }}>
                             {hierarchyTrees.map(tree => (
                                 <div key={tree.user.id} style={{ flex: '1 1 0', minWidth: 320 }}>
                                     <HierarchyTreeNode
@@ -1199,6 +1296,12 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                                         isRoot
                                         currentUserId={currentUser.id}
                                         highlightedUserId={highlightedUserId}
+                                        onDeselect={() => {
+                                            setHighlightedUserId(null);
+                                            setSearchInput('');
+                                            setSearchResults([]);
+                                            setShowSearchResults(false);
+                                        }}
                                     />
                                 </div>
                             ))}
@@ -1207,43 +1310,52 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                 </div>
             </div>
 
-            {/* Bento Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 24 }}>
-                <div style={{ background: '#f8fafc', padding: 24, border: '1px solid #f1f5f9', borderRadius: 15 }}>
+            {/* Bento Grid - Responsive Layout */}
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+                gap: 16,
+                width: '100%',
+                boxSizing: 'border-box'
+            }} className="organization-overview-bento">
+                <div style={{ background: '#f8fafc', padding: '16px 12px', border: '1px solid #f1f5f9', borderRadius: 15 }}>
                     <h3 style={{ fontSize: 18, fontWeight: 900, marginBottom: 16, color: '#0f172a', margin: '0 0 16px' }}>Organization Overview</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
                         {[
                             { label: 'Organization Size', value: totalOrgSize, sub: 'Total Members' },
                             { label: 'Your Department', value: currentUser.department || 'N/A', sub: 'Current', small: true },
                             { label: 'Direct Reports', value: currentUserReports, sub: 'reporting to you' },
+                            { label: 'Your Team', value: currentUserTeamCount, sub: 'team members' },
+                            { label: 'Your Manager', value: currentUser.manager_name || 'No Manager', sub: 'Reporting To', small: true },
                             { label: 'Your Level', value: levelInfo?.roleTitle || 'Employee', sub: `Grade: ${currentUser.employee_grade}`, small: true },
                         ].map(({ label, value, sub, small }) => (
-                            <div key={label} style={{ background: 'white', padding: 16, border: '1px solid #f1f5f9', borderRadius: 15, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-                                <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', margin: '0 0 6px' }}>{label}</p>
-                                <p style={{ fontSize: small ? 14 : 28, fontWeight: 900, color: '#0f172a', margin: 0 }}>{value}</p>
-                                <p style={{ fontSize: 11, color: '#94a3b8', margin: '4px 0 0' }}>{sub}</p>
+                            <div key={label} style={{ background: 'white', padding: '12px 10px', border: '1px solid #f1f5f9', borderRadius: 15, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                                <p style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', margin: '0 0 4px' }}>{label}</p>
+                                <p style={{ fontSize: small ? 12 : 20, fontWeight: 900, color: '#0f172a', margin: 0 }}>{value}</p>
+                                <p style={{ fontSize: 9, color: '#94a3b8', margin: '2px 0 0' }}>{sub}</p>
                             </div>
                         ))}
                     </div>
                 </div>
                 <div style={{
-                    background: '#2563eb', color: 'white', padding: 24, borderRadius: 15,
+                    background: '#2563eb', color: 'white', padding: '20px 16px', borderRadius: 15,
                     display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                    overflow: 'hidden', position: 'relative'
+                    overflow: 'hidden', position: 'relative',
+                    minHeight: 'auto'
                 }}>
-                    <div style={{ position: 'absolute', right: -16, bottom: -16, opacity: 0.1 }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: 160 }}>hub</span>
+                    <div style={{ position: 'absolute', right: -20, bottom: -20, opacity: 0.08 }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 140 }}>hub</span>
                     </div>
                     <div style={{ position: 'relative', zIndex: 1 }}>
-                        <h3 style={{ fontSize: 20, fontWeight: 900, margin: '0 0 8px' }}>Export Structure</h3>
-                        <p style={{ fontSize: 12, color: '#bfdbfe', lineHeight: 1.6, margin: '0 0 24px' }}>
+                        <h3 style={{ fontSize: 16, fontWeight: 900, margin: '0 0 6px' }}>Export Structure</h3>
+                        <p style={{ fontSize: 11, color: '#bfdbfe', lineHeight: 1.5, margin: '0 0 16px' }}>
                             Generate detailed PDF report of your organizational structure with current filters applied.
                         </p>
                     </div>
                     <button style={{
                         position: 'relative', zIndex: 1, width: '100%', background: 'white',
-                        color: '#2563eb', padding: '10px 0', fontWeight: 900, fontSize: 11,
-                        letterSpacing: 2, textTransform: 'uppercase', border: 'none', borderRadius: 15, cursor: 'pointer'
+                        color: '#2563eb', padding: '8px 0', fontWeight: 900, fontSize: 10,
+                        letterSpacing: 1.5, textTransform: 'uppercase', border: 'none', borderRadius: 15, cursor: 'pointer'
                     }}>
                         Download PDF
                     </button>
@@ -1254,7 +1366,9 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
             {hierarchyTrees.length === 0 && (
                 <div style={{
                     textAlign: 'center', padding: '40px 24px',
-                    background: '#eff6ff', border: '2px dashed #bfdbfe', borderRadius: 15
+                    background: '#eff6ff', border: '2px dashed #bfdbfe', borderRadius: 15,
+                    width: '100%',
+                    boxSizing: 'border-box'
                 }}>
                     <span className="material-symbols-outlined" style={{ fontSize: 48, color: '#93c5fd', display: 'block', marginBottom: 8 }}>account_tree</span>
                     <p style={{ fontWeight: 600, fontSize: 14, color: '#1e40af', margin: '0 0 4px' }}>No organizational structure found</p>

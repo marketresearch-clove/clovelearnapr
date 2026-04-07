@@ -96,7 +96,7 @@ const CourseDetailModal: React.FC<{ onClose: () => void; courseId?: string }> = 
               <div className="flex justify-center">
                 <button
                   onClick={() => handleNavigation(`/course/${course.id}`)}
-                  className="bg-primary-600 hover:bg-primary-700 text-white px-10 py-4 rounded-2xl font-bold transition-all shadow-lg shadow-primary-200 flex items-center gap-3"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-4 rounded-2xl font-bold transition-all shadow-lg shadow-indigo-200 flex items-center gap-3"
                 >
                   <span className="material-symbols-rounded">play_circle</span>
                   Enter Course Dashboard

@@ -60,7 +60,7 @@ const LeaderboardPage: React.FC = () => {
       name: profile?.fullname || user.username,
       score: user.totalpoints || 0,
       avatar: avatarUrl,
-      badgeColor: user.rank === 1 ? 'bg-primary-600' : user.rank === 2 ? 'bg-teal-600' : 'bg-orange-500'
+      badgeColor: user.rank === 1 ? 'bg-indigo-600' : user.rank === 2 ? 'bg-teal-600' : 'bg-orange-500'
     };
   });
 

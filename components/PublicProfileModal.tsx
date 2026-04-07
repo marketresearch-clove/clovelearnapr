@@ -22,20 +22,20 @@ const PublicProfileModal: React.FC<PublicProfileModalProps> = ({ userId, onClose
     const fetchUserData = async () => {
       try {
         setLoading(true);
-        
+
         // Fetch profile
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', userId)
           .single();
-        
+
         if (profileError) throw profileError;
         setProfile(profileData);
 
         // Fetch stats from leaderboard first (as requested)
         const rankData = await leaderboardService.getUserRank(userId);
-        
+
         if (rankData) {
           setStats(rankData);
         } else {
@@ -74,15 +74,15 @@ const PublicProfileModal: React.FC<PublicProfileModalProps> = ({ userId, onClose
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
-      <div 
+      <div
         className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative animate-slide-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header/Cover */}
         <div className="h-24 bg-gradient-to-r from-primary-600 to-indigo-600"></div>
-        
+
         {/* Close Button */}
-        <button 
+        <button
           onClick={onClose}
           className="absolute top-4 right-4 p-2 rounded-full bg-black/20 text-white hover:bg-black/40 transition-colors z-10"
         >
@@ -93,14 +93,14 @@ const PublicProfileModal: React.FC<PublicProfileModalProps> = ({ userId, onClose
           {/* Profile Header */}
           <div className="flex flex-col items-center">
             <div className="relative">
-              <img 
-                src={profile.avatarurl || `https://i.pravatar.cc/150?u=${userId}`} 
-                alt={profile.fullname} 
+              <img
+                src={profile.avatarurl || `https://i.pravatar.cc/150?u=${userId}`}
+                alt={profile.fullname}
                 className="w-24 h-24 rounded-full border-4 border-white dark:border-gray-900 object-cover shadow-lg"
               />
               <div className="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></div>
             </div>
-            
+
             <div className="flex items-center gap-2 mt-4">
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">{profile.fullname}</h2>
               {profile.role === 'admin' && (
@@ -154,18 +154,18 @@ const PublicProfileModal: React.FC<PublicProfileModalProps> = ({ userId, onClose
               <h3 className="font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wider">Achievements</h3>
               <span className="text-[10px] bg-primary-50 text-primary-600 px-2 py-0.5 rounded-full font-bold">{badges.length} Earned</span>
             </div>
-            
+
             {badges.length > 0 ? (
               <div className="grid grid-cols-3 gap-4 mt-4 max-h-48 overflow-y-auto custom-scrollbar p-1">
                 {badges.map((badge, idx) => (
-                  <div 
-                    key={idx} 
+                  <div
+                    key={idx}
                     className="flex flex-col items-center text-center gap-2"
                     title={badge.name}
                   >
-                    <div 
+                    <div
                       className="w-12 h-12 rounded-full flex items-center justify-center shadow-sm border border-slate-100 dark:border-gray-700 transition-transform hover:scale-110"
-                      style={{ 
+                      style={{
                         backgroundColor: badge.isEFSET ? `${badge.color}15` : 'rgba(79, 70, 229, 0.1)',
                         color: badge.isEFSET ? badge.color : 'rgb(79, 70, 229)'
                       }}
@@ -194,9 +194,9 @@ const PublicProfileModal: React.FC<PublicProfileModalProps> = ({ userId, onClose
           </div>
 
           <div className="mt-8">
-            <button 
+            <button
               onClick={onClose}
-              className="w-full py-3 bg-slate-900 dark:bg-primary-600 text-white font-bold rounded-xl hover:opacity-90 transition-all shadow-lg"
+              className="w-full py-3 bg-slate-900 dark:bg-indigo-600 text-white font-bold rounded-xl hover:opacity-90 transition-all shadow-lg"
             >
               Close
             </button>

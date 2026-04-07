@@ -182,7 +182,7 @@ const PdfViewer: React.FC<PdfViewerProps> = ({ file, onScrollToEnd }) => {
 
           <button
             onClick={togglePlay}
-            className="p-3 rounded-full bg-primary text-white hover:bg-primary-600 transition-colors shadow-md hover:shadow-lg active:scale-95 transform duration-100"
+            className="p-3 rounded-full bg-indigo text-white hover:bg-indigo-600 transition-colors shadow-md hover:shadow-lg active:scale-95 transform duration-100"
             title={isPlaying ? "Pause" : "Play Slideshow"}
           >
             <span className="material-symbols-rounded text-2xl">
@@ -220,7 +220,7 @@ const PdfViewer: React.FC<PdfViewerProps> = ({ file, onScrollToEnd }) => {
               }
             }}>
             <div
-              className="bg-primary h-1.5 rounded-full transition-all duration-300 relative group-hover:bg-primary-600"
+              className="bg-indigo h-1.5 rounded-full transition-all duration-300 relative group-hover:bg-indigo-600"
               style={{ width: `${((pageNumber) / (numPages || 1)) * 100}%` }}
             >
               <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-primary rounded-full shadow opacity-70 group-hover:opacity-100 transition-opacity"></div>

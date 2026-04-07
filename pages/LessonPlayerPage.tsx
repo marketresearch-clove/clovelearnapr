@@ -1642,7 +1642,7 @@ const LessonPlayerPage: React.FC = () => {
                   <a
                     href={pptxFile}
                     download="business-risk-management.pptx"
-                    className="inline-flex items-center gap-2 bg-primary-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-primary-700 transition-colors"
+                    className="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-primary-700 transition-colors"
                   >
                     <span className="material-symbols-rounded">download</span> Download PPTX
                   </a>
@@ -1764,14 +1764,14 @@ const LessonPlayerPage: React.FC = () => {
           {courseId ? (
             <button
               onClick={() => navigate(`/course/${courseId}`)}
-              className="inline-flex items-center gap-2 bg-primary-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-primary-700"
+              className="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-primary-700"
             >
               <span className="material-symbols-rounded">arrow_back</span> Back to Course
             </button>
           ) : (
             <button
               onClick={() => navigate('/dashboard')}
-              className="inline-flex items-center gap-2 bg-primary-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-primary-700"
+              className="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700"
             >
               <span className="material-symbols-rounded">home</span> Back to Dashboard
             </button>

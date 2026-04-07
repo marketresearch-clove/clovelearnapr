@@ -60,7 +60,7 @@ const QuizPage: React.FC = () => {
 
   useEffect(() => {
     if (!assessment) return;
-    
+
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -171,7 +171,7 @@ const QuizPage: React.FC = () => {
           <p className="text-red-600 mb-4">{error}</p>
           <button
             onClick={() => navigate(-1)}
-            className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700"
+            className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
           >
             Go Back
           </button>
@@ -187,7 +187,7 @@ const QuizPage: React.FC = () => {
           <p className="text-slate-600 mb-4">No questions found in this quiz.</p>
           <button
             onClick={() => navigate(-1)}
-            className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700"
+            className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
           >
             Go Back
           </button>
@@ -202,7 +202,7 @@ const QuizPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 lg:p-8 font-sans">
       <div className="w-full max-w-6xl bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col min-h-[600px]">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100">
           <div>
@@ -210,20 +210,20 @@ const QuizPage: React.FC = () => {
             <p className="text-slate-500 text-sm mt-1">Question {currentQuestion + 1} of {assessment.questions.length}</p>
           </div>
           <div className="flex items-center gap-3">
-             <div className="relative flex items-center justify-center">
-                {progressCircle}
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-[10px] font-bold text-green-600 leading-tight">
-                    <span>Remaining</span>
-                    <span className="text-sm">{timeLeft}</span>
-                    <span>secs</span>
-                </div>
-             </div>
+            <div className="relative flex items-center justify-center">
+              {progressCircle}
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-[10px] font-bold text-green-600 leading-tight">
+                <span>Remaining</span>
+                <span className="text-sm">{timeLeft}</span>
+                <span>secs</span>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Content */}
         <div className="flex-1 flex flex-col lg:flex-row">
-          
+
           {/* Question Column */}
           <div className="lg:w-5/12 p-8 lg:p-12 border-r border-slate-100 bg-slate-50 relative flex flex-col">
             <div className="flex-1 z-10">
@@ -231,76 +231,74 @@ const QuizPage: React.FC = () => {
                 {currentQ.text}
               </h2>
             </div>
-            
+
             {/* Decorative Graphics */}
             <div className="absolute bottom-0 left-0 w-full h-32 opacity-50 pointer-events-none overflow-hidden">
-               <svg viewBox="0 0 400 150" className="w-full h-full">
-                  <path d="M0,150 L100,100 L200,150 Z" fill="#E0E7FF" />
-                  <path d="M50,150 L150,50 L250,150 Z" fill="#C7D2FE" opacity="0.6" />
-                  <circle cx="350" cy="120" r="10" fill="#818CF8" opacity="0.4" />
-                  <circle cx="300" cy="140" r="5" fill="#6366F1" opacity="0.4" />
-               </svg>
+              <svg viewBox="0 0 400 150" className="w-full h-full">
+                <path d="M0,150 L100,100 L200,150 Z" fill="#E0E7FF" />
+                <path d="M50,150 L150,50 L250,150 Z" fill="#C7D2FE" opacity="0.6" />
+                <circle cx="350" cy="120" r="10" fill="#818CF8" opacity="0.4" />
+                <circle cx="300" cy="140" r="5" fill="#6366F1" opacity="0.4" />
+              </svg>
             </div>
           </div>
 
           {/* Options Column */}
           <div className="lg:w-7/12 p-8 lg:p-12 bg-slate-100/50 flex flex-col">
-             <div className="space-y-4 flex-1">
-               {options.map((option, index) => {
-                 const isSelected = selectedOption === index;
-                 return (
-                   <button
-                     key={index}
-                     onClick={() => handleOptionSelect(index)}
-                     className={`w-full text-left p-6 rounded-xl border transition-all duration-200 shadow-sm hover:shadow-md flex items-start gap-4 group ${
-                       isSelected 
-                         ? 'bg-primary-100 border-primary-300 ring-1 ring-primary-300' 
-                         : 'bg-white border-slate-200 hover:border-primary-200'
-                     }`}
-                   >
-                     <div className={`w-6 h-6 rounded-full border-2 mt-0.5 flex-shrink-0 flex items-center justify-center transition-colors ${
-                        isSelected ? 'border-primary-600 bg-primary-600' : 'border-slate-300 group-hover:border-primary-400'
-                     }`}>
-                        {isSelected && <span className="material-symbols-rounded text-white text-sm">check</span>}
-                     </div>
-                     <span className={`text-lg ${isSelected ? 'text-primary-900 font-medium' : 'text-slate-700'}`}>
-                       {option}
-                     </span>
-                   </button>
-                 );
-               })}
-             </div>
-             
-             <div className="mt-8 flex justify-between items-center">
-                <button
-                  onClick={handlePreviousQuestion}
-                  disabled={currentQuestion === 0}
-                  className="bg-slate-200 text-slate-700 px-6 py-2 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-300 transition-colors flex items-center gap-2"
-                >
-                  <span className="material-symbols-rounded">arrow_back</span> Previous
-                </button>
-                
-                {currentQuestion === assessment.questions.length - 1 ? (
-                  <button 
-                    onClick={() => {
-                      const userId = localStorage.getItem('userId') || 'anonymous';
-                      submitAssessment(userId);
-                    }}
-                    disabled={selectedOption === null}
-                    className="bg-primary-600 text-white px-8 py-2 rounded-lg font-bold shadow-lg shadow-primary-500/30 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
-                  >
-                    Submit <span className="material-symbols-rounded">check</span>
-                  </button>
-                ) : (
+            <div className="space-y-4 flex-1">
+              {options.map((option, index) => {
+                const isSelected = selectedOption === index;
+                return (
                   <button
-                    onClick={handleNextQuestion}
-                    disabled={selectedOption === null}
-                    className="bg-primary-600 text-white px-8 py-2 rounded-lg font-bold shadow-lg shadow-primary-500/30 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                    key={index}
+                    onClick={() => handleOptionSelect(index)}
+                    className={`w-full text-left p-6 rounded-xl border transition-all duration-200 shadow-sm hover:shadow-md flex items-start gap-4 group ${isSelected
+                      ? 'bg-primary-100 border-primary-300 ring-1 ring-primary-300'
+                      : 'bg-white border-slate-200 hover:border-primary-200'
+                      }`}
                   >
-                    Next <span className="material-symbols-rounded">arrow_forward</span>
+                    <div className={`w-6 h-6 rounded-full border-2 mt-0.5 flex-shrink-0 flex items-center justify-center transition-colors ${isSelected ? 'border-indigo-600 bg-indigo-600' : 'border-slate-300 group-hover:border-indigo-400'
+                      }`}>
+                      {isSelected && <span className="material-symbols-rounded text-white text-sm">check</span>}
+                    </div>
+                    <span className={`text-lg ${isSelected ? 'text-primary-900 font-medium' : 'text-slate-700'}`}>
+                      {option}
+                    </span>
                   </button>
-                )}
-             </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-8 flex justify-between items-center">
+              <button
+                onClick={handlePreviousQuestion}
+                disabled={currentQuestion === 0}
+                className="bg-slate-200 text-slate-700 px-6 py-2 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-300 transition-colors flex items-center gap-2"
+              >
+                <span className="material-symbols-rounded">arrow_back</span> Previous
+              </button>
+
+              {currentQuestion === assessment.questions.length - 1 ? (
+                <button
+                  onClick={() => {
+                    const userId = localStorage.getItem('userId') || 'anonymous';
+                    submitAssessment(userId);
+                  }}
+                  disabled={selectedOption === null}
+                  className="bg-indigo-600 text-white px-8 py-2 rounded-lg font-bold shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                >
+                  Submit <span className="material-symbols-rounded">check</span>
+                </button>
+              ) : (
+                <button
+                  onClick={handleNextQuestion}
+                  disabled={selectedOption === null}
+                  className="bg-indigo-600 text-white px-8 py-2 rounded-lg font-bold shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                >
+                  Next <span className="material-symbols-rounded">arrow_forward</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

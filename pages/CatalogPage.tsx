@@ -536,7 +536,7 @@ const CatalogPage: React.FC = () => {
                           </div>
                           <div className="w-full bg-slate-200 rounded-full h-2">
                             <div
-                              className="bg-primary-600 h-2 rounded-full transition-all duration-300"
+                              className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
                               style={{ width: `${course.progress}%` }}
                             ></div>
                           </div>
@@ -574,7 +574,7 @@ const CatalogPage: React.FC = () => {
                             e.stopPropagation();
                             navigate(`/lesson/${course.id}`);
                           }}
-                          className="w-full bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
                         >
                           <span className="material-symbols-rounded text-sm">play_arrow</span>
                           Continue Learning

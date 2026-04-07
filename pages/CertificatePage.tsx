@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { getCertificate } from '../lib/certificateService';
 import { courseCompletionService } from '../lib/courseCompletionService';
 import { generateCertificateHTML } from '../lib/certificateHTMLGenerator';
@@ -9,6 +9,7 @@ import html2canvas from 'html2canvas';
 
 const CertificatePage = () => {
   const { certificateId } = useParams<{ certificateId: string }>();
+  const navigate = useNavigate();
   const [certificate, setCertificate] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -158,10 +159,7 @@ const CertificatePage = () => {
           <p className="text-red-800 font-bold mb-2">Unable to Load Certificate</p>
           <p className="text-red-700 text-sm mb-6">{error}</p>
           <button
-            onClick={() => {
-              const baseUrl = window.location.href.split('#')[0];
-              window.location.href = `${baseUrl}#/learning?tab=certificates`;
-            }}
+            onClick={() => navigate('/learning?tab=certificates')}
             className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors"
           >
             Back to Certificates
@@ -178,11 +176,8 @@ const CertificatePage = () => {
           <span className="material-symbols-rounded text-6xl text-gray-500 block mb-4">description</span>
           <p className="text-gray-700 font-medium mb-6">Certificate not found.</p>
           <button
-            onClick={() => {
-              const baseUrl = window.location.href.split('#')[0];
-              window.location.href = `${baseUrl}#/learning?tab=certificates`;
-            }}
-            className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg transition-colors"
+            onClick={() => navigate('/learning?tab=certificates')}
+            className="bg-indigo-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg transition-colors"
           >
             Back to Certificates
           </button>
@@ -196,10 +191,7 @@ const CertificatePage = () => {
       <div className="w-full max-w-5xl">
         <div className="mb-6 flex items-center justify-between">
           <button
-            onClick={() => {
-              const baseUrl = window.location.href.split('#')[0];
-              window.location.href = `${baseUrl}#/learning?tab=certificates`;
-            }}
+            onClick={() => navigate('/learning?tab=certificates')}
             className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium transition-colors"
           >
             <span className="material-symbols-rounded">arrow_back</span>
@@ -230,7 +222,7 @@ const CertificatePage = () => {
             disabled={downloading}
             className={`flex items-center gap-2 px-8 py-3 rounded-lg font-bold text-white transition-colors ${downloading
               ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-primary-600 hover:bg-primary-700'
+              : 'bg-indigo-600 hover:bg-indigo-700'
               }`}
           >
             <span className="material-symbols-rounded">download</span>

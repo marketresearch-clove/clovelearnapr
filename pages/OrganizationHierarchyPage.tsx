@@ -26,10 +26,10 @@ const OrganizationHierarchyPage: React.FC = () => {
     }
 
     return (
-        <div className="w-full bg-gray-50 min-h-screen">
+        <div className="flex-1 bg-gray-50 min-h-screen overflow-x-hidden">
             {/* Page Header */}
             <div className="bg-white border-b border-gray-200 px-8 py-8">
-                <div className="w-full text-left">
+                <div className="max-w-full text-left">
                     <h1 className="text-4xl font-black text-gray-900 tracking-tight">Organization Hierarchy</h1>
                     <p className="text-gray-500 mt-2 text-lg font-medium max-w-2xl">
                         View your position in the organization, your manager, team members, and peers.
@@ -38,8 +38,10 @@ const OrganizationHierarchyPage: React.FC = () => {
             </div>
 
             {/* Hierarchy Content */}
-            <div className="bg-gray-50 py-8">
-                <OrganizationHierarchy userId={user.id} />
+            <div className="bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 overflow-hidden">
+                <div className="w-full">
+                    <OrganizationHierarchy userId={user.id} />
+                </div>
             </div>
 
             {/* Help Section */}

@@ -350,10 +350,69 @@
     gap: 12px;
 }
 
+/* Bento Grid Responsive */
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+    gap: 24px;
+}
+
+.bento-grid-item {
+    min-width: 0;
+}
+
+/* Organization Overview Bento Grid */
+.organization-overview-bento {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 16px;
+}
+
+.organization-overview-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+/* SVG Connector Lines - Ensure Visibility */
+svg {
+    overflow: visible !important;
+    display: block !important;
+}
+
+/* Canvas Viewport - Allow Internal Scrolling */
+.canvas-viewport {
+    overflow: auto !important;
+}
+
+.canvas-viewport svg {
+    overflow: visible !important;
+}
+
+/* Hierarchy Tree Wrapper - Ensure proper sizing on all devices */
+.hierarchy-tree-wrapper {
+    overflow: visible !important;
+    width: fit-content !important;
+    min-width: 100%;
+}
+
+.hierarchy-tree-wrapper svg {
+    overflow: visible !important;
+    display: block !important;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .organization-hierarchy {
         padding: 8px;
+    }
+
+    .bento-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .organization-overview-cards {
+        grid-template-columns: 1fr;
     }
 
     .hierarchy-grid {
@@ -364,6 +423,21 @@
     .hierarchy-section.peers-section,
     .hierarchy-section.reports-section {
         grid-column: auto;
+    }
+
+    /* Ensure SVG lines are visible on mobile */
+    svg {
+        overflow: visible !important;
+    }
+
+    .hierarchy-tree-wrapper {
+        overflow: visible !important;
+        width: fit-content !important;
+        min-width: 100%;
+    }
+
+    .hierarchy-tree-wrapper svg {
+        overflow: visible !important;
     }
 
     .org-path-cards {
@@ -409,6 +483,18 @@
     .hierarchy-loading {
         padding: 24px 12px;
     }
+
+    /* Organization Overview Bento on Mobile */
+    .organization-overview-bento {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    /* Reduce canvas viewport height on mobile */
+    .canvas-viewport {
+        height: 500px !important;
+        overflow: auto !important;
+    }
 }
 
 @media (max-width: 480px) {
@@ -426,6 +512,27 @@
 
     .hierarchy-grid {
         gap: 12px;
+    }
+
+    /* Extra SVG adjustments for very small screens */
+    svg {
+        overflow: visible !important;
+    }
+
+    .hierarchy-tree-wrapper {
+        overflow: visible !important;
+        width: fit-content !important;
+        min-width: 100%;
+    }
+
+    .hierarchy-tree-wrapper svg {
+        overflow: visible !important;
+    }
+
+    /* Organization Overview Bento on Very Small Screens */
+    .organization-overview-bento {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
     }
 }
 
