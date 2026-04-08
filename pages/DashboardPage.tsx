@@ -11,6 +11,7 @@ import { leaderboardService } from '../lib/leaderboardService';
 import { enrollmentService } from '../lib/enrollmentService';
 import PlatformTutorial from '../components/PlatformTutorial';
 import Loader from '../components/Loader';
+import UserReportCard from '../components/UserReportCard';
 
 const StatCard: React.FC<{ title: string; value: string; icon: string; color: string; trend?: string }> = ({ title, value, icon, color, trend }) => (
   <div className="bg-white p-4 md:p-6 shadow-sm border border-slate-100 flex items-start justify-between" style={{ borderRadius: '15px' }}>
@@ -47,6 +48,7 @@ const DashboardPage: React.FC = () => {
   const [isUnenrolling, setIsUnenrolling] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [loadingError, setLoadingError] = useState<string | null>(null);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   // Check if user has completed tutorial on mount
   useEffect(() => {
@@ -490,7 +492,11 @@ const DashboardPage: React.FC = () => {
             <p className="text-slate-500">Let's learn something new today.</p>
           </div>
           <div className="flex gap-3">
-            <button className="bg-white border border-slate-200 text-slate-700 px-4 py-2 text-sm font-medium hover:bg-slate-50 transition-colors" style={{ borderRadius: '15px' }}>
+            <button
+              onClick={() => setShowReportModal(true)}
+              className="bg-white border border-slate-200 text-slate-700 px-4 py-2 text-sm font-medium hover:bg-slate-50 transition-colors"
+              style={{ borderRadius: '15px' }}
+            >
               View Reports
             </button>
           </div>
@@ -687,6 +693,15 @@ const DashboardPage: React.FC = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {/* User Report Modal */}
+        {user?.id && (
+          <UserReportCard
+            userId={user.id}
+            isOpen={showReportModal}
+            onClose={() => setShowReportModal(false)}
+          />
         )}
       </div >
     </>

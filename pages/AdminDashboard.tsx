@@ -545,7 +545,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   return (
-    <AdminLayout title="Admin Overview">
+    <AdminLayout title="Dashboard">
 
       <div className="flex flex-col gap-8 bg-gray-50">
         {/* Error Display */}
@@ -704,144 +704,144 @@ const AdminDashboard: React.FC = () => {
 
             {/* Enhanced Stats Grid */}
             {visibleSections.metrics && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4 bg-gray-50" style={{ order: getOrderIndex('metrics') }}>
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 bg-gray-50" style={{ order: getOrderIndex('metrics') }}>
                 {/* Core Metrics */}
-                <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="p-2 bg-blue-50" style={{ borderRadius: '15px' }}>
-                      <span className="material-symbols-rounded text-blue-600">people</span>
+                <div className="bg-white p-3 sm:p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="p-1.5 sm:p-2 bg-blue-50" style={{ borderRadius: '12px' }}>
+                      <span className="material-symbols-rounded text-blue-600 text-lg sm:text-xl">people</span>
                     </div>
-                    <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '15px' }}>
-                      <span className="material-symbols-rounded text-[12px]">trending_up</span>
+                    <div className="flex items-center gap-0.5 text-[9px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '10px' }}>
+                      <span className="material-symbols-rounded text-[10px] sm:text-[12px]">trending_up</span>
                       +{stats.monthlyGrowth}%
                     </div>
                   </div>
-                  <p className="text-gray-600 text-xs font-bold uppercase tracking-wider">Total Employees</p>
-                  <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.totalEmployees.toLocaleString()}</h3>
+                  <p className="text-gray-600 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Employees</p>
+                  <h3 className="text-lg sm:text-2xl font-black text-gray-900 mt-1">{stats.totalEmployees.toLocaleString()}</h3>
                 </div>
 
-                <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="p-2 bg-emerald-50" style={{ borderRadius: '15px' }}>
-                      <span className="material-symbols-rounded text-emerald-600">group</span>
+                <div className="bg-white p-3 sm:p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="p-1.5 sm:p-2 bg-emerald-50" style={{ borderRadius: '12px' }}>
+                      <span className="material-symbols-rounded text-emerald-600 text-lg sm:text-xl">group</span>
                     </div>
-                    <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '15px' }}>
-                      <span className="material-symbols-rounded text-[12px]">trending_up</span>
+                    <div className="flex items-center gap-0.5 text-[9px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '10px' }}>
+                      <span className="material-symbols-rounded text-[10px] sm:text-[12px]">trending_up</span>
                       +5%
                     </div>
                   </div>
-                  <p className="text-gray-600 text-xs font-bold uppercase tracking-wider">Active Learners</p>
-                  <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.totalActiveLearners.toLocaleString()}</h3>
+                  <p className="text-gray-600 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Learners</p>
+                  <h3 className="text-lg sm:text-2xl font-black text-gray-900 mt-1">{stats.totalActiveLearners.toLocaleString()}</h3>
                 </div>
 
-                <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="p-2 bg-indigo-50" style={{ borderRadius: '15px' }}>
-                      <span className="material-symbols-rounded text-indigo-600">schedule</span>
+                <div className="bg-white p-3 sm:p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="p-1.5 sm:p-2 bg-indigo-50" style={{ borderRadius: '12px' }}>
+                      <span className="material-symbols-rounded text-indigo-600 text-lg sm:text-xl">schedule</span>
                     </div>
                   </div>
-                  <p className="text-gray-600 text-xs font-bold uppercase tracking-wider">Learning Hours</p>
-                  <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.totalLearningHours.toLocaleString()}h</h3>
+                  <p className="text-gray-600 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Hours</p>
+                  <h3 className="text-lg sm:text-2xl font-black text-gray-900 mt-1">{stats.totalLearningHours.toLocaleString()}h</h3>
                 </div>
 
-                <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="p-2 bg-orange-50" style={{ borderRadius: '15px' }}>
-                      <span className="material-symbols-rounded text-orange-600">book</span>
+                <div className="bg-white p-3 sm:p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="p-1.5 sm:p-2 bg-orange-50" style={{ borderRadius: '12px' }}>
+                      <span className="material-symbols-rounded text-orange-600 text-lg sm:text-xl">book</span>
                     </div>
                   </div>
-                  <p className="text-gray-600 text-xs font-bold uppercase tracking-wider">Active Courses</p>
-                  <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.activeCourses}</h3>
+                  <p className="text-gray-600 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Courses</p>
+                  <h3 className="text-lg sm:text-2xl font-black text-gray-900 mt-1">{stats.activeCourses}</h3>
                 </div>
 
-                <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="p-2 bg-green-50" style={{ borderRadius: '15px' }}>
-                      <span className="material-symbols-rounded text-green-600">done_all</span>
+                <div className="bg-white p-3 sm:p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="p-1.5 sm:p-2 bg-green-50" style={{ borderRadius: '12px' }}>
+                      <span className="material-symbols-rounded text-green-600 text-lg sm:text-xl">done_all</span>
                     </div>
-                    <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '15px' }}>
-                      <span className="material-symbols-rounded text-[12px]">trending_up</span>
+                    <div className="flex items-center gap-0.5 text-[9px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '10px' }}>
+                      <span className="material-symbols-rounded text-[10px] sm:text-[12px]">trending_up</span>
                       +2%
                     </div>
                   </div>
-                  <p className="text-gray-600 text-xs font-bold uppercase tracking-wider">Completion Rate</p>
-                  <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.completionRate}%</h3>
+                  <p className="text-gray-600 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Complete</p>
+                  <h3 className="text-lg sm:text-2xl font-black text-gray-900 mt-1">{stats.completionRate}%</h3>
                 </div>
 
-                <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="p-2 bg-teal-50" style={{ borderRadius: '15px' }}>
-                      <span className="material-symbols-rounded text-teal-600">verified</span>
+                <div className="bg-white p-3 sm:p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="p-1.5 sm:p-2 bg-teal-50" style={{ borderRadius: '12px' }}>
+                      <span className="material-symbols-rounded text-teal-600 text-lg sm:text-xl">verified</span>
                     </div>
-                    <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '15px' }}>
-                      <span className="material-symbols-rounded text-[12px]">trending_up</span>
+                    <div className="flex items-center gap-0.5 text-[9px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '10px' }}>
+                      <span className="material-symbols-rounded text-[10px] sm:text-[12px]">trending_up</span>
                       +8%
                     </div>
                   </div>
-                  <p className="text-gray-600 text-xs font-bold uppercase tracking-wider">Pass Rate</p>
-                  <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.assessmentPassRate}%</h3>
+                  <p className="text-gray-600 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Pass Rate</p>
+                  <h3 className="text-lg sm:text-2xl font-black text-gray-900 mt-1">{stats.assessmentPassRate}%</h3>
                 </div>
 
-                <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="p-2 bg-indigo-50" style={{ borderRadius: '15px' }}>
-                      <span className="material-symbols-rounded text-indigo-600">card_giftcard</span>
+                <div className="bg-white p-3 sm:p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="p-1.5 sm:p-2 bg-indigo-50" style={{ borderRadius: '12px' }}>
+                      <span className="material-symbols-rounded text-indigo-600 text-lg sm:text-xl">card_giftcard</span>
                     </div>
-                    <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '15px' }}>
-                      <span className="material-symbols-rounded text-[12px]">trending_up</span>
+                    <div className="flex items-center gap-0.5 text-[9px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '10px' }}>
+                      <span className="material-symbols-rounded text-[10px] sm:text-[12px]">trending_up</span>
                       +12
                     </div>
                   </div>
-                  <p className="text-gray-600 text-xs font-bold uppercase tracking-wider">Certificates</p>
-                  <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.certificatesEarned}</h3>
+                  <p className="text-gray-600 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Certificate</p>
+                  <h3 className="text-lg sm:text-2xl font-black text-gray-900 mt-1">{stats.certificatesEarned}</h3>
                 </div>
 
-                <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="p-2 bg-pink-50" style={{ borderRadius: '15px' }}>
-                      <span className="material-symbols-rounded text-pink-600">radar</span>
+                <div className="bg-white p-3 sm:p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="p-1.5 sm:p-2 bg-pink-50" style={{ borderRadius: '12px' }}>
+                      <span className="material-symbols-rounded text-pink-600 text-lg sm:text-xl">radar</span>
                     </div>
                   </div>
-                  <p className="text-gray-600 text-xs font-bold uppercase tracking-wider">Skill Coverage</p>
-                  <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.skillCoverage}%</h3>
+                  <p className="text-gray-600 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Skills</p>
+                  <h3 className="text-lg sm:text-2xl font-black text-gray-900 mt-1">{stats.skillCoverage}%</h3>
                 </div>
 
-                <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="p-2 bg-yellow-50" style={{ borderRadius: '15px' }}>
-                      <span className="material-symbols-rounded text-yellow-600">star</span>
+                <div className="bg-white p-3 sm:p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="p-1.5 sm:p-2 bg-yellow-50" style={{ borderRadius: '12px' }}>
+                      <span className="material-symbols-rounded text-yellow-600 text-lg sm:text-xl">star</span>
                     </div>
-                    <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '15px' }}>
-                      <span className="material-symbols-rounded text-[12px]">trending_up</span>
+                    <div className="flex items-center gap-0.5 text-[9px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '10px' }}>
+                      <span className="material-symbols-rounded text-[10px] sm:text-[12px]">trending_up</span>
                       +0.2
                     </div>
                   </div>
-                  <p className="text-gray-600 text-xs font-bold uppercase tracking-wider">Avg Rating</p>
-                  <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.avgCourseRating}★</h3>
+                  <p className="text-gray-600 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Rating</p>
+                  <h3 className="text-lg sm:text-2xl font-black text-gray-900 mt-1">{stats.avgCourseRating}★</h3>
                 </div>
 
-                <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="p-2 bg-cyan-50" style={{ borderRadius: '15px' }}>
-                      <span className="material-symbols-rounded text-cyan-600">business</span>
+                <div className="bg-white p-3 sm:p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all col-span-2 sm:col-span-1" style={{ borderRadius: '15px' }}>
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="p-1.5 sm:p-2 bg-cyan-50" style={{ borderRadius: '12px' }}>
+                      <span className="material-symbols-rounded text-cyan-600 text-lg sm:text-xl">business</span>
                     </div>
                   </div>
-                  <p className="text-gray-600 text-xs font-bold uppercase tracking-wider">Top Department</p>
-                  <h3 className="text-lg font-black text-gray-900 mt-1 truncate">{stats.topDepartment}</h3>
+                  <p className="text-gray-600 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Top Dept</p>
+                  <h3 className="text-xs sm:text-lg font-black text-gray-900 mt-1 truncate">{stats.topDepartment}</h3>
                 </div>
 
-                <div className="bg-white p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="p-2 bg-rose-50" style={{ borderRadius: '15px' }}>
-                      <span className="material-symbols-rounded text-rose-600">access_time</span>
+                <div className="bg-white p-3 sm:p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all col-span-2 sm:col-span-1" style={{ borderRadius: '15px' }}>
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="p-1.5 sm:p-2 bg-rose-50" style={{ borderRadius: '12px' }}>
+                      <span className="material-symbols-rounded text-rose-600 text-lg sm:text-xl">access_time</span>
                     </div>
-                    <div className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '15px' }}>
-                      <span className="material-symbols-rounded text-[12px]">trending_up</span>
+                    <div className="flex items-center gap-0.5 text-[9px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 text-green-600 bg-green-50" style={{ borderRadius: '10px' }}>
+                      <span className="material-symbols-rounded text-[10px] sm:text-[12px]">trending_up</span>
                       +0.3h
                     </div>
                   </div>
-                  <p className="text-gray-600 text-xs font-bold uppercase tracking-wider">Avg Session</p>
-                  <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.avgSessionTime}h</h3>
+                  <p className="text-gray-600 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Session</p>
+                  <h3 className="text-lg sm:text-2xl font-black text-gray-900 mt-1">{stats.avgSessionTime}h</h3>
                 </div>
               </div>
             )}
@@ -955,21 +955,21 @@ const AdminDashboard: React.FC = () => {
                     <p className="text-sm text-gray-500 mt-1">Test and quiz metrics</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="text-center p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-100">
-                    <p className="text-xs text-gray-600 font-semibold mb-2">Pass Rate</p>
-                    <p className="text-3xl font-black text-amber-600">{stats.assessmentPassRate || 0}%</p>
-                    <p className="text-[10px] text-gray-500 mt-2">Avg Success</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                  <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-100">
+                    <p className="text-xs sm:text-xs text-gray-600 font-semibold mb-2">Pass Rate</p>
+                    <p className="text-2xl sm:text-3xl font-black text-amber-600">{stats.assessmentPassRate || 0}%</p>
+                    <p className="text-[9px] sm:text-[10px] text-gray-500 mt-2">Avg Success</p>
                   </div>
-                  <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
-                    <p className="text-xs text-gray-600 font-semibold mb-2">Certificates</p>
-                    <p className="text-3xl font-black text-blue-600">{stats.certificatesEarned || 0}</p>
-                    <p className="text-[10px] text-gray-500 mt-2">Earned</p>
+                  <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                    <p className="text-xs sm:text-xs text-gray-600 font-semibold mb-2">Certificates</p>
+                    <p className="text-2xl sm:text-3xl font-black text-blue-600">{stats.certificatesEarned || 0}</p>
+                    <p className="text-[9px] sm:text-[10px] text-gray-500 mt-2">Earned</p>
                   </div>
-                  <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-100">
-                    <p className="text-xs text-gray-600 font-semibold mb-2">Skill Coverage</p>
-                    <p className="text-3xl font-black text-purple-600">{stats.skillCoverage || 0}%</p>
-                    <p className="text-[10px] text-gray-500 mt-2">Covered</p>
+                  <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-100">
+                    <p className="text-xs sm:text-xs text-gray-600 font-semibold mb-2">Skill Coverage</p>
+                    <p className="text-2xl sm:text-3xl font-black text-purple-600">{stats.skillCoverage || 0}%</p>
+                    <p className="text-[9px] sm:text-[10px] text-gray-500 mt-2">Covered</p>
                   </div>
                 </div>
               </div>
@@ -1065,22 +1065,22 @@ const AdminDashboard: React.FC = () => {
                 {/* Top Departments Chart - Only show on Executive tab */}
                 {visibleSections.topDepartments && (
                   <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                    <div className="flex justify-between items-center mb-6">
+                    <div className="flex flex-col gap-4 mb-6">
                       <h4 className="font-bold text-gray-900 flex items-center gap-2">
                         <span className="material-symbols-rounded text-blue-500">bar_chart</span>
                         Top 10 Departments
                       </h4>
-                      <div className="flex bg-gray-100 p-1 rounded-xl">
+                      <div className="flex bg-gray-100 p-1 rounded-xl w-full flex-wrap gap-1 sm:gap-0">
                         {[
-                          { id: 'userCount', label: 'User Count' },
+                          { id: 'userCount', label: 'Users' },
                           { id: 'totalXP', label: 'XP' },
-                          { id: 'coursesEnrolled', label: 'Courses Enrolled' },
-                          { id: 'coursesCompleted', label: 'Courses Completed' }
+                          { id: 'coursesEnrolled', label: 'Enrolled' },
+                          { id: 'coursesCompleted', label: 'Completed' }
                         ].map((metric) => (
                           <button
                             key={metric.id}
                             onClick={() => setDepartmentFilterMetric(metric.id)}
-                            className={`px-3 py-1 text-[10px] font-bold uppercase rounded-xl transition-all ${departmentFilterMetric === metric.id
+                            className={`flex-1 sm:flex-none px-1.5 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-bold uppercase rounded-xl transition-all ${departmentFilterMetric === metric.id
                               ? 'bg-white text-primary shadow-sm'
                               : 'text-gray-500 hover:text-gray-700'
                               }`}
@@ -1223,27 +1223,31 @@ const AdminDashboard: React.FC = () => {
             {/* Users & Modules Section */}
             {visibleSections.usersModules && (
               <div className="shadow-sm border border-gray-100 overflow-hidden" style={{ borderRadius: '15px', order: getOrderIndex('usersModules') }}>
-                <div className="bg-white p-8 border-b border-gray-100">
-                  <div className="flex items-center gap-8">
+                <div className="bg-white px-4 sm:px-8 py-4 sm:py-6 border-b border-gray-100">
+                  <div className="flex items-center gap-1 sm:gap-8 overflow-x-auto scrollbar-hide">
                     <button
                       onClick={() => setActiveTab('users')}
-                      className={`pb-4 px-2 font-bold text-sm transition-all relative ${activeTab === 'users'
-                        ? 'text-primary'
+                      className={`pb-3 sm:pb-4 px-3 sm:px-4 font-bold text-xs sm:text-sm transition-all relative whitespace-nowrap flex items-center gap-1.5 sm:gap-2 ${activeTab === 'users'
+                        ? 'text-indigo-600'
                         : 'text-gray-400 hover:text-gray-600'
                         }`}
                     >
-                      By users
-                      {activeTab === 'users' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary" style={{ borderRadius: '15px 15px 0 0' }} />}
+                      <span className="material-symbols-rounded text-sm sm:text-base">people</span>
+                      <span className="hidden sm:inline">Users</span>
+                      <span className="sm:hidden text-[10px]">Users</span>
+                      {activeTab === 'users' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-indigo-600" style={{ borderRadius: '15px 15px 0 0' }} />}
                     </button>
                     <button
                       onClick={() => setActiveTab('modules')}
-                      className={`pb-4 px-2 font-bold text-sm transition-all relative ${activeTab === 'modules'
-                        ? 'text-primary'
+                      className={`pb-3 sm:pb-4 px-3 sm:px-4 font-bold text-xs sm:text-sm transition-all relative whitespace-nowrap flex items-center gap-1.5 sm:gap-2 ${activeTab === 'modules'
+                        ? 'text-indigo-600'
                         : 'text-gray-400 hover:text-gray-600'
                         }`}
                     >
-                      By modules
-                      {activeTab === 'modules' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary" style={{ borderRadius: '15px 15px 0 0' }} />}
+                      <span className="material-symbols-rounded text-sm sm:text-base">library_books</span>
+                      <span className="hidden sm:inline">Modules</span>
+                      <span className="sm:hidden text-[10px]">Modules</span>
+                      {activeTab === 'modules' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-indigo-600" style={{ borderRadius: '15px 15px 0 0' }} />}
                     </button>
                   </div>
                 </div>

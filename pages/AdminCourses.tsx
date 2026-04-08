@@ -20,6 +20,7 @@ const AdminCourses: React.FC = () => {
   const navigate = useNavigate();
   const { user, session } = useAuth();
   useAuthGuard(['admin', 'instructor']);
+  const categoryDropdownRef = React.useRef<HTMLDivElement>(null);
   const [showBuilder, setShowBuilder] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
   const [coursesLoading, setCoursesLoading] = useState(true);
@@ -34,9 +35,10 @@ const AdminCourses: React.FC = () => {
 
   // New filters and search states
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterCategory, setFilterCategory] = useState<string>('');
+  const [filterCategories, setFilterCategories] = useState<string[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [filterLevel, setFilterLevel] = useState<string>('');
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [sortBy, setSortBy] = useState<'title' | 'students' | 'rating' | 'recent' | 'completion'>('title');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -78,6 +80,20 @@ const AdminCourses: React.FC = () => {
       fetchCourses();
     }
   }, [session]);
+
+  useEffect(() => {
+    // Close category dropdown when clicking outside
+    const handleClickOutside = (event: MouseEvent) => {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+        setShowCategoryDropdown(false);
+      }
+    };
+
+    if (showCategoryDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showCategoryDropdown]);
 
   const fetchCourses = async () => {
     try {
@@ -127,7 +143,7 @@ const AdminCourses: React.FC = () => {
       course.instructorname.toLowerCase().includes(searchQuery.toLowerCase());
 
     // Category filter
-    const matchesCategory = !filterCategory || course.category === filterCategory;
+    const matchesCategory = filterCategories.length === 0 || filterCategories.includes(course.category);
 
     // Status filter
     const matchesStatus = !filterStatus || course.status === filterStatus;
@@ -174,7 +190,7 @@ const AdminCourses: React.FC = () => {
 
   const handleResetFilters = () => {
     setSearchQuery('');
-    setFilterCategory('');
+    setFilterCategories([]);
     setFilterStatus('');
     setFilterLevel('');
     setSortBy('title');
@@ -734,7 +750,7 @@ const AdminCourses: React.FC = () => {
                   // Reload data
                   fetchCourses();
                 }}
-                className="px-2.5 sm:px-4 py-1.5 sm:py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-sm flex items-center justify-center sm:justify-start gap-1 sm:gap-2 transition-colors text-sm sm:text-base"
+                className="px-2.5 sm:px-4 py-1.5 sm:py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-xl flex items-center justify-center sm:justify-start gap-1 sm:gap-2 transition-colors text-sm sm:text-base"
                 title="Clear cache and reload course data"
               >
                 <span className="material-symbols-outlined text-base">refresh</span>
@@ -742,7 +758,7 @@ const AdminCourses: React.FC = () => {
               </button>
               <button
                 onClick={() => setShowBuilder(true)}
-                className="px-2.5 sm:px-4 py-1.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-sm flex items-center justify-center sm:justify-start gap-1 sm:gap-2 transition-colors text-sm sm:text-base font-medium shadow-lg hover:shadow-xl"
+                className="px-2.5 sm:px-4 py-1.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl flex items-center justify-center sm:justify-start gap-1 sm:gap-2 transition-colors text-sm sm:text-base font-medium shadow-lg hover:shadow-xl"
               >
                 <span className="material-symbols-outlined">add</span>
                 <span className="hidden sm:inline">Create New Course</span>
@@ -752,156 +768,213 @@ const AdminCourses: React.FC = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-6 border-b border-gray-200">
+        <div className="flex border-b border-slate-200 overflow-x-auto scrollbar-hide">
           <button
             onClick={() => setActiveTab('courses')}
-            className={`pb-3 px-1 font-semibold text-sm transition-all relative flex items-center gap-2 ${activeTab === 'courses' ? 'text-primary' : 'text-gray-500 hover:text-gray-700'
+            className={`px-4 sm:px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap flex items-center gap-2 ${activeTab === 'courses'
+              ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg'
+              : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
               }`}
           >
             <span className="material-symbols-outlined text-base">school</span>
-            Courses
-            {activeTab === 'courses' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-sm" />}
+            <span>Courses</span>
           </button>
           <button
             onClick={() => setActiveTab('assignments')}
-            className={`pb-3 px-1 font-semibold text-sm transition-all relative flex items-center gap-2 ${activeTab === 'assignments' ? 'text-primary' : 'text-gray-500 hover:text-gray-700'
+            className={`px-4 sm:px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap flex items-center gap-2 ${activeTab === 'assignments'
+              ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg'
+              : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
               }`}
           >
             <span className="material-symbols-outlined text-base">assignment_ind</span>
-            Course Assignments
-            {activeTab === 'assignments' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-sm" />}
+            <span className="hidden sm:inline">Course Assignments</span>
+            <span className="sm:hidden text-xs">Assignments</span>
           </button>
           <button
             onClick={() => setActiveTab('add-assignment')}
-            className={`pb-3 px-1 font-semibold text-sm transition-all relative flex items-center gap-2 ${activeTab === 'add-assignment' ? 'text-primary' : 'text-gray-500 hover:text-gray-700'
+            className={`px-4 sm:px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap flex items-center gap-2 ${activeTab === 'add-assignment'
+              ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg'
+              : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
               }`}
           >
             <span className="material-symbols-outlined text-base">person_add</span>
-            Add Assignment
-            {activeTab === 'add-assignment' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-sm" />}
+            <span className="hidden sm:inline">Add Assignment</span>
+            <span className="sm:hidden text-xs">Add</span>
           </button>
         </div>
 
         {/* Courses Tab Content */}
         {activeTab === 'courses' && (
           <>
-            {/* Search and Filter Controls - Simplified */}
-            <div className="bg-white rounded-md border border-gray-200 p-4 space-y-3">
-              {/* Search Bar */}
-              <input
-                type="text"
-                placeholder="Search by course title or instructor..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none"
-              />
+            {/* Search and Filter Controls */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6 space-y-3 sm:space-y-4">
+              {/* Filter Controls - Responsive Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                {/* Category Filter - Custom Dropdown */}
+                <div className="relative" ref={categoryDropdownRef}>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Categories</label>
+                  <button
+                    onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded text-xs sm:text-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none flex items-center justify-between hover:border-gray-400 transition-colors"
+                  >
+                    <span className="truncate">
+                      {filterCategories.length === 0
+                        ? 'All Categories'
+                        : `${filterCategories.length} selected`}
+                    </span>
+                    <span className="material-symbols-rounded text-sm ml-1 flex-shrink-0">
+                      {showCategoryDropdown ? 'expand_less' : 'expand_more'}
+                    </span>
+                  </button>
 
-              {/* Filter Controls */}
-              <div className="flex gap-3 flex-wrap items-center">
-                {/* Category Filter */}
-                <select
-                  value={filterCategory}
-                  onChange={(e) => {
-                    setFilterCategory(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className="px-3 py-2 pl-3 pr-8 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
-                >
-                  <option value="">All Categories</option>
-                  {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
+                  {/* Dropdown Menu */}
+                  {showCategoryDropdown && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-20 max-h-48 overflow-y-auto">
+                      {categories.map(cat => (
+                        <label
+                          key={cat}
+                          className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer text-xs sm:text-sm transition-colors border-b border-gray-100 last:border-b-0"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={filterCategories.includes(cat)}
+                            onChange={(e) => {
+                              const newCategories = e.target.checked
+                                ? [...filterCategories, cat]
+                                : filterCategories.filter(c => c !== cat);
+                              setFilterCategories(newCategories);
+                              setCurrentPage(1);
+                            }}
+                            className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer"
+                          />
+                          <span className="text-gray-700">{cat}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
                 {/* Status Filter */}
-                <select
-                  value={filterStatus}
-                  onChange={(e) => {
-                    setFilterStatus(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className="px-3 py-2 pl-3 pr-8 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
-                >
-                  <option value="">All Status</option>
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
-                </select>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => {
+                      setFilterStatus(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded text-xs sm:text-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none"
+                  >
+                    <option value="">All</option>
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                  </select>
+                </div>
 
                 {/* Level Filter */}
-                <select
-                  value={filterLevel}
-                  onChange={(e) => {
-                    setFilterLevel(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className="px-3 py-2 pl-3 pr-8 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
-                >
-                  <option value="">All Levels</option>
-                  {levels.map(lvl => (
-                    <option key={lvl} value={lvl}>{lvl.charAt(0).toUpperCase() + lvl.slice(1)}</option>
-                  ))}
-                </select>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Level</label>
+                  <select
+                    value={filterLevel}
+                    onChange={(e) => {
+                      setFilterLevel(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded text-xs sm:text-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none"
+                  >
+                    <option value="">All</option>
+                    {levels.map(lvl => (
+                      <option key={lvl} value={lvl}>{lvl.charAt(0).toUpperCase() + lvl.slice(1)}</option>
+                    ))}
+                  </select>
+                </div>
 
                 {/* Sort By */}
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                  className="px-3 py-2 pl-3 pr-8 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
-                >
-                  <option value="title">Sort: Title</option>
-                  <option value="students">Sort: Learners</option>
-                  <option value="completion">Sort: Completion</option>
-                  <option value="rating">Sort: Rating</option>
-                  <option value="recent">Sort: Recent</option>
-                </select>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Sort</label>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded text-xs sm:text-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none"
+                  >
+                    <option value="title">Title</option>
+                    <option value="students">Learners</option>
+                    <option value="completion">Completion</option>
+                    <option value="rating">Rating</option>
+                    <option value="recent">Recent</option>
+                  </select>
+                </div>
+              </div>
 
-                {/* Sort Order */}
-                <button
-                  onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                  className="px-3 py-2 pr-3 border border-gray-300 rounded-lg bg-white text-gray-900 hover:bg-gray-100 transition-colors flex items-center justify-center gap-1 text-sm"
-                  title={sortOrder === 'asc' ? 'Sort Ascending' : 'Sort Descending'}
-                >
-                  <span className="material-symbols-outlined text-base">
-                    {sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}
-                  </span>
-                </button>
-
-                {/* Items Per Page */}
-                <select
-                  value={itemsPerPage}
+              {/* Search Bar - Below Filters */}
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-sm">search</span>
+                <input
+                  type="text"
+                  placeholder="Search by course title or instructor..."
+                  value={searchQuery}
                   onChange={(e) => {
-                    setItemsPerPage(Number(e.target.value));
+                    setSearchQuery(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="px-3 py-2 pl-3 pr-8 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
-                >
-                  <option value={5}>5 per page</option>
-                  <option value={10}>10 per page</option>
-                  <option value={25}>25 per page</option>
-                  <option value={50}>50 per page</option>
-                </select>
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white text-xs sm:text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none"
+                />
+              </div>
 
-                {/* Reset button */}
-                <button
-                  onClick={handleResetFilters}
-                  className="px-3 py-2 pr-3 border border-gray-300 rounded-lg bg-white text-gray-900 hover:bg-gray-100 transition-colors flex items-center justify-center gap-1 text-xs"
-                  title="Reset all filters"
-                >
-                  <span className="material-symbols-outlined text-sm">refresh</span>
-                </button>
+              {/* Action Controls Row */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                {/* Left: Items Per Page */}
+                <div className="flex items-center gap-2">
+                  <label className="text-xs font-medium text-gray-700">Per Page:</label>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="px-2 sm:px-3 py-1.5 sm:py-2 pl-2 pr-6 border border-gray-300 rounded text-xs sm:text-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                  </select>
+                </div>
 
-                {/* Column Visibility Toggle */}
-                <button
-                  onClick={() => setShowColumnSettings(!showColumnSettings)}
-                  className="px-3 py-2 pr-3 border border-gray-300 rounded-lg bg-indigo-100 text-indigo-700  hover:bg-indigo-200 transition-colors flex items-center gap-1 text-xs"
-                  title="Toggle visible columns"
-                >
-                  <span className="material-symbols-outlined text-base">view_column</span>
-                  Columns
-                </button>
+                {/* Right: Action Buttons */}
+                <div className="flex items-center gap-2 flex-wrap justify-end">
+                  {/* Sort Order Button */}
+                  <button
+                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                    className="px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded bg-white text-gray-900 hover:bg-gray-100 transition-colors flex items-center justify-center gap-1 text-xs sm:text-sm"
+                    title={sortOrder === 'asc' ? 'Sort Ascending' : 'Sort Descending'}
+                  >
+                    <span className="material-symbols-outlined text-base">
+                      {sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}
+                    </span>
+                    <span className="hidden sm:inline">{sortOrder === 'asc' ? 'Asc' : 'Desc'}</span>
+                  </button>
+
+                  {/* Reset Button */}
+                  <button
+                    onClick={handleResetFilters}
+                    className="px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded bg-white text-gray-900 hover:bg-gray-100 transition-colors flex items-center justify-center gap-1 text-xs sm:text-sm"
+                    title="Reset all filters"
+                  >
+                    <span className="material-symbols-outlined text-base">refresh</span>
+                    <span className="hidden sm:inline">Reset</span>
+                  </button>
+
+                  {/* Column Visibility Toggle */}
+                  <button
+                    onClick={() => setShowColumnSettings(!showColumnSettings)}
+                    className="px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors flex items-center justify-center gap-1 text-xs sm:text-sm"
+                    title="Toggle visible columns"
+                  >
+                    <span className="material-symbols-outlined text-base">view_column</span>
+                    <span className="hidden sm:inline">Columns</span>
+                  </button>
+                </div>
               </div>
 
               {/* Column Visibility Settings */}

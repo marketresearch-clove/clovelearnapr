@@ -378,15 +378,21 @@
 svg {
     overflow: visible !important;
     display: block !important;
+    flex-shrink: 0;
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
 }
 
 /* Canvas Viewport - Allow Internal Scrolling */
 .canvas-viewport {
     overflow: auto !important;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
 }
 
 .canvas-viewport svg {
     overflow: visible !important;
+    display: block !important;
 }
 
 /* Hierarchy Tree Wrapper - Ensure proper sizing on all devices */
@@ -394,11 +400,13 @@ svg {
     overflow: visible !important;
     width: fit-content !important;
     min-width: 100%;
+    backface-visibility: hidden;
 }
 
 .hierarchy-tree-wrapper svg {
     overflow: visible !important;
     display: block !important;
+    flex-shrink: 0;
 }
 
 /* Responsive Design */
@@ -536,6 +544,14 @@ svg {
     }
 }
 
+/* Card Wrapper - for export stability */
+.hierarchy-card-wrapper {
+    flex-shrink: 0;
+    backface-visibility: hidden;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+}
+
 /* Animation */
 @keyframes slideIn {
     from {
@@ -568,4 +584,18 @@ svg {
 
 .hierarchy-section:nth-child(4) {
     animation-delay: 0.2s;
+}
+
+/* Export-specific fixes */
+@media print {
+    .hierarchy-tree-wrapper,
+    .hierarchy-card-wrapper {
+        backface-visibility: visible;
+        -webkit-transform: none;
+        transform: none;
+    }
+
+    svg {
+        backface-visibility: visible;
+    }
 }

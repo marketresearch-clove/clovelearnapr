@@ -528,23 +528,28 @@ const SkillAssignments: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col justify-between items-start gap-4 mb-6">
-        <div className="flex flex-wrap gap-3 w-full items-center">
-          <div className="relative flex-1 min-w-80">
-            <span className="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">search</span>
-            <input
-              type="text"
-              placeholder="Search Assignments..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-900 placeholder-gray-500"
-            />
+      <div className="flex flex-col gap-4 mb-6">
+        {/* Filters Grid - Responsive Layout */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full">
+          {/* Search Box - Full Width */}
+          <div className="sm:col-span-2 lg:col-span-3">
+            <div className="relative">
+              <span className="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">search</span>
+              <input
+                type="text"
+                placeholder="Search Assignments..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-gray-900 placeholder-gray-500 text-sm"
+              />
+            </div>
           </div>
 
+          {/* Filter Dropdowns */}
           <select
             value={filterVisibility}
             onChange={(e) => setFilterVisibility(e.target.value)}
-            className="flex-shrink-0 px-4 py-2 pr-8 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            className="w-full px-4 py-2 pr-8 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 text-sm"
           >
             <option value="all">All Visibility</option>
             <option value="visible">Visible</option>
@@ -554,7 +559,7 @@ const SkillAssignments: React.FC = () => {
           <select
             value={filterFamily}
             onChange={(e) => setFilterFamily(e.target.value)}
-            className="flex-shrink-0 px-4 py-2 pr-8 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            className="w-full px-4 py-2 pr-8 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 text-sm"
           >
             <option value="all">All Families</option>
             {families.map(family => (
@@ -565,7 +570,7 @@ const SkillAssignments: React.FC = () => {
           <select
             value={filterLevel}
             onChange={(e) => setFilterLevel(e.target.value)}
-            className="flex-shrink-0 px-4 py-2 pr-8 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            className="w-full px-4 py-2 pr-8 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 text-sm"
           >
             <option value="all">All Levels</option>
             {levels.map(level => (
@@ -578,7 +583,7 @@ const SkillAssignments: React.FC = () => {
           <select
             value={filterCourse}
             onChange={(e) => setFilterCourse(e.target.value)}
-            className="flex-shrink-0 px-4 py-2 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 text-sm"
           >
             <option value="all">All Courses</option>
             {courses.map(course => (
@@ -589,7 +594,7 @@ const SkillAssignments: React.FC = () => {
           <select
             value={filterDepartment}
             onChange={(e) => setFilterDepartment(e.target.value)}
-            className="flex-shrink-0 px-4 py-2 pr-8 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            className="w-full px-4 py-2 pr-8 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 text-sm"
           >
             <option value="all">All Departments</option>
             {departments.map(dept => (
@@ -600,7 +605,7 @@ const SkillAssignments: React.FC = () => {
           <select
             value={filterUser}
             onChange={(e) => setFilterUser(e.target.value)}
-            className="flex-shrink-0 px-4 py-2 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 text-sm"
           >
             <option value="all">All Users</option>
             {uniqueUsers.map(user => (
@@ -611,38 +616,42 @@ const SkillAssignments: React.FC = () => {
           </select>
         </div>
 
-        <div className="flex gap-2 items-center justify-end w-full flex-wrap">
+        {/* Action Buttons - Responsive */}
+        <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-end w-full">
           {selectedAssignmentIds.size > 0 && (
             <button
               onClick={() => setIsBatchExpiryModalOpen(true)}
-              className="bg-amber-50 hover:bg-amber-100 text-amber-600 px-3 py-1.5 rounded-lg flex items-center gap-2 transition-colors border border-amber-200 text-sm font-medium whitespace-nowrap"
+              className="bg-amber-50 hover:bg-amber-100 text-amber-600 px-3 py-2 sm:py-1.5 rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-colors border border-amber-200 text-xs sm:text-sm font-medium whitespace-nowrap"
               title={'Set expiry for ' + selectedAssignmentIds.size + ' selected assignment(s)'}
             >
               <span className="material-symbols-rounded text-sm">schedule</span>
-              Set Expiry
+              <span className="hidden sm:inline">Set Expiry</span>
+              <span className="sm:hidden">Expiry</span>
             </button>
           )}
           <button
             onClick={handleClearExpired}
-            className="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg flex items-center gap-2 transition-colors border border-red-200 text-sm font-medium whitespace-nowrap"
+            className="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 sm:py-1.5 rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-colors border border-red-200 text-xs sm:text-sm font-medium whitespace-nowrap"
             title="Delete all expired assignments"
           >
             <span className="material-symbols-rounded text-sm">delete_sweep</span>
-            Clear Expired
+            <span className="hidden sm:inline">Clear Expired</span>
+            <span className="sm:hidden">Clear</span>
           </button>
           <button
             onClick={handleExport}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 transition-colors text-sm font-medium whitespace-nowrap"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 sm:py-1.5 rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
           >
             <span className="material-symbols-rounded text-sm">download</span>
             Export
           </button>
           <button
             onClick={() => setIsAssignModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 transition-colors text-sm font-medium whitespace-nowrap"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 sm:py-1.5 rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
           >
             <span className="material-symbols-rounded text-sm">add</span>
-            Assign Skill
+            <span className="hidden sm:inline">Assign Skill</span>
+            <span className="sm:hidden">Assign</span>
           </button>
         </div>
       </div>

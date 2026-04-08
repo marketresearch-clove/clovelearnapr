@@ -1352,21 +1352,24 @@ const ManageLearningJourneys: React.FC = () => {
             </div>
           )}
 
-          <div className="flex justify-between items-center">
-            <div>
+          {/* Header Section - Responsive Layout */}
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+            <div className="flex-1">
               <h2 className="text-2xl font-bold text-gray-900">Learning Journey Management</h2>
               <p className="text-gray-600 mt-1">Create, manage, and assign learning journeys.</p>
             </div>
-            <div className="flex items-center gap-3">
+
+            {/* Buttons - Show on desktop right, mobile below text */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 md:gap-3">
               <button
                 onClick={() => {
                   setEditingJourneyId(null);
                   setNewJourney({ title: '', description: '', type: 'Standard', modules: [] });
                   setShowCreateModal(true);
                 }}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center gap-2"
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 text-sm md:text-base"
               >
-                <span className="material-symbols-rounded">add</span>
+                <span className="material-symbols-rounded text-base">add</span>
                 Create Journey
               </button>
               <button
@@ -1380,74 +1383,46 @@ const ManageLearningJourneys: React.FC = () => {
                   });
                   setShowCreateCareerPathModal(true);
                 }}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm md:text-base"
               >
-                <span className="material-symbols-rounded">add</span>
+                <span className="material-symbols-rounded text-base">add</span>
                 Create Career Path
               </button>
             </div>
           </div>
 
-          {/* Tabs */}
-          <div className="border-b border-gray-200 ">
-            <nav className="-mb-px flex space-x-8">
-              <button
-                onClick={() => setActiveTab('assign')}
-                className={`
-                whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
-                ${activeTab === 'assign'
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
-              `}
-              >
-                Assign Journeys
-              </button>
-              <button
-                onClick={() => setActiveTab('manage')}
-                className={`
-                whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
-                ${activeTab === 'manage'
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
-              `}
-              >
-                Manage Journeys
-              </button>
-              <button
-                onClick={() => setActiveTab('careerPaths')}
-                className={`
-                whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
-                ${activeTab === 'careerPaths'
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
-              `}
-              >
-                Career Paths
-              </button>
-              <button
-                onClick={() => setActiveTab('careerProgress')}
-                className={
-                  `
-                whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
-                ${activeTab === 'careerProgress'
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
-              `}
-              >
-                Manage Career Paths
-              </button>
-              <button
-                onClick={() => setActiveTab('userCareerAssignments')}
-                className={`
-                whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
-                ${activeTab === 'userCareerAssignments'
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
-              `}
-              >
-                User Career Paths
-              </button>
-            </nav>
+          {/* Tabs - AdminAssessmentsPage Style with Horizontal Scrolling */}
+          <div className="flex border-b border-gray-200 overflow-x-auto scrollbar-hide">
+            <button
+              onClick={() => setActiveTab('assign')}
+              className={`px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap ${activeTab === 'assign' ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
+            >
+              Assign Journeys
+            </button>
+            <button
+              onClick={() => setActiveTab('manage')}
+              className={`px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap ${activeTab === 'manage' ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
+            >
+              Manage Journeys
+            </button>
+            <button
+              onClick={() => setActiveTab('careerPaths')}
+              className={`px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap ${activeTab === 'careerPaths' ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
+            >
+              Career Paths
+            </button>
+            <button
+              onClick={() => setActiveTab('careerProgress')}
+              className={`px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap ${activeTab === 'careerProgress' ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
+            >
+              Manage Career Paths
+            </button>
+            <button
+              onClick={() => setActiveTab('userCareerAssignments')}
+              className={`px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap ${activeTab === 'userCareerAssignments' ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
+            >
+              User Career Paths
+            </button>
           </div>
 
           {activeTab === 'assign' && (

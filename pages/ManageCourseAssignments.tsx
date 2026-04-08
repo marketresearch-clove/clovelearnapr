@@ -96,6 +96,8 @@ const ManageCourseAssignments: React.FC<ManageCourseAssignmentsProps> = ({ hideL
   const usersPerPage = 20;
   const [assignmentDetails, setAssignmentDetails] = useState<any[]>([]);
   const [courseFilterCategories, setCourseFilterCategories] = useState<string[]>([]);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const categoryDropdownRef = React.useRef<HTMLDivElement>(null);
 
   const loadInitialDataRef = React.useRef<boolean>(false);
 
@@ -146,6 +148,20 @@ const ManageCourseAssignments: React.FC<ManageCourseAssignmentsProps> = ({ hideL
   useEffect(() => {
     setCoursePage(0);
   }, [courseSearchQuery, courseFilterCategories]);
+
+  // Close category dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+        setShowCategoryDropdown(false);
+      }
+    };
+
+    if (showCategoryDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showCategoryDropdown]);
 
   const departmentCounts = useMemo(() => {
     const counts: { [key: string]: number } = {};
@@ -959,26 +975,74 @@ const ManageCourseAssignments: React.FC<ManageCourseAssignmentsProps> = ({ hideL
               onChange={(e) => setCourseSearchQuery(e.target.value)}
               className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
             />
-            <select
-              multiple
-              value={courseFilterCategories}
-              onChange={(e) => {
-                const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-                const filteredOptions = selectedOptions.filter(opt => opt !== '');
-                setCourseFilterCategories(filteredOptions);
-              }}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm bg-white min-w-[180px]"
-              size={Math.min(uniqueCourseCategories.length || 1, 6)}
-            >
-              <option value="" disabled>
-                Categories
-              </option>
-              {uniqueCourseCategories.map(category => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
+
+            {/* Custom Categories Dropdown */}
+            <div className="relative" ref={categoryDropdownRef}>
+              <button
+                onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 focus:ring-2 focus:ring-primary focus:border-transparent text-sm font-medium text-gray-700 transition-colors min-w-[160px] justify-between"
+              >
+                <span>Categories</span>
+                <div className="flex items-center gap-1">
+                  {courseFilterCategories.length > 0 && (
+                    <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded text-xs font-semibold">
+                      {courseFilterCategories.length}
+                    </span>
+                  )}
+                  <span className={`material-symbols-outlined text-base transition-transform ${showCategoryDropdown ? 'rotate-180' : ''}`}>
+                    expand_more
+                  </span>
+                </div>
+              </button>
+
+              {/* Dropdown Menu */}
+              {showCategoryDropdown && (
+                <div className="absolute top-full right-0 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                  <div className="sticky top-0 bg-gray-50 border-b border-gray-200 px-4 py-2">
+                    <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Filter by Category</p>
+                  </div>
+
+                  <div className="py-2 px-2 space-y-1">
+                    {uniqueCourseCategories.length > 0 ? (
+                      uniqueCourseCategories.map(category => (
+                        <label
+                          key={category}
+                          className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 cursor-pointer transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={courseFilterCategories.includes(category)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setCourseFilterCategories([...courseFilterCategories, category]);
+                              } else {
+                                setCourseFilterCategories(courseFilterCategories.filter(c => c !== category));
+                              }
+                            }}
+                            className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer"
+                          />
+                          <span className="text-sm text-gray-700 flex-1">{category}</span>
+                        </label>
+                      ))
+                    ) : (
+                      <p className="px-3 py-2 text-sm text-gray-500 text-center">No categories available</p>
+                    )}
+                  </div>
+
+                  {/* Dropdown Footer */}
+                  {courseFilterCategories.length > 0 && (
+                    <div className="border-t border-gray-200 px-4 py-2 bg-gray-50 flex gap-2">
+                      <button
+                        onClick={() => setCourseFilterCategories([])}
+                        className="flex-1 text-xs px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors font-medium"
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Course Summary Info */}

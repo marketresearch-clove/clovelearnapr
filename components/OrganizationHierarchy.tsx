@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useLayoutEffect, useCallback, useMemo } from 'react';
+import html2canvas from 'html2canvas';
 import { supabase } from '../lib/supabaseClient';
 import '../styles/OrganizationHierarchy.css';
 
@@ -295,25 +296,63 @@ const UserCard: React.FC<{ user: UserProfile; isHighlighted?: boolean; size?: 'l
                         </div>
                     )}
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 leading-none">
                     {user.employee_grade && (
                         <span
-                            className={`${isHighlighted ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'} text-[8px] font-black px-1 py-0.5 tracking-wider`}
-                            style={{ borderRadius: '15px' }}
+                            style={{
+                                backgroundColor: isHighlighted ? '#2563eb' : '#f1f5f9',
+                                color: isHighlighted ? '#ffffff' : '#64748b',
+                                fontSize: '9px',
+                                fontWeight: 700,
+                                letterSpacing: '0.05em',
+                                borderRadius: '6px',
+                                padding: '2px 5px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                lineHeight: '2',
+                                whiteSpace: 'nowrap',
+                                minWidth: '20px'
+                            }}
                         >
                             {user.employee_grade}
                         </span>
                     )}
+
                     {user.linkedin_profile_url ? (
                         <button
                             onClick={handleLinkedInClick}
-                            className={`${isHighlighted ? 'text-blue-600 hover:text-blue-700' : 'text-slate-400 hover:text-blue-600'} transition-colors cursor-pointer text-sm font-bold leading-none`}
+                            style={{
+                                color: isHighlighted ? '#2563eb' : '#94a3b8',
+                                fontSize: '9px',
+                                fontWeight: 700,
+                                padding: '2px 4px',
+                                lineHeight: '1',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                border: 'none',
+                                backgroundColor: 'transparent',
+                                cursor: 'pointer'
+                            }}
                             title="View LinkedIn Profile"
                         >
                             in
                         </button>
                     ) : (
-                        <span className={`text-sm font-bold leading-none ${isHighlighted ? 'text-blue-300' : 'text-slate-200'}`}>in</span>
+                        <span
+                            style={{
+                                color: isHighlighted ? '#dbeafe' : '#94a3b8',
+                                fontSize: '9px',
+                                fontWeight: 700,
+                                padding: '2px 4px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            in
+                        </span>
                     )}
                 </div>
             </div>
@@ -412,11 +451,13 @@ const TreeConnector: React.FC<{
             style={{
                 display: 'block',
                 flexShrink: 0,
-                overflow: 'visible'
+                overflow: 'visible',
+                backfaceVisibility: 'hidden'
             }}
             className="pointer-events-none"
             viewBox={`0 0 ${width} ${height}`}
             preserveAspectRatio="none"
+            vectorEffect="non-scaling-stroke"
         >
             {/* Vertical line from parent down to midpoint */}
             {parentX !== undefined && (
@@ -640,7 +681,7 @@ const HierarchyTreeNode: React.FC<{ node: HierarchyNode; isRoot?: boolean; curre
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, overflow: 'visible' }}>
             {/* User Card and Role Badge */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, width: '100%', maxWidth: '280px' }}>
                 <UserCard
                     user={node.user}
                     isHighlighted={isCurrentUser || node.user.id === highlightedUserId}
@@ -649,15 +690,25 @@ const HierarchyTreeNode: React.FC<{ node: HierarchyNode; isRoot?: boolean; curre
                 />
                 {levelInfo && (
                     <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                         fontSize: 10,
-                        fontWeight: 900,
-                        color: '#4338ca',
-                        letterSpacing: 1.5,
+                        fontWeight: 700,
+                        color: '#4f46e5',
+                        letterSpacing: 0.5,
                         textTransform: 'uppercase',
                         background: 'white',
                         border: '1px solid #e0e7ff',
                         borderRadius: 12,
-                        padding: '4px 12px'
+                        padding: '3px 10px',
+                        lineHeight: '3',
+                        marginTop: '5px',
+                        height: 'auto',
+                        minHeight: '25px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        maxWidth: '100%'
                     }}>
                         {levelInfo.roleTitle} ({node.user.employee_grade})
                     </div>
@@ -690,6 +741,8 @@ const HierarchyTreeNode: React.FC<{ node: HierarchyNode; isRoot?: boolean; curre
                             minWidth: '100%',
                             minHeight: '1px', // Ensure container is measurable
                             overflow: 'visible',
+                            backfaceVisibility: 'hidden',
+                            WebkitFontSmoothing: 'antialiased'
                         }}
                     >
                         {sortedChildren.map((child, i) => (
@@ -734,6 +787,7 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
     const canvasRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const searchDropdownRef = useRef<HTMLDivElement>(null);
+    const pinchDistanceRef = useRef<number | null>(null);
 
     useEffect(() => {
         fetchHierarchyData();
@@ -762,24 +816,213 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
 
     const handleMouseUp = () => setIsPanning(false);
 
+    // Helper function to calculate distance between two touch points
+    const getTouchDistance = (touch1: Touch, touch2: Touch): number => {
+        const dx = touch1.clientX - touch2.clientX;
+        const dy = touch1.clientY - touch2.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+
     const handleTouchStart = (e: React.TouchEvent) => {
-        if (e.touches.length === 1) {
+        if (e.touches.length === 2) {
+            // Two-finger pinch zoom
+            e.preventDefault();
+            pinchDistanceRef.current = getTouchDistance(e.touches[0], e.touches[1]);
+            setIsPanning(false);
+        } else if (e.touches.length === 1) {
+            // Single-finger pan
+            pinchDistanceRef.current = null;
             setIsPanning(true);
             setPanStart({ x: e.touches[0].clientX - panX, y: e.touches[0].clientY - panY });
         }
     };
 
     const handleTouchMove = (e: React.TouchEvent) => {
-        if (isPanning && e.touches.length === 1) {
+        if (e.touches.length === 2 && pinchDistanceRef.current !== null) {
+            // Two-finger pinch zoom
+            e.preventDefault();
+            const currentDistance = getTouchDistance(e.touches[0], e.touches[1]);
+            const distanceDelta = currentDistance - pinchDistanceRef.current;
+
+            // Scale zoom based on distance change (0.005 is sensitivity factor)
+            setZoom(prev => Math.max(0.2, Math.min(3, prev + distanceDelta * 0.005)));
+
+            // Update pinch distance for next move event
+            pinchDistanceRef.current = currentDistance;
+        } else if (isPanning && e.touches.length === 1) {
+            // Single-finger pan
             e.preventDefault();
             setPanX(e.touches[0].clientX - panStart.x);
             setPanY(e.touches[0].clientY - panStart.y);
         }
     };
 
-    const handleTouchEnd = () => setIsPanning(false);
+    const handleTouchEnd = () => {
+        setIsPanning(false);
+        pinchDistanceRef.current = null;
+    };
 
     const resetZoomPan = () => { setZoom(0.9); setPanX(0); setPanY(0); };
+
+    const exportPdfSinglePage = async () => {
+        if (!canvasRef.current || !viewportRef.current) return;
+
+        try {
+            // Save current zoom/pan state
+            const savedZoom = zoom;
+            const savedPanX = panX;
+            const savedPanY = panY;
+            const savedCanvasStyle = canvasRef.current.style.cssText;
+
+            // Temporarily set zoom/pan to 1/0 for export
+            setZoom(1);
+            setPanX(0);
+            setPanY(0);
+
+            // Wait for state update and DOM to settle
+            await new Promise(resolve => setTimeout(resolve, 400));
+
+            // Measure actual content bounds
+            const canvas = canvasRef.current;
+            const children = canvas.querySelectorAll('[style*="flex"]');
+            let maxRight = 0;
+            let maxBottom = 0;
+
+            // Find the rightmost and bottommost content
+            children.forEach(child => {
+                const rect = (child as HTMLElement).getBoundingClientRect();
+                const relativeRight = rect.right - canvas.getBoundingClientRect().left;
+                const relativeBottom = rect.bottom - canvas.getBoundingClientRect().top;
+                maxRight = Math.max(maxRight, relativeRight);
+                maxBottom = Math.max(maxBottom, relativeBottom);
+            });
+
+            // Get content dimensions with generous padding
+            const contentPadding = 140; // Extra padding on all sides (120px + 20px buffer for text overflow)
+            const contentWidth = Math.max(maxRight + contentPadding, canvas.scrollWidth || canvas.offsetWidth || 2000);
+            const contentHeight = Math.max(maxBottom + contentPadding, canvas.scrollHeight || canvas.offsetHeight || 3000);
+
+            // Calculate export dimensions - no restrictive minimums
+            const exportWidth = Math.max(contentWidth, 2000);
+            const exportHeight = Math.max(contentHeight, 2000);
+
+            // Capture the canvas as high-quality image
+            const canvasImage = await html2canvas(canvasRef.current, {
+                backgroundColor: '#f9fafb',
+                scale: 4, // Balanced quality and file size
+                useCORS: true,
+                allowTaint: true,
+                logging: false,
+                windowHeight: exportHeight + 300,
+                windowWidth: exportWidth + 300,
+                imageTimeout: 0, // Prevent timeout on images
+                ignoreElements: (el: Element) => {
+                    // Don't ignore any elements - we want everything
+                    return false;
+                },
+                onclone: (clonedDoc) => {
+                    // Find the canvas element and ensure it has proper dimensions
+                    const clonedCanvas = clonedDoc.querySelector('[data-export="canvas"]') as HTMLElement;
+
+                    if (clonedCanvas) {
+                        // Remove transforms for export
+                        clonedCanvas.style.transform = 'none';
+                        clonedCanvas.style.transition = 'none';
+                        clonedCanvas.style.animation = 'none';
+                        clonedCanvas.style.cursor = 'default';
+                        clonedCanvas.style.userSelect = 'auto';
+                        clonedCanvas.style.touchAction = 'auto';
+                        clonedCanvas.style.position = 'relative';
+                        clonedCanvas.style.overflow = 'visible';
+                        clonedCanvas.style.width = 'fit-content';
+                        clonedCanvas.style.minWidth = 'auto';
+                        clonedCanvas.style.height = 'auto';
+                        clonedCanvas.style.minHeight = 'auto';
+                        clonedCanvas.style.display = 'flex';
+                        clonedCanvas.style.flexDirection = 'column';
+                        clonedCanvas.style.alignItems = 'center';
+                    }
+
+                    // Remove all transitions and animations
+                    const allElements = clonedDoc.querySelectorAll('*');
+                    allElements.forEach((el) => {
+                        const htmlEl = el as HTMLElement;
+                        htmlEl.style.transition = 'none !important';
+                        htmlEl.style.animation = 'none !important';
+                    });
+
+                    // Ensure SVG elements are visible and properly rendered
+                    const svgs = clonedDoc.querySelectorAll('svg');
+                    svgs.forEach(svg => {
+                        svg.style.overflow = 'visible';
+                        svg.style.display = 'block';
+                        svg.setAttribute('preserveAspectRatio', 'none');
+                    });
+
+                    // Force visibility on all nested elements
+                    allElements.forEach((el) => {
+                        const htmlEl = el as HTMLElement;
+                        htmlEl.style.visibility = 'visible';
+                        htmlEl.style.opacity = '1';
+                        htmlEl.style.display = htmlEl.style.display === 'none' ? 'block' : htmlEl.style.display;
+
+                        // Ensure overflow is visible for text content
+                        htmlEl.style.overflow = 'visible';
+                        htmlEl.style.textOverflow = 'clip';
+                        htmlEl.style.whiteSpace = 'normal';
+                    });
+                }
+            });
+
+            // Convert canvas to blob and download as PNG image
+            canvasImage.toBlob((blob) => {
+                if (!blob) {
+                    alert('Failed to generate image. Please try again.');
+                    // Restore state
+                    setZoom(savedZoom);
+                    setPanX(savedPanX);
+                    setPanY(savedPanY);
+                    return;
+                }
+
+                // Create download link
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+
+                // Create filename with filters applied
+                const deptLabel = selectedDept !== 'All' ? ` - ${selectedDept}` : '';
+                const gradeLabel = selectedGrade !== 'All' ? ` - ${selectedGrade}` : '';
+                const timestamp = new Date().toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                }).replace(/\s+/g, '-');
+
+                link.download = `Organization_Hierarchy${deptLabel}${gradeLabel} (${timestamp}).png`;
+
+                // Trigger download
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Cleanup object URL
+                URL.revokeObjectURL(url);
+
+                // Restore original zoom/pan state
+                setZoom(savedZoom);
+                setPanX(savedPanX);
+                setPanY(savedPanY);
+            }, 'image/png');
+        } catch (error) {
+            console.error('Export failed:', error);
+            alert('Failed to export image. Please try again.');
+            // Restore zoom/pan on error
+            setZoom(savedZoom);
+            setPanX(savedPanX);
+            setPanY(savedPanY);
+        }
+    };
 
     const handleSearch = useCallback((query: string) => {
         setSearchInput(query);
@@ -1235,7 +1478,7 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                             border: '1px solid rgba(226,232,240,0.6)', borderRadius: 10,
                             padding: '3px 8px', margin: 0
                         }}>
-                            💡 Left-click + drag to pan | Mouse wheel to zoom | 🔄 Reset available
+                            💡 <span className="hidden sm:inline">Left-click + drag to pan | Mouse wheel to zoom</span><span className="sm:hidden">Drag to pan | Pinch to zoom</span> | 🔄 Reset
                         </p>
                     </div>
                 </div>
@@ -1252,6 +1495,7 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                 {/* Pannable / Zoomable Canvas Content */}
                 <div
                     ref={canvasRef}
+                    data-export="canvas"
                     onWheel={handleWheel}
                     onMouseDown={handleMouseDown}
                     onMouseMove={handleMouseMove}
@@ -1349,15 +1593,27 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                     <div style={{ position: 'relative', zIndex: 1 }}>
                         <h3 style={{ fontSize: 16, fontWeight: 900, margin: '0 0 6px' }}>Export Structure</h3>
                         <p style={{ fontSize: 11, color: '#bfdbfe', lineHeight: 1.5, margin: '0 0 16px' }}>
-                            Generate detailed PDF report of your organizational structure with current filters applied.
+                            Generate detailed PNG image of your organizational structure with current filters applied.
                         </p>
                     </div>
-                    <button style={{
-                        position: 'relative', zIndex: 1, width: '100%', background: 'white',
-                        color: '#2563eb', padding: '8px 0', fontWeight: 900, fontSize: 10,
-                        letterSpacing: 1.5, textTransform: 'uppercase', border: 'none', borderRadius: 15, cursor: 'pointer'
-                    }}>
-                        Download PDF
+                    <button
+                        onClick={exportPdfSinglePage}
+                        style={{
+                            position: 'relative', zIndex: 1, width: '100%', background: 'white',
+                            color: '#2563eb', padding: '8px 0', fontWeight: 900, fontSize: 10,
+                            letterSpacing: 1.5, textTransform: 'uppercase', border: 'none', borderRadius: 15, cursor: 'pointer',
+                            transition: 'all 0.2s ease', hover: { opacity: 0.9 }
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.opacity = '0.9';
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.opacity = '1';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                        }}
+                    >
+                        Download PNG
                     </button>
                 </div>
             </div>

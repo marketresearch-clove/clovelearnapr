@@ -1241,12 +1241,12 @@ const UserManagementV2Page = () => {
                     )}
 
                     {/* Tab Navigation */}
-                    <div className="flex gap-8 border-b border-gray-200">
+                    <div className="flex border-b border-slate-200 overflow-x-auto scrollbar-hide">
                         <button
                             onClick={() => switchTab('users')}
-                            className={`pb-3 px-2 font-medium flex items-center gap-2 transition-colors ${activeTab === 'users'
-                                ? 'text-primary border-b-2 border-primary'
-                                : 'text-gray-600 hover:text-gray-900'
+                            className={`px-4 sm:px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap flex items-center gap-2 ${activeTab === 'users'
+                                ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg'
+                                : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
                                 }`}
                         >
                             <FiUsers size={18} />
@@ -1254,33 +1254,36 @@ const UserManagementV2Page = () => {
                         </button>
                         <button
                             onClick={() => switchTab('add-user')}
-                            className={`pb-3 px-2 font-medium flex items-center gap-2 transition-colors ${activeTab === 'add-user'
-                                ? 'text-primary border-b-2 border-primary'
-                                : 'text-gray-600 hover:text-gray-900'
+                            className={`px-4 sm:px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap flex items-center gap-2 ${activeTab === 'add-user'
+                                ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg'
+                                : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
                                 }`}
                         >
                             <FiUserPlus size={18} />
-                            <span>Add New User</span>
+                            <span className="hidden sm:inline">Add New User</span>
+                            <span className="sm:hidden text-xs">Add User</span>
                         </button>
                         <button
                             onClick={() => switchTab('bulk-import')}
-                            className={`pb-3 px-2 font-medium flex items-center gap-2 transition-colors ${activeTab === 'bulk-import'
-                                ? 'text-primary border-b-2 border-primary'
-                                : 'text-gray-600 hover:text-gray-900'
+                            className={`px-4 sm:px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap flex items-center gap-2 ${activeTab === 'bulk-import'
+                                ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg'
+                                : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
                                 }`}
                         >
                             <FiUpload size={18} />
-                            <span>Bulk Import</span>
+                            <span className="hidden sm:inline">Bulk Import</span>
+                            <span className="sm:hidden text-xs">Import</span>
                         </button>
                         <button
                             onClick={() => switchTab('bulk-mapping')}
-                            className={`pb-3 px-2 font-medium flex items-center gap-2 transition-colors ${activeTab === 'bulk-mapping'
-                                ? 'text-primary border-b-2 border-primary'
-                                : 'text-gray-600 hover:text-gray-900'
+                            className={`px-4 sm:px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap flex items-center gap-2 ${activeTab === 'bulk-mapping'
+                                ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg'
+                                : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
                                 }`}
                         >
                             <FiUsers size={18} />
-                            <span>Bulk Mapping</span>
+                            <span className="hidden sm:inline">Bulk Mapping</span>
+                            <span className="sm:hidden text-xs">Mapping</span>
                         </button>
                     </div>
 
@@ -1292,8 +1295,11 @@ const UserManagementV2Page = () => {
 
 
                             {/* Stats Grid */}
-                            <div className="grid grid-cols-4 gap-4">
-                                <div className="bg-white p-4 rounded-2xl border border-gray-200">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                <div className="bg-white p-4 rounded-2xl border border-gray-200 relative overflow-hidden">
+                                    <div className="absolute top-3 right-3 p-2 bg-indigo-100 rounded-xl">
+                                        <FiUsers size={18} className="text-indigo-600" />
+                                    </div>
                                     <p className="text-xs text-gray-600 font-semibold mb-1">TOTAL USERS</p>
                                     <h3 className="text-2xl font-bold text-gray-900">{users.length}</h3>
                                     <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
@@ -1301,21 +1307,30 @@ const UserManagementV2Page = () => {
                                         Updated today
                                     </p>
                                 </div>
-                                <div className="bg-white p-4 rounded-2xl border border-gray-200">
+                                <div className="bg-white p-4 rounded-2xl border border-gray-200 relative overflow-hidden">
+                                    <div className="absolute top-3 right-3 p-2 bg-green-100 rounded-xl">
+                                        <FiPlay size={18} className="text-green-600" />
+                                    </div>
                                     <p className="text-xs text-gray-600 font-semibold mb-1">ACTIVE USERS</p>
                                     <h3 className="text-2xl font-bold text-gray-900">
                                         {users.filter(u => u.user_status === 'Active').length}
                                     </h3>
                                     <p className="text-xs text-gray-600 mt-2">Active accounts</p>
                                 </div>
-                                <div className="bg-white p-4 rounded-2xl border border-gray-200">
+                                <div className="bg-white p-4 rounded-2xl border border-gray-200 relative overflow-hidden">
+                                    <div className="absolute top-3 right-3 p-2 bg-purple-100 rounded-xl">
+                                        <FiFileText size={18} className="text-purple-600" />
+                                    </div>
                                     <p className="text-xs text-gray-600 font-semibold mb-1">LEARNERS</p>
                                     <h3 className="text-2xl font-bold text-gray-900">
                                         {users.filter(u => u.role === 'learner').length}
                                     </h3>
                                     <p className="text-xs text-gray-600 mt-2">Role type</p>
                                 </div>
-                                <div className="bg-white p-4 rounded-2xl border border-gray-200">
+                                <div className="bg-white p-4 rounded-2xl border border-gray-200 relative overflow-hidden">
+                                    <div className="absolute top-3 right-3 p-2 bg-orange-100 rounded-xl">
+                                        <FiUserPlus size={18} className="text-orange-600" />
+                                    </div>
                                     <p className="text-xs text-gray-600 font-semibold mb-1">MANAGERS</p>
                                     <h3 className="text-2xl font-bold text-gray-900">
                                         {users.filter(u => u.role === 'manager').length}
@@ -1325,21 +1340,24 @@ const UserManagementV2Page = () => {
                             </div>
 
                             {/* Toolbar */}
-                            <div className="flex items-center justify-between gap-4">
-                                <div className="flex items-center gap-2 flex-1 max-w-md">
-                                    <FiSearch className="text-gray-400" />
-                                    <input
-                                        type="text"
-                                        placeholder="Search users..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                    />
-                                </div>
+                            <div className="space-y-3">
+                                {/* Row 1: Search Bar + Per Page (Mobile) / Desktop single line */}
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                                    {/* Search Bar */}
+                                    <div className="relative flex items-center flex-1 w-full">
+                                        <FiSearch className="absolute left-3 text-gray-400" size={18} />
+                                        <input
+                                            type="text"
+                                            placeholder="Search users..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                        />
+                                    </div>
 
-                                <div className="flex items-center gap-2">
-                                    <div className="flex items-center gap-2 mr-2 border-r border-gray-200 pr-4">
-                                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Per Page</span>
+                                    {/* Per Page - Desktop: visible inline, Mobile: takes full width on row 1 */}
+                                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Per Page</span>
                                         <select
                                             value={itemsPerPage}
                                             onChange={(e) => setItemsPerPage(Number(e.target.value))}
@@ -1352,15 +1370,19 @@ const UserManagementV2Page = () => {
                                             <option value={50}>50</option>
                                         </select>
                                     </div>
+                                </div>
 
+                                {/* Row 2: Desktop single line buttons, Mobile 2-column grid */}
+                                <div className="hidden sm:flex items-center gap-2 justify-end">
+                                    {/* Desktop view - all buttons in one line */}
                                     <button
                                         onClick={() => setShowFilters(!showFilters)}
-                                        className={`flex items-center gap-2 px-3 py-2 border rounded-lg transition-colors ${showFilters ? 'bg-primary/10 border-primary text-primary' : 'border-gray-300 hover:bg-gray-50'
+                                        className={`flex items-center gap-2 px-3 py-2 border rounded-lg transition-colors text-sm whitespace-nowrap ${showFilters ? 'bg-primary/10 border-primary text-primary' : 'border-gray-300 hover:bg-gray-50'
                                             }`}
                                         title="Toggle filters"
                                     >
                                         <FiFilter size={18} />
-                                        <span className="text-sm font-medium">Filters</span>
+                                        <span className="font-medium">Filters</span>
                                         {(roleFilter || statusFilter || departmentFilter || companyFilter) && (
                                             <span className="flex h-2 w-2 rounded-full bg-primary"></span>
                                         )}
@@ -1368,29 +1390,71 @@ const UserManagementV2Page = () => {
 
                                     <button
                                         onClick={() => setShowColumnManager(!showColumnManager)}
-                                        className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                        className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm whitespace-nowrap"
                                         title="Manage visible columns"
                                     >
                                         <FiEye size={18} />
-                                        <span className="text-sm font-medium">Columns</span>
+                                        <span className="font-medium">Columns</span>
                                         <FiChevronDown size={16} />
                                     </button>
 
                                     <button
                                         onClick={handleExtractUserDump}
                                         disabled={loading}
-                                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 transition-colors font-medium"
+                                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 transition-colors font-medium text-sm whitespace-nowrap"
                                     >
                                         <FiDownload size={18} />
-                                        <span className="text-sm font-medium">Export</span>
+                                        <span>Export</span>
                                     </button>
 
                                     <button
                                         onClick={() => switchTab('add-user')}
-                                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+                                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm whitespace-nowrap"
                                     >
                                         <FiUserPlus size={18} />
-                                        <span className="text-sm font-medium">Add User</span>
+                                        <span>Add User</span>
+                                    </button>
+                                </div>
+
+                                {/* Mobile view - 2 column grid */}
+                                <div className="sm:hidden grid grid-cols-2 gap-2">
+                                    <button
+                                        onClick={() => setShowFilters(!showFilters)}
+                                        className={`flex items-center gap-2 px-3 py-2 border rounded-lg transition-colors text-sm justify-center ${showFilters ? 'bg-primary/10 border-primary text-primary' : 'border-gray-300 hover:bg-gray-50'
+                                            }`}
+                                        title="Toggle filters"
+                                    >
+                                        <FiFilter size={18} />
+                                        <span className="font-medium">Filters</span>
+                                        {(roleFilter || statusFilter || departmentFilter || companyFilter) && (
+                                            <span className="flex h-2 w-2 rounded-full bg-primary"></span>
+                                        )}
+                                    </button>
+
+                                    <button
+                                        onClick={() => setShowColumnManager(!showColumnManager)}
+                                        className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm justify-center"
+                                        title="Manage visible columns"
+                                    >
+                                        <FiEye size={18} />
+                                        <span className="font-medium">Columns</span>
+                                    </button>
+
+                                    <button
+                                        onClick={handleExtractUserDump}
+                                        disabled={loading}
+                                        className="flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 transition-colors font-medium text-sm justify-center"
+                                    >
+                                        <FiDownload size={18} />
+                                        <span>Export</span>
+                                    </button>
+
+                                    <button
+                                        onClick={() => switchTab('add-user')}
+                                        className="flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm justify-center"
+                                    >
+                                        <FiUserPlus size={18} />
+                                        <span>Add</span>
                                     </button>
                                 </div>
                             </div>
@@ -1603,11 +1667,11 @@ const UserManagementV2Page = () => {
 
                                 {/* Pagination Controls */}
                                 {!loading && allFilteredUsers.length > 0 && (
-                                    <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
-                                        <div className="text-sm text-gray-600">
+                                    <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                                        <div className="text-sm text-gray-600 order-2 sm:order-1">
                                             Showing <span className="font-semibold text-gray-900">{Math.min(startIndex + 1, allFilteredUsers.length)}</span> to <span className="font-semibold text-gray-900">{Math.min(startIndex + itemsPerPage, allFilteredUsers.length)}</span> of <span className="font-semibold text-gray-900">{allFilteredUsers.length}</span> users
                                         </div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 flex-wrap order-1 sm:order-2">
                                             <button
                                                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                                                 disabled={currentPage === 1}
@@ -1615,7 +1679,7 @@ const UserManagementV2Page = () => {
                                             >
                                                 Previous
                                             </button>
-                                            <div className="flex items-center gap-1">
+                                            <div className="flex items-center gap-1 flex-wrap">
                                                 {(() => {
                                                     const pages = [];
                                                     for (let i = 1; i <= totalPages; i++) {
@@ -2964,9 +3028,11 @@ const UserManagementV2Page = () => {
                                 <p className="text-gray-600 mb-6">Select users from the table below and assign department, employee grade, and/or manager to them.</p>
 
                                 <form onSubmit={handleBulkMappingSubmit} className="space-y-4">
-                                    <div className="grid grid-cols-3 gap-4">
+                                    {/* All Fields in Single Grid - Order: Department, Grade, Manager, Industry, Company, Location */}
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
+                                        {/* 1. Department */}
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                                                 Department
                                             </label>
                                             {!showNewDepartmentInput ? (
@@ -2981,7 +3047,7 @@ const UserManagementV2Page = () => {
                                                                 handleBulkMappingChange('department', e.target.value);
                                                             }
                                                         }}
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                        className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                                                     >
                                                         <option value="">Select Department</option>
                                                         {DEPARTMENTS.map(dept => (
@@ -2996,8 +3062,8 @@ const UserManagementV2Page = () => {
                                                         type="text"
                                                         value={newDepartment}
                                                         onChange={(e) => setNewDepartment(e.target.value)}
-                                                        placeholder="Enter new department name"
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                        placeholder="Enter new department"
+                                                        className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                                                     />
                                                     <div className="flex gap-2">
                                                         <button
@@ -3008,14 +3074,14 @@ const UserManagementV2Page = () => {
                                                                     setShowNewDepartmentInput(false);
                                                                 }
                                                             }}
-                                                            className="flex-1 px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                                                            className="flex-1 px-2 sm:px-3 py-1 bg-blue-600 text-white text-xs sm:text-sm rounded hover:bg-blue-700"
                                                         >
                                                             Add
                                                         </button>
                                                         <button
                                                             type="button"
                                                             onClick={() => setShowNewDepartmentInput(false)}
-                                                            className="flex-1 px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded hover:bg-gray-400"
+                                                            className="flex-1 px-2 sm:px-3 py-1 bg-gray-300 text-gray-700 text-xs sm:text-sm rounded hover:bg-gray-400"
                                                         >
                                                             Cancel
                                                         </button>
@@ -3023,14 +3089,16 @@ const UserManagementV2Page = () => {
                                                 </div>
                                             )}
                                         </div>
+
+                                        {/* 2. Employee Grade */}
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                                                 Employee Grade
                                             </label>
                                             <select
                                                 value={bulkMappingData.employee_grade}
                                                 onChange={(e) => handleBulkMappingChange('employee_grade', e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                                             >
                                                 <option value="">Select Grade</option>
                                                 <option value="C1">C1</option>
@@ -3057,14 +3125,16 @@ const UserManagementV2Page = () => {
                                                 <option value="V3">V3</option>
                                             </select>
                                         </div>
+
+                                        {/* 3. Manager */}
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                                                 Manager
                                             </label>
                                             <select
                                                 value={bulkMappingData.manager_name}
                                                 onChange={(e) => handleBulkMappingChange('manager_name', e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                                             >
                                                 <option value="">Select Manager</option>
                                                 {managers.map(manager => (
@@ -3074,60 +3144,62 @@ const UserManagementV2Page = () => {
                                                 ))}
                                             </select>
                                         </div>
-                                    </div>
 
-                                    {/* Second Row for Company, Location, Industry */}
-                                    <div className="grid grid-cols-3 gap-4">
+                                        {/* 4. Industry (moved next to Manager) */}
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                                Industry
+                                            </label>
+                                            <select
+                                                value={bulkMappingData.industry}
+                                                onChange={(e) => handleBulkMappingChange('industry', e.target.value)}
+                                                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                            >
+                                                <option value="">Select Industry</option>
+                                                <option value="AEC">AEC</option>
+                                            </select>
+                                        </div>
+
+                                        {/* 5. Company Name */}
+                                        <div>
+                                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                                                 Company Name
                                             </label>
                                             <select
                                                 value={bulkMappingData.company_name}
                                                 onChange={(e) => handleBulkMappingChange('company_name', e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                                             >
                                                 <option value="">Select Company</option>
                                                 <option value="Clove Technologies Pvt. Ltd.">Clove Technologies Pvt. Ltd.</option>
                                             </select>
                                         </div>
+
+                                        {/* 6. Location */}
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                                                 Location
                                             </label>
                                             <select
                                                 value={bulkMappingData.location}
                                                 onChange={(e) => handleBulkMappingChange('location', e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                                             >
                                                 <option value="">Select Location</option>
                                                 <option value="Visakhapatnam">Visakhapatnam</option>
                                                 <option value="Hyderabad">Hyderabad</option>
                                             </select>
                                         </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Industry
-                                            </label>
-                                            <select
-                                                value={bulkMappingData.industry}
-                                                onChange={(e) => handleBulkMappingChange('industry', e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                            >
-                                                <option value="">Select Industry</option>
-                                                <option value="AEC">AEC</option>
-                                            </select>
-                                        </div>
                                     </div>
 
-                                    <div className="flex items-center justify-between">
-                                        <div className="text-sm text-gray-600">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
+                                        <div className="text-xs sm:text-sm text-gray-600">
                                             <span className="font-medium text-gray-900">{selectedUserIds.size}</span> user(s) selected
                                         </div>
                                         <button
                                             type="submit"
                                             disabled={loading || selectedUserIds.size === 0}
-                                            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 font-medium transition-colors"
+                                            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-indigo-600 text-white rounded text-xs sm:text-sm font-medium hover:bg-indigo-700 disabled:bg-gray-300 transition-colors whitespace-nowrap"
                                         >
                                             {loading ? 'Updating...' : 'Apply Mapping'}
                                         </button>
@@ -3136,29 +3208,29 @@ const UserManagementV2Page = () => {
                             </div>
 
                             {/* Users Table */}
-                            <div className="bg-white p-6 rounded-2xl border border-gray-200">
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4">Select Users</h4>
+                            <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-200">
+                                <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Select Users</h4>
 
                                 {/* Search Bar */}
-                                <div className="mb-4 relative">
-                                    <FiSearch className="absolute left-3 top-3 text-gray-400" />
+                                <div className="mb-3 sm:mb-4 relative">
+                                    <FiSearch className="absolute left-3 top-2.5 text-gray-400 text-sm sm:text-base" />
                                     <input
                                         type="text"
                                         placeholder="Search by name or email..."
                                         value={bulkMappingSearch}
                                         onChange={(e) => setBulkMappingSearch(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                        className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 border border-gray-300 rounded text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                                     />
                                 </div>
 
                                 {/* Filters */}
-                                <div className="mb-4 grid grid-cols-4 gap-3">
+                                <div className="mb-3 sm:mb-4 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-700 mb-1">Department</label>
+                                        <label className="block text-xs font-medium text-gray-700 mb-0.5 sm:mb-1">Department</label>
                                         <select
                                             value={bulkMappingFilters.department}
                                             onChange={(e) => setBulkMappingFilters({ ...bulkMappingFilters, department: e.target.value })}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                            className="w-full px-2 sm:px-3 py-1 sm:py-2 border border-gray-300 rounded text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                                         >
                                             <option value="">All Departments</option>
                                             {DEPARTMENTS.map(dept => (
@@ -3167,11 +3239,11 @@ const UserManagementV2Page = () => {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-700 mb-1">Employee Grade</label>
+                                        <label className="block text-xs font-medium text-gray-700 mb-0.5 sm:mb-1">Employee Grade</label>
                                         <select
                                             value={bulkMappingFilters.employee_grade}
                                             onChange={(e) => setBulkMappingFilters({ ...bulkMappingFilters, employee_grade: e.target.value })}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                            className="w-full px-2 sm:px-3 py-1 sm:py-2 border border-gray-300 rounded text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                                         >
                                             <option value="">All Grades</option>
                                             <option value="C1">C1</option>
@@ -3199,11 +3271,11 @@ const UserManagementV2Page = () => {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-700 mb-1">Role</label>
+                                        <label className="block text-xs font-medium text-gray-700 mb-0.5 sm:mb-1">Role</label>
                                         <select
                                             value={bulkMappingFilters.role}
                                             onChange={(e) => setBulkMappingFilters({ ...bulkMappingFilters, role: e.target.value })}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                            className="w-full px-2 sm:px-3 py-1 sm:py-2 border border-gray-300 rounded text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                                         >
                                             <option value="">All Roles</option>
                                             <option value="admin">Admin</option>
@@ -3212,13 +3284,13 @@ const UserManagementV2Page = () => {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-700 mb-1">Manager</label>
+                                        <label className="block text-xs font-medium text-gray-700 mb-0.5 sm:mb-1">Manager</label>
                                         <input
                                             type="text"
                                             placeholder="Filter by manager..."
                                             value={bulkMappingFilters.manager_name}
                                             onChange={(e) => setBulkMappingFilters({ ...bulkMappingFilters, manager_name: e.target.value })}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                            className="w-full px-2 sm:px-3 py-1 sm:py-2 border border-gray-300 rounded text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                                         />
                                     </div>
                                 </div>
@@ -3294,9 +3366,9 @@ const UserManagementV2Page = () => {
 
                                 {/* Pagination */}
                                 {getFilteredBulkMappingUsers().length > 0 && (
-                                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-                                        <div className="flex items-center gap-4">
-                                            <div className="text-sm text-gray-600">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mt-4 pt-4 border-t border-gray-200">
+                                        <div className="flex flex-col xs:flex-row items-start xs:items-center gap-3 text-sm">
+                                            <div className="text-gray-600">
                                                 Showing <span className="font-medium">{(bulkMappingPage - 1) * bulkMappingItemsPerPage + 1}</span> to{' '}
                                                 <span className="font-medium">
                                                     {Math.min(bulkMappingPage * bulkMappingItemsPerPage, getFilteredBulkMappingUsers().length)}
@@ -3314,7 +3386,7 @@ const UserManagementV2Page = () => {
                                             </select>
                                         </div>
 
-                                        <div className="flex gap-2">
+                                        <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-start sm:justify-end">
                                             <button
                                                 onClick={() => setBulkMappingPage(Math.max(1, bulkMappingPage - 1))}
                                                 disabled={bulkMappingPage === 1}
@@ -3322,12 +3394,12 @@ const UserManagementV2Page = () => {
                                             >
                                                 Previous
                                             </button>
-                                            <div className="flex items-center gap-1">
+                                            <div className="flex items-center gap-1 flex-wrap">
                                                 {Array.from({ length: getPaginatedBulkMappingUsers().pages }, (_, i) => i + 1).map((page) => (
                                                     <button
                                                         key={page}
                                                         onClick={() => setBulkMappingPage(page)}
-                                                        className={`px-3 py-1 rounded text-sm ${bulkMappingPage === page
+                                                        className={`px-2 xs:px-3 py-1 rounded text-sm ${bulkMappingPage === page
                                                             ? 'bg-primary text-white font-medium'
                                                             : 'border border-gray-300 hover:bg-gray-50'
                                                             }`}

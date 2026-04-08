@@ -32,9 +32,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
           <div className="flex flex-1 justify-end gap-4 items-center">
             <AdminSearchBar />
 
-            <button className="flex items-center justify-center rounded-lg h-10 w-10 bg-gray-100 text-gray-700 hover:bg-gray-200">
-              <span className="material-symbols-rounded">notifications</span>
-            </button>
 
             <button
               onClick={() => window.location.href = '/'}

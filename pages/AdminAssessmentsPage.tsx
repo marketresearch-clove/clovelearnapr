@@ -1393,12 +1393,12 @@ const ActiveAssignmentsTab: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center gap-4 flex-wrap">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 -mb-2">
           {['All', 'assigned', 'in_progress', 'submitted', 'evaluated'].map(status => (
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
-              className={`px-4 py-1.5 text-xs font-bold rounded-full border transition-all ${statusFilter === status
+              className={`px-4 py-1.5 text-xs font-bold rounded-full border transition-all whitespace-nowrap flex-shrink-0 ${statusFilter === status
                 ? 'bg-primary text-white border-primary'
                 : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}`}
             >
@@ -1408,15 +1408,15 @@ const ActiveAssignmentsTab: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 text-left">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden overflow-x-auto">
+        <table className="w-full min-w-fit">
+          <thead className="bg-gray-50 text-left sticky top-0">
             <tr>
-              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase">Learner</th>
-              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase">Assessment</th>
-              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase">Assigned At</th>
-              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase">Status</th>
-              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase">Action</th>
+              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase whitespace-nowrap">Learner</th>
+              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase whitespace-nowrap">Assessment</th>
+              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase whitespace-nowrap">Assigned At</th>
+              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase whitespace-nowrap">Status</th>
+              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase whitespace-nowrap">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -1545,17 +1545,17 @@ const AssessmentResultsTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 text-left">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden overflow-x-auto">
+        <table className="w-full min-w-fit">
+          <thead className="bg-gray-50 text-left sticky top-0">
             <tr>
-              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase">Learner / Admin</th>
-              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase">Assessment</th>
-              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase text-center">Score</th>
-              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase text-center">Level</th>
-              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase">Submitted</th>
-              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase">Status</th>
-              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase">Action</th>
+              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase whitespace-nowrap">Learner / Admin</th>
+              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase whitespace-nowrap">Assessment</th>
+              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase text-center whitespace-nowrap">Score</th>
+              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase text-center whitespace-nowrap">Level</th>
+              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase whitespace-nowrap">Submitted</th>
+              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase whitespace-nowrap">Status</th>
+              <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase whitespace-nowrap">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">

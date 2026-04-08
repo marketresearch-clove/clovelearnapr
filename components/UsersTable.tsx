@@ -65,6 +65,20 @@ const UsersTable: React.FC = () => {
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
   const [selectedLocation, setSelectedLocation] = useState<string>('all');
   const [selectedDesignation, setSelectedDesignation] = useState<string>('all');
+  const [visibleColumns, setVisibleColumns] = useState<{
+    department: boolean;
+    location: boolean;
+    designation: boolean;
+    hours: boolean;
+    points: boolean;
+  }>({
+    department: true,
+    location: true,
+    designation: true,
+    hours: true,
+    points: true
+  });
+  const [showColumnMenu, setShowColumnMenu] = useState(false);
 
   // Get unique departments, locations, and designations
   const departments = useMemo(() => {
@@ -100,9 +114,21 @@ const UsersTable: React.FC = () => {
       })
       .subscribe();
 
+    // Close column menu on click outside
+    const handleClickOutside = (e: MouseEvent) => {
+      const columnMenu = document.getElementById('column-menu');
+      const columnButton = document.getElementById('column-button');
+      if (columnMenu && !columnMenu.contains(e.target as Node) && !columnButton?.contains(e.target as Node)) {
+        setShowColumnMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
     return () => {
       supabase.removeChannel(profilesSubscription);
       supabase.removeChannel(statsSubscription);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -216,113 +242,203 @@ const UsersTable: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Search and Sort Controls */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-        <div className="flex-1 relative min-w-0">
-          <span className="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">search</span>
-          <input
-            type="text"
-            placeholder="Search by name, department, or designation..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-white border border-gray-200 dark:border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm"
-          />
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 bg-gray-50">
+      {/* Action Buttons Header */}
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-start sm:items-center justify-between">
+
+
+        {/* Column Visibility Toggle */}
+        <div className="relative">
+          <button
+            id="column-button"
+            onClick={() => setShowColumnMenu(!showColumnMenu)}
+            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-200 bg-white text-gray-700 text-xs sm:text-sm font-bold rounded-lg hover:bg-gray-50 transition-colors"
+            title="Toggle column visibility"
+          >
+            <span className="material-symbols-rounded text-base">view_list</span>
+            <span className="hidden sm:inline">Columns</span>
+            <span className="sm:hidden">Columns</span>
+            <span className="material-symbols-rounded text-xs transition-transform" style={{ transform: showColumnMenu ? 'rotate(180deg)' : 'rotate(0deg)' }}>expand_more</span>
+          </button>
+
+          {showColumnMenu && (
+            <div id="column-menu" className="absolute left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-0 mt-2 w-44 sm:w-48 max-w-[calc(100vw-1rem)] max-h-[calc(100vh-200px)] overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+              <div className="p-3 space-y-2">
+                <label className="flex items-center gap-2 text-xs font-medium text-gray-700 hover:bg-gray-50 p-2 rounded cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={visibleColumns.department}
+                    onChange={(e) => setVisibleColumns({ ...visibleColumns, department: e.target.checked })}
+                    className="rounded"
+                  />
+                  <span className="material-symbols-rounded text-sm">location_on</span>
+                  Department
+                </label>
+                <label className="flex items-center gap-2 text-xs font-medium text-gray-700 hover:bg-gray-50 p-2 rounded cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={visibleColumns.location}
+                    onChange={(e) => setVisibleColumns({ ...visibleColumns, location: e.target.checked })}
+                    className="rounded"
+                  />
+                  <span className="material-symbols-rounded text-sm">place</span>
+                  Location
+                </label>
+                <label className="flex items-center gap-2 text-xs font-medium text-gray-700 hover:bg-gray-50 p-2 rounded cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={visibleColumns.designation}
+                    onChange={(e) => setVisibleColumns({ ...visibleColumns, designation: e.target.checked })}
+                    className="rounded"
+                  />
+                  <span className="material-symbols-rounded text-sm">work</span>
+                  Designation
+                </label>
+                <label className="flex items-center gap-2 text-xs font-medium text-gray-700 hover:bg-gray-50 p-2 rounded cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={visibleColumns.hours}
+                    onChange={(e) => setVisibleColumns({ ...visibleColumns, hours: e.target.checked })}
+                    className="rounded"
+                  />
+                  <span className="material-symbols-rounded text-sm">schedule</span>
+                  Learning Hours
+                </label>
+                <label className="flex items-center gap-2 text-xs font-medium text-gray-700 hover:bg-gray-50 p-2 rounded cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={visibleColumns.points}
+                    onChange={(e) => setVisibleColumns({ ...visibleColumns, points: e.target.checked })}
+                    className="rounded"
+                  />
+                  <span className="material-symbols-rounded text-sm">star</span>
+                  Points
+                </label>
+              </div>
+            </div>
+          )}
         </div>
+      </div>
 
-        {/* Advanced Filters */}
-        <div className="flex gap-2 flex-wrap">
-          <select
-            value={selectedDepartment}
-            onChange={(e) => setSelectedDepartment(e.target.value)}
-            className="px-4 py-2 pr-8 bg-white dark:bg-white border border-gray-200 dark:border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm text-gray-700 dark:text-gray-700"
-          >
-            <option value="all">All Departments</option>
-            {departments.map((dept) => (
-              <option key={dept} value={dept}>{dept}</option>
-            ))}
-          </select>
+      {/* Search Bar - Full Width */}
+      <div className="relative min-w-0">
+        <span className="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">search</span>
+        <input
+          type="text"
+          placeholder="Search by name, department, or designation..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-white dark:bg-white border border-gray-200 dark:border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-xs sm:text-sm"
+        />
+      </div>
 
-          <select
-            value={selectedLocation}
-            onChange={(e) => setSelectedLocation(e.target.value)}
-            className="px-4 py-2 bg-white dark:bg-white border border-gray-200 dark:border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm text-gray-700 dark:text-gray-700"
-          >
-            <option value="all">All Locations</option>
-            {locations.map((loc) => (
-              <option key={loc} value={loc}>{loc}</option>
-            ))}
-          </select>
-
-          <select
-            value={selectedDesignation}
-            onChange={(e) => setSelectedDesignation(e.target.value)}
-            className="px-4 py-2 bg-white dark:bg-white border border-gray-200 dark:border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm text-gray-700 dark:text-gray-700"
-          >
-            <option value="all">All Designations</option>
-            {designations.map((desig) => (
-              <option key={desig} value={desig}>{desig}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Metric Filter Controls */}
-        <div className="flex bg-gray-100 p-1 rounded-xl w-fit">
+      {/* Controls Row - Page Per View & Metric Filters */}
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center">
+        {/* Metric Filter Controls - Page Per View */}
+        <div className="flex bg-white border border-gray-200 p-1 rounded-lg w-fit flex-shrink-0">
           {[
-            { id: 'completion', label: 'Completion', icon: 'analytics' },
+            { id: 'completion', label: 'Complete', icon: 'done_all' },
             { id: 'points', label: 'Grade', icon: 'grade' },
-            { id: 'hours', label: 'Schedule', icon: 'schedule' },
-            { id: 'name', label: 'Person', icon: 'person' }
+            { id: 'hours', label: 'Hours', icon: 'schedule' },
+            { id: 'name', label: 'Name', icon: 'person' }
           ].map((metric: any) => (
             <button
               key={metric.id}
               onClick={() => setSortBy(metric.id as any)}
-              className={`px-4 py-2 text-[11px] font-bold uppercase rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap ${sortBy === metric.id
-                ? 'bg-white text-primary shadow-sm'
+              className={`px-1.5 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-xs font-bold uppercase rounded transition-all flex items-center gap-0.5 sm:gap-1 whitespace-nowrap ${sortBy === metric.id
+                ? 'bg-indigo-600 text-white shadow-sm'
                 : 'text-gray-500 hover:text-gray-700'
                 }`}
               title={`Sort by ${metric.label}`}
             >
-              <span className="material-symbols-rounded text-base">{metric.icon}</span>
+              <span className="material-symbols-rounded text-xs sm:text-sm">{metric.icon}</span>
               <span>{metric.label}</span>
             </button>
           ))}
         </div>
       </div>
 
+      {/* Advanced Filters - Stacked for Mobile */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+        <select
+          value={selectedDepartment}
+          onChange={(e) => setSelectedDepartment(e.target.value)}
+          className="px-2 sm:px-3 py-2 pr-6 sm:pr-8 bg-white dark:bg-white border border-gray-200 dark:border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-xs sm:text-sm text-gray-700 dark:text-gray-700"
+        >
+          <option value="all">All Dept</option>
+          {departments.map((dept) => (
+            <option key={dept} value={dept}>{dept}</option>
+          ))}
+        </select>
+
+        <select
+          value={selectedLocation}
+          onChange={(e) => setSelectedLocation(e.target.value)}
+          className="px-2 sm:px-3 py-2 pr-6 sm:pr-8 bg-white dark:bg-white border border-gray-200 dark:border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-xs sm:text-sm text-gray-700 dark:text-gray-700"
+        >
+          <option value="all">All Loc</option>
+          {locations.map((loc) => (
+            <option key={loc} value={loc}>{loc}</option>
+          ))}
+        </select>
+
+        <select
+          value={selectedDesignation}
+          onChange={(e) => setSelectedDesignation(e.target.value)}
+          className="px-2 sm:px-3 py-2 pr-6 sm:pr-8 bg-white dark:bg-white border border-gray-200 dark:border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-xs sm:text-sm text-gray-700 dark:text-gray-700 col-span-2 sm:col-span-1"
+        >
+          <option value="all">All Designation</option>
+          {designations.map((desig) => (
+            <option key={desig} value={desig}>{desig}</option>
+          ))}
+        </select>
+      </div>
+
       {/* Stats Summary */}
       {filteredAndSortedUsers.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-white dark:to-gray-50 rounded-2xl border border-blue-100 dark:border-gray-200">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 p-3 sm:p-5 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-white dark:to-gray-50 rounded-2xl border border-indigo-100 dark:border-gray-200">
           <div className="text-center">
-            <div className="text-2xl font-bold text-primary">{filteredAndSortedUsers.length}</div>
-            <div className="text-xs text-gray-700 dark:text-gray-700 mt-1">Total Users</div>
+            <div className="flex items-center justify-center mb-2">
+              <span className="material-symbols-rounded text-indigo-600 text-2xl sm:text-3xl">people</span>
+            </div>
+            <div className="text-xl sm:text-2xl font-bold text-indigo-600">{filteredAndSortedUsers.length}</div>
+            <div className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-700 mt-1">Total Users</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
+            <div className="flex items-center justify-center mb-2">
+              <span className="material-symbols-rounded text-green-600 text-2xl sm:text-3xl">check_circle</span>
+            </div>
+            <div className="text-xl sm:text-2xl font-bold text-green-600">
               {Math.round(filteredAndSortedUsers.reduce((sum, u) => {
                 const s = u.user_statistics || {};
                 return sum + (s.totalcoursesenrolled > 0 ? (s.coursescompleted / s.totalcoursesenrolled) * 100 : 0);
               }, 0) / filteredAndSortedUsers.length)}%
             </div>
-            <div className="text-xs text-gray-700 dark:text-gray-700 mt-1">Avg Completion</div>
+            <div className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-700 mt-1">Avg Complete</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="flex items-center justify-center mb-2">
+              <span className="material-symbols-rounded text-blue-600 text-2xl sm:text-3xl">schedule</span>
+            </div>
+            <div className="text-xl sm:text-2xl font-bold text-blue-600">
               {Math.round(filteredAndSortedUsers.reduce((sum, u) => sum + ((u.user_statistics?.totallearninghours) || 0), 0) / filteredAndSortedUsers.length / 60)}
             </div>
-            <div className="text-xs text-gray-700 dark:text-gray-700 mt-1">Avg Hours</div>
+            <div className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-700 mt-1">Avg Hours</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-orange-600">
-              {Math.round(filteredAndSortedUsers.reduce((sum, u) => sum + ((u.user_statistics?.totalpoints) || 0), 0) / filteredAndSortedUsers.length)} XP
+            <div className="flex items-center justify-center mb-2">
+              <span className="material-symbols-rounded text-orange-600 text-2xl sm:text-3xl">star</span>
             </div>
-            <div className="text-xs text-gray-700 dark:text-gray-700 mt-1">Avg Points</div>
+            <div className="text-xl sm:text-2xl font-bold text-orange-600">
+              {Math.round(filteredAndSortedUsers.reduce((sum, u) => sum + ((u.user_statistics?.totalpoints) || 0), 0) / filteredAndSortedUsers.length)}
+            </div>
+            <div className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-700 mt-1">Avg XP</div>
           </div>
         </div>
       )}
 
       {/* User Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {filteredAndSortedUsers.length > 0 ? (
           filteredAndSortedUsers.map((user) => {
             const stats = user.user_statistics || {};
@@ -333,58 +449,76 @@ const UsersTable: React.FC = () => {
             return (
               <div
                 key={user.id}
-                className="bg-white dark:bg-white rounded-2xl border border-gray-100 dark:border-gray-200 p-5 hover:shadow-lg hover:border-primary/30 transition-all duration-300"
+                className="bg-white dark:bg-white rounded-2xl border border-gray-100 dark:border-gray-200 p-3 sm:p-5 hover:shadow-lg hover:border-indigo-300 transition-all duration-300"
               >
                 {/* Header */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-gray-900 dark:text-gray-900 text-sm line-clamp-2">{user.fullname || 'Unknown User'}</h3>
-                    <p className="text-xs text-gray-700 dark:text-gray-700 mt-0.5">{user.designation || 'N/A'}</p>
-                    <div className="flex gap-2 mt-2 flex-wrap">
-                      <span className="inline-block px-2 py-0.5 text-xs font-medium bg-blue-50 dark:bg-blue-50 text-blue-700 dark:text-blue-700 rounded">
-                        {user.department || 'N/A'}
+                <div className="flex items-start justify-between mb-3 sm:mb-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start gap-2">
+                      <span className="material-symbols-rounded text-indigo-600 text-lg flex-shrink-0 mt-0.5">person</span>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-bold text-gray-900 dark:text-gray-900 text-xs sm:text-sm line-clamp-2">{user.fullname || 'Unknown User'}</h3>
+                        <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-700 mt-0.5">{user.designation || 'N/A'}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-1.5 mt-2 flex-wrap">
+                      <span className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-medium bg-indigo-50 dark:bg-indigo-50 text-indigo-700 dark:text-indigo-700 rounded">
+                        <span className="material-symbols-rounded text-xs">location_on</span>
+                        <span className="hidden sm:inline">{user.department || 'N/A'}</span>
+                        <span className="sm:hidden">{(user.department || 'N/A').substring(0, 3)}</span>
                       </span>
-                      <span className="inline-block px-2 py-0.5 text-xs font-medium bg-gray-50 dark:bg-gray-50 text-gray-700 dark:text-gray-700 rounded">
-                        {user.location || 'N/A'}
+                      <span className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-medium bg-blue-50 dark:bg-blue-50 text-blue-700 dark:text-blue-700 rounded">
+                        <span className="material-symbols-rounded text-xs">place</span>
+                        <span className="hidden sm:inline">{user.location || 'N/A'}</span>
+                        <span className="sm:hidden">{(user.location || 'N/A').substring(0, 3)}</span>
                       </span>
                     </div>
                   </div>
                 </div>
 
                 {/* Progress Circle */}
-                <div className="flex items-center justify-center mb-4 py-2">
+                <div className="flex items-center justify-center mb-3 sm:mb-4 py-1 sm:py-2">
                   <div className="relative">
-                    <CircularProgress percentage={completionRate} size={70} strokeWidth={2} />
+                    <CircularProgress percentage={completionRate} size={60} strokeWidth={2} />
                   </div>
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-3 gap-3 mb-3 p-3 bg-white dark:bg-gray-50 rounded-lg">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-3 sm:mb-4 p-2 sm:p-3 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-100 dark:to-gray-50 rounded-xl">
                   <div className="text-center">
-                    <div className="text-lg font-bold text-primary">{stats.coursescompleted || 0}</div>
-                    <div className="text-xs text-gray-700 dark:text-gray-700">Completed</div>
+                    <div className="flex items-center justify-center mb-1">
+                      <span className="material-symbols-rounded text-indigo-600 text-base">done_all</span>
+                    </div>
+                    <div className="text-sm sm:text-base font-bold text-indigo-600">{stats.coursescompleted || 0}</div>
+                    <div className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-700 whitespace-nowrap">Completed</div>
                   </div>
-                  <div className="border-l border-r border-gray-200 dark:border-gray-200 text-center">
-                    <div className="text-lg font-bold text-green-600">
+                  <div className="border-l border-r border-gray-300 dark:border-gray-300 text-center">
+                    <div className="flex items-center justify-center mb-1">
+                      <span className="material-symbols-rounded text-green-600 text-base">schedule</span>
+                    </div>
+                    <div className="text-sm sm:text-base font-bold text-green-600">
                       {Math.round((stats.totallearninghours || 0) / 60)}
                     </div>
-                    <div className="text-xs text-gray-700 dark:text-gray-700">Hours</div>
+                    <div className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-700 whitespace-nowrap">Hours</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-lg font-bold text-orange-500">{(stats.totalpoints || 0).toLocaleString()} XP</div>
-                    <div className="text-xs text-gray-700 dark:text-gray-700">Points</div>
+                    <div className="flex items-center justify-center mb-1">
+                      <span className="material-symbols-rounded text-orange-500 text-base">star</span>
+                    </div>
+                    <div className="text-sm sm:text-base font-bold text-orange-500">{Math.round((stats.totalpoints || 0) / 100)}</div>
+                    <div className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-700 whitespace-nowrap">XP</div>
                   </div>
                 </div>
 
                 {/* Progress Bar */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-gray-700 dark:text-gray-700 font-medium">Course Progress</span>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <div className="flex justify-between items-center text-[10px] sm:text-xs">
+                    <span className="text-gray-600 dark:text-gray-700 font-medium">Course Progress</span>
                     <span className="text-gray-900 dark:text-gray-900 font-bold">{stats.coursescompleted}/{stats.totalcoursesenrolled}</span>
                   </div>
                   <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-primary to-blue-500 rounded-full transition-all duration-500"
+                      className="h-full bg-gradient-to-r from-indigo-600 to-blue-500 rounded-full transition-all duration-500"
                       style={{ width: `${completionRate}%` }}
                     />
                   </div>
@@ -395,7 +529,7 @@ const UsersTable: React.FC = () => {
         ) : (
           <div className="col-span-full py-12 text-center">
             <span className="material-symbols-rounded text-4xl text-gray-400 dark:text-gray-700 block mb-2">person_off</span>
-            <p className="text-gray-700 dark:text-gray-700">No users found matching your search</p>
+            <p className="text-gray-600 dark:text-gray-700 text-sm">No users found matching your search</p>
           </div>
         )}
       </div>

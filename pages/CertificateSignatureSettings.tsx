@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import Loader from '../components/Loader';
 import useAuthGuard from '../hooks/useAuthGuard';
+import CertificateTemplateManager from '../components/CertificateTemplateManager';
 import {
     getAllSignatures,
     CertificateSignature,
@@ -275,7 +276,7 @@ const CertificateSignatureSettings: React.FC = () => {
                     {/* Form Modal */}
                     {showForm && (
                         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                            <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                            <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
                                 <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
                                     <h2 className="text-xl font-bold text-gray-900">
                                         {editingId ? 'Edit Signature' : 'Add New Signature'}
@@ -288,7 +289,10 @@ const CertificateSignatureSettings: React.FC = () => {
                                     </button>
                                 </div>
 
-                                <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                                <div className="flex flex-1 overflow-hidden">
+                                    {/* Form Section */}
+                                    <div className="w-96 border-r border-gray-200 overflow-y-auto">
+                                        <form onSubmit={handleSubmit} className="p-6 space-y-6">
                                     {/* Name */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -317,11 +321,10 @@ const CertificateSignatureSettings: React.FC = () => {
                                             onChange={handleFormChange}
                                             placeholder="e.g., HR, COO, Manager"
                                             required
-                                            disabled={!!editingId}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent"
                                         />
                                         <p className="text-xs text-gray-600 mt-1">
-                                            Cannot be changed after creation
+                                            Enter the designation for this signature (e.g., HR, COO, Manager, Lead)
                                         </p>
                                     </div>
 
@@ -415,6 +418,62 @@ const CertificateSignatureSettings: React.FC = () => {
                                         </button>
                                     </div>
                                 </form>
+                                    </div>
+
+                                    {/* Certificate Preview Section */}
+                                    <div className="flex-1 bg-gray-100 overflow-y-auto p-6 flex items-center justify-center">
+                                        <div className="bg-white rounded-lg shadow p-4" style={{ width: '595px', height: '420px', transformOrigin: 'top', transform: 'scale(0.5)' }}>
+                                            <div className="h-full flex flex-col justify-between p-6 bg-gradient-to-b from-gray-50 to-white border border-gray-200 rounded">
+                                                {/* Certificate Header */}
+                                                <div>
+                                                    <h3 className="text-xl font-bold text-gray-900 mb-1">Certificate of Completion</h3>
+                                                    <p className="text-xs text-gray-600 mb-4">Certificate ID: d47a4e63-0752-4ed1-adc4-3599beb0096d</p>
+                                                </div>
+
+                                                {/* Certificate Body */}
+                                                <div className="flex-1 flex flex-col justify-between">
+                                                    <div>
+                                                        <p className="text-xs text-gray-600 mb-2">is awarded to</p>
+                                                        <h2 className="text-2xl font-bold text-orange-600 mb-3">Sample User</h2>
+                                                        <p className="text-xs text-gray-700 mb-3">
+                                                            For Completion of the<br/>
+                                                            <strong>Sample Course</strong>
+                                                        </p>
+                                                        <p className="text-xs text-gray-700 mb-2">Grade: <strong>Qualified</strong></p>
+                                                        <div className="inline-block bg-orange-500 text-white px-3 py-1 rounded text-xs font-medium mb-4">
+                                                            Date of Issue: December 22, 2025
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Signature Preview */}
+                                                    <div className="flex justify-around">
+                                                        <div className="text-center flex-1">
+                                                            <div style={{ height: '48px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', marginBottom: '4px' }}>
+                                                                {imagePreview ? (
+                                                                    <img src={imagePreview} alt="Signature" style={{ maxHeight: '48px', maxWidth: '120px' }} />
+                                                                ) : (
+                                                                    <div style={{ fontFamily: "'Dancing Script', cursive", fontSize: '16px', color: '#333', transform: 'rotate(-3deg)' }}>
+                                                                        {formData.signature_text || formData.name || 'Signature'}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div style={{ height: '1px', width: '100%', backgroundColor: '#9ca3af', margin: '4px 0' }}></div>
+                                                            <p style={{ fontSize: '10px', fontWeight: 'bold', color: '#0F3D47', margin: '2px 0' }}>
+                                                                {formData.name ? `Signed: ${formData.name}` : 'Signed: Name'}
+                                                            </p>
+                                                            <p style={{ fontSize: '10px', fontWeight: 'bold', color: '#000', margin: '0' }}>
+                                                                {formData.designation || 'Designation'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p className="text-xs text-gray-600 mt-4 text-center absolute bottom-4 left-0 right-0">
+                                            Live Preview (50% scale)
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -563,6 +622,12 @@ const CertificateSignatureSettings: React.FC = () => {
                             </div>
                         </div>
                     </div>
+
+                    {/* Divider */}
+                    <div className="border-t border-gray-300 my-8"></div>
+
+                    {/* Certificate Template Manager Section */}
+                    <CertificateTemplateManager />
                 </div>
             </div>
         </AdminLayout>

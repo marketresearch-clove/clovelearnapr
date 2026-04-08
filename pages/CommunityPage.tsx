@@ -850,7 +850,7 @@ const CommunityPage: React.FC = () => {
           ) : (
             <div className="flex flex-col h-full">
               {/* Mobile Create Post Header - Sticky */}
-              <div className="fixed top-14 left-0 right-0 bg-white dark:bg-neutral-dark border-b border-slate-100 dark:border-neutral-800 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-50 shrink-0 lg:hidden">
+              <div className="fixed top-32 left-0 right-0 bg-white dark:bg-neutral-dark border-b border-slate-100 dark:border-neutral-800 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-50 shrink-0 lg:hidden">
                 <h3 className="font-bold text-base sm:text-lg">Create Post</h3>
                 <button
                   onClick={() => setIsEditorCollapsed(true)}
@@ -862,7 +862,7 @@ const CommunityPage: React.FC = () => {
                 </button>
               </div>
 
-              <div className="pt-36 sm:pt-20 p-4 sm:p-6 pb-10 flex flex-col flex-1 overflow-y-auto">
+              <div className="pt-60 sm:pt-20 p-4 sm:p-6 pb-10 flex flex-col flex-1 overflow-y-auto">
                 <div className="flex items-start gap-4 mb-4">
                   <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" style={{ backgroundImage: `url("${userProfile?.avatarurl || userProfile?.avatar_url || `https://i.pravatar.cc/150?u=${user?.id}`}")` }} />
                   <div className="flex-1 flex flex-col gap-2">

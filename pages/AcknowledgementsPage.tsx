@@ -461,38 +461,38 @@ const AcknowledgementsPage: React.FC = () => {
             </div>
 
             {/* Filters */}
-            <div className="flex flex-wrap gap-2">
-              <div className="relative">
+            <div className="flex flex-wrap gap-2 overflow-visible">
+              <div className="relative flex-1 sm:flex-initial">
                 <span className="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">search</span>
                 <input
                   type="text"
                   placeholder="Search..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="pl-9 pr-3 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 w-48 text-gray-900"
+                  className="w-full sm:w-48 pl-9 pr-3 py-2 text-xs sm:text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900"
                 />
               </div>
 
               <select value={filterPolicy} onChange={e => setFilterPolicy(e.target.value)}
-                className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900">
+                className="relative z-10 flex-1 sm:flex-initial px-2 sm:px-3 py-2 text-xs sm:text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900">
                 <option value="all">All Documents</option>
                 {policies.map(p => <option key={p} value={p}>{p}</option>)}
               </select>
 
               <select value={filterCourse} onChange={e => setFilterCourse(e.target.value)}
-                className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900">
+                className="relative z-20 flex-1 sm:flex-initial px-2 sm:px-3 py-2 text-xs sm:text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900">
                 <option value="all">All Courses</option>
                 {courses.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
 
               <select value={filterDept} onChange={e => setFilterDept(e.target.value)}
-                className="pl-3 pr-5 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900">
+                className="relative z-10 flex-1 sm:flex-initial pl-2 sm:pl-3 pr-8 sm:pr-8 py-2 text-xs sm:text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900">
                 <option value="all">All Departments</option>
                 {departments.map(d => <option key={d} value={d}>{d}</option>)}
               </select>
 
               <select value={filterUser} onChange={e => setFilterUser(e.target.value)}
-                className="pl-3 pr-5 py-2 text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900">
+                className="relative z-10 flex-1 sm:flex-initial pl-2 sm:pl-3 pr-4 sm:pr-5 py-2 text-xs sm:text-sm bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-400 text-gray-900">
                 <option value="all">All Employees</option>
                 {users.map(u => <option key={u} value={u}>{u}</option>)}
               </select>
@@ -500,9 +500,10 @@ const AcknowledgementsPage: React.FC = () => {
               {(filterPolicy !== 'all' || filterCourse !== 'all' || filterDept !== 'all' || filterUser !== 'all' || searchQuery) && (
                 <button
                   onClick={() => { setFilterPolicy('all'); setFilterCourse('all'); setFilterDept('all'); setFilterUser('all'); setSearchQuery(''); }}
-                  className="px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1"
+                  className="flex-shrink-0 px-2 sm:px-3 py-2 text-xs sm:text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1"
                 >
-                  <span className="material-symbols-rounded text-sm">close</span> Clear
+                  <span className="material-symbols-rounded text-sm">close</span>
+                  <span className="hidden sm:inline">Clear</span>
                 </button>
               )}
             </div>

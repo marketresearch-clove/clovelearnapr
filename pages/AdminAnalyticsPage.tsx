@@ -585,7 +585,7 @@ const AdminAnalyticsPage: React.FC = () => {
 
         {/* Top KPI Cards - Only show on Executive tab */}
         {activeTab === 'executive' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4">
             <KPICard title="Active Learners" value={stats.totalActiveLearners} icon="group" trend="+12%" color="blue" />
             <KPICard title="Total Users" value={stats.totalUsers} icon="people" trend="+8%" color="green" />
             <KPICard title="Total Courses" value={stats.totalCourses} icon="school" trend="+15%" color="purple" />
@@ -604,22 +604,22 @@ const AdminAnalyticsPage: React.FC = () => {
         {/* Top Departments Chart - Only show on Executive tab */}
         {activeTab === 'executive' && (
           <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col gap-4 mb-6">
               <h4 className="font-bold text-gray-900 flex items-center gap-2">
                 <span className="material-symbols-rounded text-blue-500">bar_chart</span>
                 Top 10 Departments
               </h4>
-              <div className="flex bg-gray-100 p-1 rounded-xl">
+              <div className="flex bg-gray-100 p-1 rounded-xl flex-wrap gap-1 sm:gap-0 w-full sm:w-fit">
                 {[
-                  { id: 'userCount', label: 'User Count' },
+                  { id: 'userCount', label: 'Users' },
                   { id: 'totalXP', label: 'XP' },
-                  { id: 'coursesEnrolled', label: 'Courses Enrolled' },
-                  { id: 'coursesCompleted', label: 'Courses Completed' }
+                  { id: 'coursesEnrolled', label: 'Enrolled' },
+                  { id: 'coursesCompleted', label: 'Completed' }
                 ].map((metric) => (
                   <button
                     key={metric.id}
                     onClick={() => setDepartmentFilterMetric(metric.id)}
-                    className={`px-3 py-1 text-[10px] font-bold uppercase rounded-xl transition-all ${departmentFilterMetric === metric.id
+                    className={`flex-1 sm:flex-none px-2 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-bold uppercase rounded-xl transition-all ${departmentFilterMetric === metric.id
                       ? 'bg-white text-primary shadow-sm'
                       : 'text-gray-500 hover:text-gray-700'
                       }`}
@@ -716,20 +716,20 @@ const KPICard = ({ title, value, icon, trend, color }: any) => {
   const isPositive = trend.startsWith('+');
 
   return (
-    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
-      <div className="flex justify-between items-start mb-3">
-        <div className={`p-2 rounded-xl ${colorMap[color] || colorMap.blue}`}>
-          <span className="material-symbols-rounded text-xl">{icon}</span>
+    <div className="bg-white p-3 sm:p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
+      <div className="flex justify-between items-start mb-2 sm:mb-3">
+        <div className={`p-1.5 sm:p-2 rounded-xl ${colorMap[color] || colorMap.blue}`}>
+          <span className="material-symbols-rounded text-base sm:text-xl">{icon}</span>
         </div>
-        <div className={`flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isPositive ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>
-          <span className="material-symbols-rounded text-[12px]">
+        <div className={`flex items-center gap-0.5 text-[8px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded-full ${isPositive ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>
+          <span className="material-symbols-rounded text-[10px] sm:text-[12px]">
             {isPositive ? 'trending_up' : 'trending_down'}
           </span>
           {trend}
         </div>
       </div>
-      <p className="text-gray-600 text-xs font-bold uppercase tracking-wider">{title}</p>
-      <h3 className="text-2xl font-black text-gray-900 mt-1">{value}</h3>
+      <p className="text-gray-600 text-[9px] sm:text-xs font-bold uppercase tracking-wider">{title}</p>
+      <h3 className="text-lg sm:text-2xl font-black text-gray-900 mt-1">{value}</h3>
     </div>
   );
 };
@@ -941,46 +941,46 @@ const EngagementDashboard: React.FC<{ engagementData: any[], engagementMetrics: 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h5 className="text-sm font-semibold text-gray-800">Session Duration</h5>
-            <span className="material-symbols-rounded text-blue-500">schedule</span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+        <div className="bg-white p-3 sm:p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <div className="flex items-center justify-between mb-2 sm:mb-4">
+            <h5 className="text-xs sm:text-sm font-semibold text-gray-800">Session Duration</h5>
+            <span className="material-symbols-rounded text-blue-500 text-xl sm:text-2xl">schedule</span>
           </div>
-          <p className="text-3xl font-bold text-gray-900">{Math.round(engagementMetrics.avgSessionDuration * 60)} min</p>
-          <p className="text-xs text-gray-500 mt-2">per active user</p>
+          <p className="text-lg sm:text-3xl font-bold text-gray-900">{Math.round(engagementMetrics.avgSessionDuration * 60)} min</p>
+          <p className="text-[10px] sm:text-xs text-gray-500 mt-1 sm:mt-2">per active user</p>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h5 className="text-sm font-semibold text-gray-800">Peak Activity</h5>
-            <span className="material-symbols-rounded text-orange-500">trending_up</span>
+        <div className="bg-white p-3 sm:p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <div className="flex items-center justify-between mb-2 sm:mb-4">
+            <h5 className="text-xs sm:text-sm font-semibold text-gray-800">Peak Activity</h5>
+            <span className="material-symbols-rounded text-orange-500 text-xl sm:text-2xl">trending_up</span>
           </div>
-          <p className="text-3xl font-bold text-gray-900">{Math.round(engagementMetrics.peakActivityHour)}:00</p>
-          <p className="text-xs text-gray-500 mt-2">peak activity hour</p>
+          <p className="text-lg sm:text-3xl font-bold text-gray-900">{Math.round(engagementMetrics.peakActivityHour)}:00</p>
+          <p className="text-[10px] sm:text-xs text-gray-500 mt-1 sm:mt-2">peak activity hour</p>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h5 className="text-sm font-semibold text-gray-800">Quality Score</h5>
-            <span className="material-symbols-rounded text-green-500">verified_user</span>
+        <div className="bg-white p-3 sm:p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <div className="flex items-center justify-between mb-2 sm:mb-4">
+            <h5 className="text-xs sm:text-sm font-semibold text-gray-800">Quality Score</h5>
+            <span className="material-symbols-rounded text-green-500 text-xl sm:text-2xl">verified_user</span>
           </div>
-          <p className="text-3xl font-bold text-gray-900">{engagementMetrics.engagementQualityScore}%</p>
-          <div className="w-full bg-gray-200 rounded-full h-1.5 mt-3">
+          <p className="text-lg sm:text-3xl font-bold text-gray-900">{engagementMetrics.engagementQualityScore}%</p>
+          <div className="w-full bg-gray-200 rounded-full h-1 sm:h-1.5 mt-2 sm:mt-3">
             <div
-              className="bg-green-500 h-1.5 rounded-full transition-all duration-500"
+              className="bg-green-500 h-1 sm:h-1.5 rounded-full transition-all duration-500"
               style={{ width: `${engagementMetrics.engagementQualityScore}%` }}
             ></div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h5 className="text-sm font-semibold text-gray-800">Users Online</h5>
-            <span className="material-symbols-rounded text-indigo-500">people</span>
+        <div className="bg-white p-3 sm:p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <div className="flex items-center justify-between mb-2 sm:mb-4">
+            <h5 className="text-xs sm:text-sm font-semibold text-gray-800">Users Online</h5>
+            <span className="material-symbols-rounded text-indigo-500 text-xl sm:text-2xl">people</span>
           </div>
-          <p className="text-3xl font-bold text-gray-900">{engagementMetrics.activeUsersOnline}</p>
-          <p className="text-xs text-gray-500 mt-2">currently online</p>
+          <p className="text-lg sm:text-3xl font-bold text-gray-900">{engagementMetrics.activeUsersOnline}</p>
+          <p className="text-[10px] sm:text-xs text-gray-500 mt-1 sm:mt-2">currently online</p>
         </div>
       </div>
 
@@ -988,34 +988,34 @@ const EngagementDashboard: React.FC<{ engagementData: any[], engagementMetrics: 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         {/* Header Section */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 border-b border-gray-100">
-          <div className="space-y-4">
-            <div className="flex justify-between items-start gap-4">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-4">
               <div className="flex-1">
-                <h4 className="font-bold text-lg text-gray-900 flex items-center gap-3 mb-2">
-                  <span className="material-symbols-rounded text-blue-600 text-2xl">calendar_month</span>
-                  Daily Lessons Completed Activity
+                <h4 className="font-bold text-base sm:text-lg text-gray-900 flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                  <span className="material-symbols-rounded text-blue-600 text-xl sm:text-2xl">calendar_month</span>
+                  <span>Daily Lessons Completed Activity</span>
                   {isLive && (
-                    <span className="flex items-center gap-1.5 ml-auto px-2.5 py-1 bg-red-100 text-red-600 text-xs font-bold rounded-full">
-                      <span className="w-2 h-2 bg-red-600 rounded-full animate-pulse"></span>
+                    <span className="flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-red-100 text-red-600 text-[9px] sm:text-xs font-bold rounded-full">
+                      <span className="w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse"></span>
                       LIVE
                     </span>
                   )}
                 </h4>
-                <p className="text-sm text-gray-600">
+                <p className="text-xs sm:text-sm text-gray-600">
                   Data from {new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} to {new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </p>
               </div>
-              <div className="flex items-center gap-5 text-[11px] font-semibold text-gray-600 bg-white px-4 py-3 rounded-lg border border-gray-200">
-                <div className="flex items-center gap-2">
-                  <span>Less</span>
-                  <div className="flex gap-1.5">
-                    <div className="w-3 h-3 bg-gray-200 rounded-sm shadow-sm"></div>
-                    <div className="w-3 h-3 bg-blue-100 rounded-sm shadow-sm"></div>
-                    <div className="w-3 h-3 bg-blue-300 rounded-sm shadow-sm"></div>
-                    <div className="w-3 h-3 bg-blue-500 rounded-sm shadow-sm"></div>
-                    <div className="w-3 h-3 bg-blue-700 rounded-sm shadow-sm"></div>
+              <div className="flex items-center gap-2 sm:gap-5 text-[9px] sm:text-[11px] font-semibold text-gray-600 bg-white px-2 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-200 whitespace-nowrap">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className="hidden sm:inline">Less</span>
+                  <div className="flex gap-0.5 sm:gap-1.5">
+                    <div className="w-2 h-2 sm:w-3 sm:h-3 bg-gray-200 rounded-sm shadow-sm"></div>
+                    <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-100 rounded-sm shadow-sm"></div>
+                    <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-300 rounded-sm shadow-sm"></div>
+                    <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-500 rounded-sm shadow-sm"></div>
+                    <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-700 rounded-sm shadow-sm"></div>
                   </div>
-                  <span>More</span>
+                  <span className="hidden sm:inline">More</span>
                 </div>
               </div>
             </div>
@@ -1066,37 +1066,37 @@ const EngagementDashboard: React.FC<{ engagementData: any[], engagementMetrics: 
         </div>
 
         {/* Heatmap Grid */}
-        <div className="p-8">
+        <div className="p-4 sm:p-8">
           {filteredData.length > 0 ? (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Week rows - Dynamic based on filtered data */}
               {Math.ceil(filteredData.length / 7) > 0 && Array.from({ length: Math.ceil(filteredData.length / 7) }).map((_, weekIdx) => (
-                <div key={weekIdx} className="space-y-2">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-20 text-xs font-semibold text-gray-500">
+                <div key={weekIdx} className="space-y-1.5 sm:space-y-2">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                    <div className="w-14 sm:w-20 text-xs font-semibold text-gray-500 shrink-0">
                       Week {weekIdx + 1}
                     </div>
                     <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
                   </div>
-                  <div className="grid grid-cols-7 gap-3">
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, dayIdx) => {
+                  <div className="grid grid-cols-7 gap-1 sm:gap-3 overflow-x-auto pb-2">
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((_, dayIdx) => {
                       const dataIdx = weekIdx * 7 + dayIdx;
                       const dayData = filteredData[dataIdx];
                       const intensity = dayData ? Math.min(dayData.lessons_completed / 10, 1) : 0;
                       const hasData = !!dayData && dayData.lessons_completed > 0;
 
                       return (
-                        <div key={`${weekIdx}-${dayIdx}`} className="flex flex-col items-center gap-2">
+                        <div key={`${weekIdx}-${dayIdx}`} className="flex flex-col items-center gap-1 sm:gap-2 flex-shrink-0">
                           <div
                             className={`
-                              w-12 h-12 rounded-lg transition-all duration-200 cursor-pointer
+                              w-7 h-7 sm:w-12 sm:h-12 rounded-lg transition-all duration-200 cursor-pointer
                               ${getIntensityColor(intensity)}
                               ${hasData ? 'hover:ring-2 hover:ring-blue-400 hover:shadow-lg' : 'opacity-50'}
                               hover:scale-110 shadow-sm
                             `}
                             title={dayData ? `${dayData.date}: ${dayData.lessons_completed} lessons, ${dayData.active_users} active users` : 'No data'}
                           ></div>
-                          <span className="text-xs font-medium text-gray-500 text-center w-12">
+                          <span className="text-[10px] sm:text-xs font-medium text-gray-500 text-center w-12 sm:w-12 truncate">
                             {dayData ? new Date(dayData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '-'}
                           </span>
                         </div>
@@ -1118,25 +1118,25 @@ const EngagementDashboard: React.FC<{ engagementData: any[], engagementMetrics: 
 
           {/* Statistics Footer */}
           {filteredData.length > 0 && (
-            <div className="mt-8 pt-6 border-t border-gray-100">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100">
-                  <p className="text-xs font-semibold text-blue-600 uppercase mb-1">Total Lessons</p>
-                  <p className="text-2xl font-bold text-blue-900">
+            <div className="mt-4 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-100">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                <div className="bg-blue-50 p-3 sm:p-4 rounded-2xl border border-blue-100">
+                  <p className="text-[10px] sm:text-xs font-semibold text-blue-600 uppercase mb-1 sm:mb-2">Total Lessons</p>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-900">
                     {filteredData.reduce((sum: number, d: any) => sum + (d.lessons_completed || 0), 0)}
                   </p>
                 </div>
-                <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
-                  <p className="text-xs font-semibold text-emerald-600 uppercase mb-1">Average/Day</p>
-                  <p className="text-2xl font-bold text-emerald-900">
+                <div className="bg-emerald-50 p-3 sm:p-4 rounded-2xl border border-emerald-100">
+                  <p className="text-[10px] sm:text-xs font-semibold text-emerald-600 uppercase mb-1 sm:mb-2">Average/Day</p>
+                  <p className="text-xl sm:text-2xl font-bold text-emerald-900">
                     {Math.round(
                       filteredData.reduce((sum: number, d: any) => sum + (d.lessons_completed || 0), 0) / Math.max(filteredData.length, 1)
                     )}
                   </p>
                 </div>
-                <div className="bg-indigo-50 p-4 rounded-2xl border border-indigo-100">
-                  <p className="text-xs font-semibold text-indigo-600 uppercase mb-1">Peak Day</p>
-                  <p className="text-2xl font-bold text-indigo-900">
+                <div className="bg-indigo-50 p-3 sm:p-4 rounded-2xl border border-indigo-100">
+                  <p className="text-[10px] sm:text-xs font-semibold text-indigo-600 uppercase mb-1 sm:mb-2">Peak Day</p>
+                  <p className="text-xl sm:text-2xl font-bold text-indigo-900">
                     {Math.max(...filteredData.map((d: any) => d.lessons_completed || 0), 0)}
                   </p>
                 </div>

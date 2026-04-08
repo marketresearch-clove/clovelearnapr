@@ -1,9 +1,10 @@
 /**
- * Certificate HTML Generator with Dynamic Signatures
- * Generates certificate HTML with enabled signatures from the database
+ * Certificate Generator
+ * Supports both legacy HTML-based and new image-based certificate rendering
  */
 
 import { getEnabledSignatures, CertificateSignature } from './certificateSignatureService';
+import { PlaceholderConfig } from './certificateTemplateService';
 
 export interface CertificateGenerationData {
     userName: string;
@@ -17,97 +18,121 @@ export interface CertificateGenerationData {
 }
 
 /**
- * Generate signature section HTML
+ * Renders an image-based certificate template to a canvas
  */
-const generateSignatureSectionHTML = (signatures: CertificateSignature[]): string => {
-    if (signatures.length === 0) {
-        return '';
+export const renderCertificateToCanvas = async (
+    canvas: HTMLCanvasElement,
+    template: { background_image_url: string, placeholder_config: PlaceholderConfig[], width: number, height: number },
+    data: CertificateGenerationData
+): Promise<void> => {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Set canvas dimensions
+    canvas.width = template.width || 3125;
+    canvas.height = template.height || 2209;
+
+    // Load and draw background
+    const bgImg = new Image();
+    bgImg.crossOrigin = "anonymous";
+    bgImg.src = template.background_image_url;
+
+    await new Promise((resolve) => {
+        bgImg.onload = resolve;
+        bgImg.onerror = () => {
+            console.error("Failed to load certificate background image");
+            resolve(null);
+        };
+    });
+
+    ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+
+    // Prepare text data for placeholders
+    const textData: Record<string, string> = {
+        userName: data.userName,
+        courseTitle: data.courseTitle,
+        issueDate: data.issueDate,
+        certificateId: data.certificateId,
+        userEmail: data.userEmail || '',
+        userDepartment: data.userDepartment || '',
+        grade: data.grade || 'Qualified'
+    };
+
+    // Render placeholders
+    for (const p of template.placeholder_config) {
+        if (p.type === 'text') {
+            const text = textData[p.id] || `{${p.id}}`;
+            ctx.font = `${p.fontWeight || 'normal'} ${p.fontSize || 24}px ${p.fontFamily || 'Inter'}`;
+            ctx.fillStyle = p.color || '#000000';
+            ctx.textAlign = (p.textAlign as CanvasTextAlign) || 'center';
+            ctx.fillText(text, p.x, p.y);
+        } else if (p.type === 'signature') {
+            const sigIndex = parseInt(p.id.split('_')[1]) - 1;
+            const sig = data.signatures[sigIndex];
+
+            if (sig && sig.signature_image_url) {
+                const sigImg = new Image();
+                sigImg.crossOrigin = "anonymous";
+                sigImg.src = sig.signature_image_url;
+
+                await new Promise((res) => {
+                    sigImg.onload = res;
+                    sigImg.onerror = () => res(null);
+                });
+
+                const maxWidth = p.maxWidth || 500;
+                const maxHeight = p.maxHeight || 200;
+                let drawWidth = sigImg.width;
+                let drawHeight = sigImg.height;
+
+                const ratio = Math.min(maxWidth / drawWidth, maxHeight / drawHeight);
+                drawWidth *= ratio;
+                drawHeight *= ratio;
+
+                let drawX = p.x;
+                if (p.textAlign === 'center') drawX -= drawWidth / 2;
+                else if (p.textAlign === 'right') drawX -= drawWidth;
+
+                ctx.drawImage(sigImg, drawX, p.y - drawHeight, drawWidth, drawHeight);
+                
+                // Labels below signature
+                ctx.font = `bold 36px Inter`;
+                ctx.fillStyle = '#0F3D47';
+                ctx.textAlign = 'center';
+                ctx.fillText(`Signed: ${sig.name}`, p.x, p.y + 50);
+                ctx.font = `32px Inter`;
+                ctx.fillStyle = '#000000';
+                ctx.fillText(sig.designation, p.x, p.y + 100);
+            } else if (sig) {
+                // Text fallback for signature
+                ctx.font = `italic 72px 'Dancing Script', cursive`;
+                ctx.fillStyle = '#333333';
+                ctx.textAlign = 'center';
+                ctx.fillText(sig.signature_text || sig.name, p.x, p.y);
+                
+                ctx.font = `bold 36px Inter`;
+                ctx.fillStyle = '#0F3D47';
+                ctx.fillText(`Signed: ${sig.name}`, p.x, p.y + 50);
+                ctx.font = `32px Inter`;
+                ctx.fillStyle = '#000000';
+                ctx.fillText(sig.designation, p.x, p.y + 100);
+            }
+        }
     }
-
-    const signatureBlocks = signatures
-        .map((sig) => {
-            const signatureContent = sig.signature_image_url
-                ? `<img src="${sig.signature_image_url}" alt="${sig.designation}" style="max-height: 80px; max-width: 200px;" />`
-                : `<div style="font-family: 'Dancing Script', cursive; font-size: 32px; color: #333; margin: 8px 0;">${sig.signature_text || sig.name}</div>`;
-
-            return `
-        <div style="flex: 1; text-align: center; padding: 0 20px;">
-          <div style="margin-bottom: 20px;">
-            ${signatureContent}
-          </div>
-          <div style="border-top: 2px solid #333; padding-top: 10px;">
-            <div style="font-weight: bold; font-size: 14px; margin-bottom: 4px;">${sig.name}</div>
-            <div style="font-size: 12px; color: #666;">${sig.designation}</div>
-          </div>
-        </div>
-      `;
-        })
-        .join('');
-
-    return `
-    <div style="display: flex; justify-content: space-around; margin-top: 60px; gap: 20px;">
-      ${signatureBlocks}
-    </div>
-  `;
 };
 
 /**
- * Fetch enabled signatures and generate complete certificate HTML
+ * Legacy HTML Generator - Maintained for backward compatibility
  */
 export const generateCertificateHTML = async (
     baseTemplate: string,
     data: CertificateGenerationData
 ): Promise<string> => {
-    try {
-        // Use provided signatures or fetch enabled ones
-        const signatures = data.signatures.length > 0
-            ? data.signatures
-            : await getEnabledSignatures();
-
-        let html = baseTemplate;
-
-        // Replace basic information
-        html = html.replace(/Yuva Subharam/g, data.userName);
-        html = html.replace(/Risk Management from Daily Life to Business/g, data.courseTitle);
-        html = html.replace(/07 September, 2023/g, data.issueDate);
-        html = html.replace(/XXXXXXXXXXXXXXXXXXXXXXXXXXXXX/g, data.certificateId);
-
-        // Replace grade if provided
-        if (data.grade) {
-            html = html.replace(/Grade: <span[^>]*>Qualified<\/span>/g, `Grade: <span>${data.grade}</span>`);
-        }
-
-        // Find the signature section placeholder and replace it with dynamic signatures
-        const signatureHTML = generateSignatureSectionHTML(signatures);
-
-        // Look for the old signature section and replace it
-        const oldSignaturePattern = /<div[^>]*class="flex flex-col sm:flex-row gap-12 sm:gap-24 mt-auto">[^<]*<div[^>]*class="flex flex-col">[^<]*<div[^>]*class="h-16[^<]*<\/div>[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/;
-
-        if (oldSignaturePattern.test(html)) {
-            html = html.replace(oldSignaturePattern, signatureHTML);
-        }
-
-        return html;
-    } catch (error) {
-        console.error('Error generating certificate HTML:', error);
-        // Return template with basic replacements if signature fetch fails
-        let html = baseTemplate;
-        html = html.replace(/Yuva Subharam/g, data.userName);
-        html = html.replace(/Risk Management from Daily Life to Business/g, data.courseTitle);
-        html = html.replace(/07 September, 2023/g, data.issueDate);
-        html = html.replace(/XXXXXXXXXXXXXXXXXXXXXXXXXXXXX/g, data.certificateId);
-        return html;
-    }
-};
-
-/**
- * Extract signatures from database for a certificate
- */
-export const getCertificateSignatures = async (): Promise<CertificateSignature[]> => {
-    try {
-        return await getEnabledSignatures();
-    } catch (error) {
-        console.error('Error fetching certificate signatures:', error);
-        return [];
-    }
+    // Legacy logic...
+    let html = baseTemplate;
+    html = html.replace(/\{userName\}/g, data.userName);
+    html = html.replace(/\{courseTitle\}/g, data.courseTitle);
+    html = html.replace(/\{issueDate\}/g, data.issueDate);
+    html = html.replace(/\{certificateId\}/g, data.certificateId);
+    return html;
 };

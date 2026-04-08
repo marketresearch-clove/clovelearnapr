@@ -20,27 +20,26 @@ const SkillManagementPage: React.FC = () => {
 
   return (
     <AdminLayout title="Skill Management">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="border-b border-gray-200 overflow-x-auto">
-          <div className="flex min-w-max">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                className={`px-6 py-4 text-sm font-medium transition-colors relative ${activeTab === tab.id
-                  ? 'text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                onClick={() => setActiveTab(tab.id)}
-              >
-                {tab.label}
-                {activeTab === tab.id && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
-                )}
-              </button>
-            ))}
-          </div>
+      <div className="flex flex-col gap-6">
+        {/* Navigation Tabs - Modern Design with Horizontal Scrolling */}
+        <div className="flex border-b border-gray-200 overflow-x-auto scrollbar-hide">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-6 py-3 text-sm font-bold border-b-4 transition-all whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'border-indigo-600 text-indigo-600 bg-indigo-50 rounded-t-lg'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
-        <div className="p-6">
+
+        {/* Content Area */}
+        <div className="flex-1">
           {activeTab === 'skills' && <Skills />}
           {activeTab === 'skillFamilies' && <SkillFamilies />}
           {activeTab === 'skillAssignments' && <SkillAssignments />}

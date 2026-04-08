@@ -278,7 +278,7 @@ const AdminReportsPage: React.FC = () => {
       `}</style>
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
         {/* Report Sidebar */}
-        <div className="reports-sidebar lg:col-span-1 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto sticky top-8 pl-2">
+        <div className="reports-sidebar lg:col-span-1 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto lg:sticky lg:top-8 pl-2">
           {Object.entries(reportsByCategory).map(([category, categoryReports]: [string, any]) => (
             <div key={category} className="space-y-2">
               <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider px-2 py-1">{category}</h4>
@@ -318,7 +318,7 @@ const AdminReportsPage: React.FC = () => {
                   <select
                     value={filterDept}
                     onChange={(e) => setFilterDept(e.target.value)}
-                    className="px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-2 pr-8 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="all">All Departments</option>
                     {departments.map(dept => (
