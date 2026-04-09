@@ -16,10 +16,13 @@
 .react-pdf__Page {
   max-width: 100%;
   max-height: 100%;
-  overflow: visible;
+  overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  height: auto;
+  aspect-ratio: auto;
 }
 
 .react-pdf__Page canvas {
@@ -28,14 +31,19 @@
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+  display: block;
+  image-rendering: crisp-edges;
 }
 
 .react-pdf__Document {
   width: 100%;
   height: 100%;
+  max-height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .fullscreen {
@@ -48,12 +56,25 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 100%;
-  max-height: calc(100vh - 80px);
+  height: auto;
+  max-height: calc(100vh - 100px);
+  overflow: hidden;
 }
 
 .fullscreen .react-pdf__Page canvas {
-  max-width: 100%;
-  max-height: 100%;
+  max-width: 100vw;
+  max-height: calc(100vh - 100px);
   object-fit: contain;
+  display: block;
+  width: auto !important;
+  height: auto !important;
+}
+
+/* Ensure proper text layer rendering */
+.react-pdf__Page__textContent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }

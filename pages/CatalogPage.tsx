@@ -6,6 +6,7 @@ import { categoryService } from '../lib/categoryService';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import { enrollmentService } from '../lib/enrollmentService';
+import { lessonProgressService } from '../lib/lessonProgressService';
 import { getCertificateByUserAndCourse } from '../lib/certificateService';
 import Loader from '../components/Loader';
 
@@ -128,9 +129,8 @@ const CategoryDropdown: React.FC<MultiSelectDropdownProps> = ({
               <button
                 key={option.id || option.name}
                 onClick={() => toggleOption(option.name)}
-                className={`w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-slate-50 transition-colors ${
-                  selected.includes(option.name) ? 'bg-indigo-50' : ''
-                }`}
+                className={`w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-slate-50 transition-colors ${selected.includes(option.name) ? 'bg-indigo-50' : ''
+                  }`}
               >
                 <span className={`material-symbols-rounded text-lg ${selected.includes(option.name) ? 'text-indigo-600' : 'text-transparent'}`}>
                   check
@@ -218,9 +218,8 @@ const LevelDropdown: React.FC<LevelDropdownProps> = ({
               <button
                 key={option.name}
                 onClick={() => toggleOption(option.name)}
-                className={`w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-slate-50 transition-colors ${
-                  selected.includes(option.name) ? 'bg-indigo-50' : ''
-                }`}
+                className={`w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-slate-50 transition-colors ${selected.includes(option.name) ? 'bg-indigo-50' : ''
+                  }`}
               >
                 <span className={`material-symbols-rounded text-lg ${selected.includes(option.name) ? 'text-indigo-600' : 'text-transparent'}`}>
                   check
@@ -291,9 +290,8 @@ const SortDropdown: React.FC<SortDropdownProps> = ({
                   onChange(option.value);
                   setIsOpen(false);
                 }}
-                className={`w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-slate-50 transition-colors ${
-                  selected === option.value ? 'bg-indigo-50' : ''
-                }`}
+                className={`w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-slate-50 transition-colors ${selected === option.value ? 'bg-indigo-50' : ''
+                  }`}
               >
                 <span className={`material-symbols-rounded text-lg ${selected === option.value ? 'text-indigo-600' : 'text-transparent'}`}>
                   check
@@ -359,17 +357,18 @@ const CatalogPage: React.FC = () => {
       if (user?.id) {
         try {
           // Fetch enrollments and assignments in parallel
-          const [enrollments, assignmentsResult, lessonProgressResult] = await Promise.all([
+          const [enrollments, assignmentsResult] = await Promise.all([
             enrollmentService.getUserEnrollments(user.id),
             supabase
               .from('course_assignments')
               .select('courseid, is_visible')
               .eq('userid', user.id),
-            supabase
-              .from('lesson_progress')
-              .select('courseid, completed')
-              .eq('userid', user.id)
           ]);
+
+          const lessonProgressResult = await lessonProgressService.getProgressByCourseIds(
+            user.id,
+            enrollments.map((enrollment: any) => enrollment.courseid)
+          );
 
           // Build enrollment map
           enrollments.forEach((enrollment: any) => {
@@ -385,13 +384,31 @@ const CatalogPage: React.FC = () => {
             });
           }
 
-          // Calculate progress from lesson_progress data
-          // We can use enrollment completion status as a shortcut
-          enrollments.forEach((enrollment: any) => {
-            if (enrollment.completed) {
-              progressMap.set(enrollment.courseid, 100);
-            }
-          });
+          // Calculate progress from lesson_progress data.
+          // Do not treat a single completed lesson as full course completion.
+          if (lessonProgressResult && lessonProgressResult.length > 0) {
+            const lessonSummaries = new Map<string, { totalProgress: number; count: number }>();
+            lessonProgressResult.forEach((progress: any) => {
+              const courseId = progress.courseid;
+              const progressValue = typeof progress.progress === 'number' ? progress.progress : 0;
+              const summary = lessonSummaries.get(courseId) || { totalProgress: 0, count: 0 };
+              summary.totalProgress += progressValue;
+              summary.count += 1;
+              lessonSummaries.set(courseId, summary);
+            });
+
+            lessonSummaries.forEach((summary, courseId) => {
+              if (summary.count > 0) {
+                progressMap.set(courseId, Math.round(summary.totalProgress / summary.count));
+              }
+            });
+          } else {
+            enrollments.forEach((enrollment: any) => {
+              if (enrollment.completed) {
+                progressMap.set(enrollment.courseid, 100);
+              }
+            });
+          }
         } catch (err) {
           console.warn('Error fetching user enrollment data:', err);
         }
@@ -740,7 +757,7 @@ const CatalogPage: React.FC = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/lesson/${course.id}`);
+                          navigate(`/course/${course.id}`);
                         }}
                         className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
                       >

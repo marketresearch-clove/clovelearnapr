@@ -139,7 +139,7 @@ const PdfViewer: React.FC<PdfViewerProps> = ({ file, onScrollToEnd }) => {
       {/* Main Content Area */}
       <div
         ref={containerRef}
-        className={`flex-1 relative overflow-auto flex items-center justify-center bg-gray-50 dark:bg-gray-900/50 ${isFullscreen ? 'p-2' : 'p-4'}`}
+        className={`flex-1 relative overflow-auto flex items-center justify-center bg-gray-50 dark:bg-gray-900/50 ${isFullscreen ? 'p-0' : 'p-4'}`}
       >
         <Document
           file={file}
@@ -155,13 +155,13 @@ const PdfViewer: React.FC<PdfViewerProps> = ({ file, onScrollToEnd }) => {
               <p>Failed to load PDF</p>
             </div>
           }
-          className="max-h-full max-w-full shadow-2xl"
+          className="max-h-full max-w-full shadow-2xl h-full"
         >
           <Page
             pageNumber={pageNumber}
-            width={containerWidth ? Math.min(containerWidth - (isFullscreen ? 16 : 48), isFullscreen ? window.innerWidth - 16 : 900) : undefined}
-            renderTextLayer={false}
-            renderAnnotationLayer={false}
+            width={containerWidth ? Math.max(300, Math.min(containerWidth - (isFullscreen ? 0 : 32), 1200)) : undefined}
+            renderTextLayer={true}
+            renderAnnotationLayer={true}
             className="shadow-lg"
           />
         </Document>

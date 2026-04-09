@@ -502,7 +502,7 @@ const AdminCourses: React.FC = () => {
           status: courseData.status,
           language: courseData.language,
           course_type: courseData.course_type || 'regular',
-          certificate_enabled: courseData.certificate_enabled !== false,
+          certificate_enabled: courseData.certificate_enabled === true,
           is_hidden: courseData.is_hidden || false,
         };
         await courseService.updateCourse(courseId, updates);
@@ -533,7 +533,7 @@ const AdminCourses: React.FC = () => {
           status: courseData.status || 'draft',
           language: courseData.language || 'English',
           course_type: courseData.course_type || 'regular',
-          certificate_enabled: courseData.certificate_enabled !== false,
+          certificate_enabled: courseData.certificate_enabled === true,
           is_hidden: courseData.is_hidden || false,
         };
         const createdCourse = await courseService.createCourse(newCourse);
@@ -556,7 +556,7 @@ const AdminCourses: React.FC = () => {
           status: courseData.status,
           language: courseData.language,
           course_type: courseData.course_type || 'regular',
-          certificate_enabled: courseData.certificate_enabled !== false,
+          certificate_enabled: courseData.certificate_enabled === true,
           is_hidden: courseData.is_hidden || false,
         };
         await courseService.updateCourse(courseId, updates);

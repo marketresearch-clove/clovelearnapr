@@ -240,7 +240,7 @@ const AdminDashboard: React.FC = () => {
         ? (((thisMonthUsers || 0) - (lastMonthUsers || 0)) / (lastMonthUsers || 1)) * 100
         : 0;
 
-      // Fetch total learning hours (convert minutes to hours)
+      // Fetch total learning hours (hoursspent is stored as minutes)
       const { data: learningHours } = await supabase
         .from('learning_hours')
         .select('hoursspent, userid');
@@ -248,10 +248,10 @@ const AdminDashboard: React.FC = () => {
       const totalMinutes = (learningHours || []).reduce((sum, record) => sum + (record.hoursspent || 0), 0);
       const totalLearningHours = Math.round(totalMinutes / 60);
 
-      // Average Session Time (calculate average hours per user with learning activity)
-      const uniqueUsersWithActivity = new Set((learningHours || []).map((lh: any) => lh.userid));
-      const avgSessionTime = uniqueUsersWithActivity.size > 0
-        ? (totalMinutes / 60) / uniqueUsersWithActivity.size
+      // Average Session Time (calculate average hours per learning_hours record)
+      const totalSessionRecords = (learningHours || []).length;
+      const avgSessionTime = totalSessionRecords > 0
+        ? (totalMinutes / totalSessionRecords) / 60
         : 0;
 
       // Fetch all enrollments for completion rate and department stats

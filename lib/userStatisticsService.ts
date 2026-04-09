@@ -74,17 +74,19 @@ export const userStatisticsService = {
     }
   },
 
-  async updateLearningHours(userId: string, hoursSpent: number) {
+  async updateLearningHours(userId: string, minutesSpent: number) {
     try {
       const stats = await this.getUserStatistics(userId);
       if (!stats) return null;
 
+      // Convert minutes to hours and add to existing total
+      const hoursSpent = minutesSpent / 60;
       const newTotalHours = (stats.totallearninghours || 0) + hoursSpent;
 
       const { data, error } = await supabase
         .from('user_statistics')
         .update({
-          totallearninghours: newTotalHours,
+          totallearninghours: Math.round(newTotalHours), // Convert to integer minutes
           lastactivityat: new Date().toISOString(),
         })
         .eq('userid', userId)

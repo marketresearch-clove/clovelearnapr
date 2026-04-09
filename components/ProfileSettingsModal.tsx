@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { userService } from '../lib/userService';
 import { supabase } from '../lib/supabaseClient';
+import { getCertificate } from '../lib/certificateService';
+import { renderCertificateToCanvas } from '../lib/certificateHTMLGenerator';
 
 interface ProfileSettingsModalProps {
   isOpen: boolean;
@@ -15,6 +17,7 @@ const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({ isOpen, onC
   const [activeTab, setActiveTab] = useState<'profile' | 'certificates'>('profile');
   const [certificates, setCertificates] = useState<any[]>([]);
   const [loadingCerts, setLoadingCerts] = useState(false);
+  const [downloadingCertId, setDownloadingCertId] = useState<string | null>(null);
   const [profile, setProfile] = useState<any>({
     fullname: '',
     email: '',
@@ -26,6 +29,7 @@ const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({ isOpen, onC
     avatarurl: ''
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const downloadCanvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (isOpen && user?.id) {
@@ -147,6 +151,46 @@ const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({ isOpen, onC
       alert('Failed to update profile');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownloadCertificatePNG = async (certificateId: string) => {
+    if (!certificateId || !downloadCanvasRef.current) return;
+
+    setDownloadingCertId(certificateId);
+    try {
+      const certData = await getCertificate(certificateId);
+      if (!certData || !certData.template) {
+        throw new Error('Certificate template not available');
+      }
+
+      await renderCertificateToCanvas(downloadCanvasRef.current, certData.template, {
+        userName: certData.profiles?.full_name || 'Certificate Recipient',
+        courseTitle: certData.courses?.title || 'Course',
+        issueDate: new Date(certData.issued_at).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }),
+        certificateId: certData.id,
+        userEmail: certData.profiles?.email || '',
+        userDepartment: certData.profiles?.department || '',
+        grade: 'Qualified',
+        signatures: certData.signatures_data || []
+      });
+
+      const url = downloadCanvasRef.current.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Certificate_${(certData.profiles?.full_name || 'Completion').replace(/\s+/g, '_')}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error downloading certificate PNG:', error);
+      alert('Unable to download certificate PNG. Please try again.');
+    } finally {
+      setDownloadingCertId(null);
     }
   };
 
@@ -341,15 +385,17 @@ const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({ isOpen, onC
                           </p>
                         </div>
                         <button
-                          onClick={() => {
-                            // Certificate download/view functionality can be added here
-                            alert('Certificate download coming soon!');
-                          }}
-                          className="ml-2 p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                          onClick={() => handleDownloadCertificatePNG(cert.id)}
+                          disabled={downloadingCertId === cert.id}
+                          className="ml-2 p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors disabled:opacity-50"
+                          title="Download certificate PNG"
                         >
                           <span className="material-symbols-rounded">download</span>
                         </button>
                       </div>
+                      {downloadingCertId === cert.id && (
+                        <p className="text-xs text-indigo-600 mt-2">Preparing PNG download...</p>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -358,6 +404,7 @@ const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({ isOpen, onC
           )}
         </div>
       </div>
+      <canvas ref={downloadCanvasRef} className="hidden" aria-hidden="true" />
     </div>
   );
 };

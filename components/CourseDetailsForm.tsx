@@ -87,7 +87,7 @@ const CourseDetailsForm: React.FC<CourseDetailsFormProps> = ({ courseData, onCom
       prerequisites: courseData.prerequisites || '',
       language: courseData.language || 'English',
       course_type: courseData.course_type || 'regular',
-      certificate_enabled: courseData.certificate_enabled !== false,
+      certificate_enabled: courseData.certificate_enabled === true,
       is_hidden: courseData.is_hidden || false,
     }));
   }, [courseData, instructors]);
@@ -130,7 +130,7 @@ const CourseDetailsForm: React.FC<CourseDetailsFormProps> = ({ courseData, onCom
     language: courseData.language || 'English',
     course_type: courseData.course_type || 'regular',
     selectedSkillIds: courseData.selectedSkillIds || [],
-    certificate_enabled: courseData.certificate_enabled !== false,
+    certificate_enabled: courseData.certificate_enabled === true,
     is_hidden: courseData.is_hidden || false,
   });
 

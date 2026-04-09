@@ -34,6 +34,7 @@ const DashboardPage: React.FC = () => {
   const [stats, setStats] = useState({
     coursesInProgress: 0,
     coursesCompleted: 0,
+    hiddenCoursesCompleted: 0,
     hoursLearned: 0,
     certificatesEarned: 0
   });
@@ -146,11 +147,13 @@ const DashboardPage: React.FC = () => {
         data: allEnrollmentsRes.data?.slice(0, 3) // Show first 3 enrollments
       });
 
-      let allEnrollments = allEnrollmentsRes.data || [];
+      const rawEnrollments = allEnrollmentsRes.data || [];
+      let allEnrollments = rawEnrollments;
+      let courseIds: string[] = [];
 
       // Fetch course details separately to avoid join issues
-      if (allEnrollments.length > 0) {
-        const courseIds = allEnrollments
+      if (rawEnrollments.length > 0) {
+        courseIds = rawEnrollments
           .map((e: any) => e.courseid)
           .filter((id: any, idx: number, arr: any[]) => arr.indexOf(id) === idx); // Remove duplicates
 
@@ -218,28 +221,85 @@ const DashboardPage: React.FC = () => {
         console.log('⚠️ No enrollments found');
       }
 
-      // Calculate stats from enrollments
-      const coursesInProgress = allEnrollments.filter((e: any) => !e.completed).length;
+      const courseStatusMap = new Map<string, { isHidden: boolean; certificateEnabled: boolean }>();
+      if (courseIds.length > 0) {
+        try {
+          const hiddenStatusRes = await withTimeout(
+            supabase
+              .from('courses')
+              .select('id, is_hidden, certificate_enabled')
+              .in('id', courseIds),
+            10000,
+            'courses.select(ids, is_hidden, certificate_enabled)'
+          );
 
-      // Certificates earned: count only completed courses with certificate_enabled = true
-      const certificatesEarned = allEnrollments.filter((e: any) =>
-        e.completed && e.courses?.certificate_enabled === true
-      ).length;
+          if (hiddenStatusRes.error) throw hiddenStatusRes.error;
+          (hiddenStatusRes.data || []).forEach((course: any) => {
+            courseStatusMap.set(course.id, {
+              isHidden: course.is_hidden === true,
+              certificateEnabled: course.certificate_enabled === true,
+            });
+          });
+        } catch (hiddenStatusErr: any) {
+          console.error('❌ Error fetching hidden status for courses:', {
+            message: hiddenStatusErr?.message,
+            code: hiddenStatusErr?.code
+          });
+        }
+      }
 
-      // Calculate total learning hours from enrollments' hoursspent
-      const totalMinutes = allEnrollments.reduce((sum: number, e: any) => sum + (e.hoursspent || 0), 0);
+      // Deduplicate enrollments by course so dashboard metrics count courses, not repeated attempts.
+      const latestEnrollmentByCourse = new Map<string, any>();
+      rawEnrollments.forEach((enrollment: any) => {
+        const existing = latestEnrollmentByCourse.get(enrollment.courseid);
+        const currentLastAccess = enrollment.lastaccessedat ? new Date(enrollment.lastaccessedat).getTime() : 0;
+        const existingLastAccess = existing?.lastaccessedat ? new Date(existing.lastaccessedat).getTime() : 0;
+        if (!existing || currentLastAccess >= existingLastAccess) {
+          latestEnrollmentByCourse.set(enrollment.courseid, enrollment);
+        }
+      });
+      const uniqueCourseEnrollments = Array.from(latestEnrollmentByCourse.values());
+
+      // Calculate stats from the unique course enrollments, excluding hidden courses from visible progress/completed counts
+      const coursesInProgress = uniqueCourseEnrollments.filter((e: any) => {
+        const status = courseStatusMap.get(e.courseid);
+        return !e.completed && !status?.isHidden;
+      }).length;
+      const coursesCompleted = uniqueCourseEnrollments.filter((e: any) => {
+        const status = courseStatusMap.get(e.courseid);
+        return e.completed && !status?.isHidden;
+      }).length;
+
+      // Hidden completed courses should also be included in dashboard counts separately
+      const hiddenCoursesCompleted = uniqueCourseEnrollments.filter((e: any) => {
+        const status = courseStatusMap.get(e.courseid);
+        return e.completed && status?.isHidden;
+      }).length;
+
+      // Certificates earned: count completed courses with certificate enabled, including hidden enrollments if applicable
+      const certificatesEarned = uniqueCourseEnrollments.filter((e: any) => {
+        const status = courseStatusMap.get(e.courseid);
+        return e.completed && status?.certificateEnabled === true;
+      }).length;
+
+      // Calculate total learning hours from ALL raw enrollments' hoursspent
+      const totalMinutes = rawEnrollments.reduce((sum: number, e: any) => sum + (e.hoursspent || 0), 0);
       const hoursLearned = Math.round(totalMinutes / 60);
+      const enrollmentsWithCourseDataCount = allEnrollments.filter((e: any) => e.courses).length;
 
       console.log('📊 Stats calculated:', {
         coursesInProgress,
-        coursesCompleted: allEnrollments.filter((e: any) => e.completed).length,
+        coursesCompleted,
         hoursLearned,
-        certificatesEarned
+        certificatesEarned,
+        totalEnrollments: allEnrollments.length,
+        enrollmentsWithCourseData: enrollmentsWithCourseDataCount
       });
 
       setStats({
         coursesInProgress,
-        coursesCompleted: allEnrollments.filter((e: any) => e.completed).length,
+        coursesCompleted,
+        hiddenCoursesCompleted,
         hoursLearned: hoursLearned,
         certificatesEarned,
       });
@@ -261,7 +321,18 @@ const DashboardPage: React.FC = () => {
         console.error('❌ Error fetching top learners:', err);
       }
 
-      const inProgressEnrollments = allEnrollments.filter((e: any) => {
+      const uniqueCourseEnrollmentMap = new Map<string, any>();
+      allEnrollments.forEach((enrollment: any) => {
+        const existing = uniqueCourseEnrollmentMap.get(enrollment.courseid);
+        const currentLastAccess = enrollment.lastaccessedat ? new Date(enrollment.lastaccessedat).getTime() : 0;
+        const existingLastAccess = existing?.lastaccessedat ? new Date(existing.lastaccessedat).getTime() : 0;
+        if (!existing || currentLastAccess >= existingLastAccess) {
+          uniqueCourseEnrollmentMap.set(enrollment.courseid, enrollment);
+        }
+      });
+      const uniqueCourseEnrollmentsWithCourse = Array.from(uniqueCourseEnrollmentMap.values());
+
+      const inProgressEnrollments = uniqueCourseEnrollmentsWithCourse.filter((e: any) => {
         return !e.completed; // Only show incomplete courses in "Continue Learning"
       });
 
@@ -310,27 +381,17 @@ const DashboardPage: React.FC = () => {
             }
 
             console.log('⏳ Fetching lesson progress...');
-            const lessonProgressRes = await withTimeout(
-              supabase
-                .from('lesson_progress')
-                .select('courseid, lessonid, completed')
-                .eq('userid', user.id)
-                .in('courseid', courseIds),
-              10000,
-              `lesson_progress.select(userid, ${courseIds.length} courses)`
-            );
+            const lessonProgressData = await lessonProgressService.getProgressByCourseIds(user.id, courseIds);
 
             const completedLessonsByCourseBefore: Record<string, number> = {};
-            if (lessonProgressRes.data) {
-              lessonProgressRes.data.forEach((progress: any) => {
-                if (progress.completed) {
-                  if (!completedLessonsByCourseBefore[progress.courseid]) {
-                    completedLessonsByCourseBefore[progress.courseid] = 0;
-                  }
-                  completedLessonsByCourseBefore[progress.courseid]++;
+            lessonProgressData.forEach((progress: any) => {
+              if (progress.completed) {
+                if (!completedLessonsByCourseBefore[progress.courseid]) {
+                  completedLessonsByCourseBefore[progress.courseid] = 0;
                 }
-              });
-            }
+                completedLessonsByCourseBefore[progress.courseid]++;
+              }
+            });
 
             const courses = inProgressEnrollments
               .map((enrollment: any) => {
@@ -407,6 +468,7 @@ const DashboardPage: React.FC = () => {
       setStats({
         coursesInProgress: 0,
         coursesCompleted: 0,
+        hiddenCoursesCompleted: 0,
         hoursLearned: 0,
         certificatesEarned: 0
       });
@@ -503,9 +565,10 @@ const DashboardPage: React.FC = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6">
           <StatCard title="Courses in Progress" value={stats.coursesInProgress.toString()} icon="book" color="bg-blue-500" />
           <StatCard title="Courses Completed" value={stats.coursesCompleted.toString()} icon="check_circle" color="bg-green-500" />
+          <StatCard title="Hidden Completed" value={stats.hiddenCoursesCompleted.toString()} icon="visibility_off" color="bg-purple-500" />
           <StatCard title="Hours Learned" value={`${stats.hoursLearned}h`} icon="schedule" color="bg-indigo-500" />
           <StatCard title="Certificates Earned" value={stats.certificatesEarned.toString()} icon="workspace_premium" color="bg-yellow-500" />
         </div>

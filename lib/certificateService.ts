@@ -1,92 +1,87 @@
 import { supabase } from './supabaseClient';
-import { getEnabledSignatures } from './certificateSignatureService';
+import { certificateBackfillService } from './certificateBackfillService';
 
 export const awardCertificate = async (userId: string, courseId: string) => {
   try {
-    // CRITICAL: Always check if certificate is enabled for this course
-    // This is a defensive measure to prevent accidental certificate issuance
-    const { data: course, error: courseError } = await supabase
-      .from('courses')
-      .select('id, title, certificate_enabled, template_id')
-      .eq('id', courseId)
+    // Call the Supabase Edge Function for certificate awarding
+    const { data, error } = await supabase.functions.invoke('award-certificate', {
+      body: { userId, courseId }
+    });
+
+    if (error) {
+      console.error('Error calling award-certificate function:', error);
+      return null;
+    }
+
+    if (!data.success) {
+      console.error('Certificate awarding failed:', data.error);
+      return null;
+    }
+
+    // Return certificate data (we'll need to fetch it to get full details)
+    const { data: certData, error: fetchError } = await supabase
+      .from('certificates')
+      .select(`
+        id,
+        user_id,
+        issued_at,
+        template_id,
+        courses:course_id ( id, title ),
+        certificate_signatures (
+          signature_id,
+          display_order,
+          signature_name,
+          signature_designation,
+          signature_text,
+          signature_image_url
+        )
+      `)
+      .eq('id', data.certificateId)
       .single();
 
-    if (courseError || !course) {
-      console.error('Error fetching course for certificate validation:', courseError);
+    if (fetchError) {
+      console.error('Error fetching awarded certificate:', fetchError);
       return null;
     }
 
-    // ABORT if certificate is disabled for this course
-    if (!course.certificate_enabled) {
-      console.warn(`Certificate issuance BLOCKED: Course "${course.title}" has certificate_enabled = false`);
-      return null;
-    }
+    // BACKFILL: If certificate has no signatures linked, try to link them now
+    if (!certData.certificate_signatures || certData.certificate_signatures.length === 0) {
+      console.warn('[CERTIFICATE_BACKFILL] Certificate has no signatures linked, attempting to backfill');
+      try {
+        await certificateBackfillService.backfillCertificateSignatures(certData.id);
+        // Re-fetch certificate data with signatures
+        const { data: updatedCertData, error: updatedFetchError } = await supabase
+          .from('certificates')
+          .select(`
+            id,
+            user_id,
+            issued_at,
+            template_id,
+            courses:course_id ( id, title ),
+            certificate_signatures (
+              signature_id,
+              display_order,
+              signature_name,
+              signature_designation,
+              signature_text,
+              signature_image_url
+            )
+          `)
+          .eq('id', data.certificateId)
+          .single();
 
-    // Get active template if course doesn't have one
-    let templateId = course.template_id;
-    if (!templateId) {
-      const { data: activeTemplate } = await supabase
-        .from('certificate_templates')
-        .select('id')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      
-      if (activeTemplate) {
-        templateId = activeTemplate.id;
-      }
-    }
-
-    // Award certificate
-    const { data: certData, error: certError } = await supabase
-      .from('certificates')
-      .insert([{
-        user_id: userId,
-        course_id: courseId,
-        template_id: templateId,
-        issued_at: new Date().toISOString()
-      }])
-      .select();
-
-    if (certError || !certData?.[0]) {
-      console.error('Error awarding certificate:', certError);
-      return null;
-    }
-
-    const certificateId = certData[0].id;
-
-    // Link enabled signatures at time of certificate issuance with snapshot data
-    try {
-      const enabledSignatures = await getEnabledSignatures();
-      if (enabledSignatures.length > 0) {
-        // Store snapshot of signature data at time of issuance for historical accuracy
-        const signatureLinkData = enabledSignatures.map(sig => ({
-          certificate_id: certificateId,
-          signature_id: sig.id,
-          display_order: sig.display_order,
-          // Snapshot data - preserves exact values at time of issuance
-          signature_name: sig.name,
-          signature_designation: sig.designation,
-          signature_text: sig.signature_text,
-          signature_image_url: sig.signature_image_url
-        }));
-
-        const { error: linkError } = await supabase
-          .from('certificate_signatures')
-          .insert(signatureLinkData);
-
-        if (linkError) {
-          console.warn('Could not link signatures to certificate:', linkError);
-        } else {
-          console.log(`Certificate successfully awarded for user ${userId} on course "${course.title}" with ${enabledSignatures.length} signatures (snapshot stored)`);
+        if (updatedFetchError) {
+          console.error('[CERTIFICATE_BACKFILL] Error re-fetching certificate after backfill:', updatedFetchError);
+          return certData;
         }
+
+        return updatedCertData || certData;
+      } catch (backfillError) {
+        console.error('[CERTIFICATE_BACKFILL] Failed to backfill signatures:', backfillError);
       }
-    } catch (sigError) {
-      console.warn('Could not fetch signatures for certificate:', sigError);
     }
 
-    return certData[0];
+    return certData;
   } catch (error) {
     console.error('Error in awardCertificate:', error);
     return null;

@@ -2,6 +2,7 @@ import { supabase } from './supabaseClient';
 import { userSkillAchievementService } from './userSkillAchievementService';
 import { careerPathService } from './careerPathService';
 import { userStatisticsService } from './userStatisticsService';
+import { awardCertificate } from './certificateService';
 
 export const courseCompletionService = {
   markCourseAsCompleted: async (userId: string, courseId: string) => {
@@ -62,13 +63,26 @@ export const courseCompletionService = {
       // DEFENSIVE LOGGING: Log the actual certificate_enabled value
       console.log(`[CERTIFICATE_CHECK] Course: "${course.title}" (ID: ${courseId}), certificate_enabled: ${course.certificate_enabled} (type: ${typeof course.certificate_enabled})`);
 
-      // Check if certificate is enabled for this course  
+      // Check if certificate is enabled for this course
       // Explicitly handle falsy values (false, null, undefined, 0)
       const isCertificateEnabled = course.certificate_enabled === true;
 
       if (!isCertificateEnabled) {
         console.log(`[CERTIFICATE_BLOCKED] Certificate disabled for course "${course.title}". Skipping certificate issuance.`);
         return { success: true, issued: false, reason: 'Certificate disabled for this course' };
+      }
+
+      // Check if this course has been retaken by the user (prevent certificate re-issuance after retake)
+      const { data: enrollment } = await supabase
+        .from('enrollments')
+        .select('retake_count')
+        .eq('userid', userId)
+        .eq('courseid', courseId)
+        .maybeSingle();
+
+      if (enrollment && enrollment.retake_count > 0) {
+        console.log(`[CERTIFICATE_BLOCKED] Course "${course.title}" has been retaken by user ${userId}. Skipping certificate issuance.`);
+        return { success: true, issued: false, reason: 'Certificate not available for retaken courses' };
       }
 
       // Check if certificate already issued for this user and course
@@ -84,24 +98,17 @@ export const courseCompletionService = {
         return { success: true, issued: false, reason: 'Certificate already issued' };
       }
 
-      // Create certificate using service role
+      // Use the awardCertificate function which properly handles signature linking
       console.log(`[CERTIFICATE_ISSUING] About to issue certificate for user ${userId} on course "${course.title}"`);
-      const { data: newCert, error: certError } = await supabase
-        .from('certificates')
-        .insert([{
-          user_id: userId,
-          course_id: courseId,
-          issued_at: new Date().toISOString()
-        }])
-        .select();
+      const certificateData = await awardCertificate(userId, courseId);
 
-      if (certError) {
-        console.error('[CERTIFICATE_ERROR] Error issuing certificate:', certError);
-        return { success: false, error: certError };
+      if (!certificateData) {
+        console.error('[CERTIFICATE_ERROR] Error issuing certificate via awardCertificate');
+        return { success: false, error: 'Failed to award certificate' };
       }
 
-      console.log(`[CERTIFICATE_SUCCESS] Certificate issued successfully for user ${userId} and course ${courseId}`);
-      return { success: true, issued: true, certificateId: newCert?.[0]?.id };
+      console.log(`[CERTIFICATE_SUCCESS] Certificate issued successfully for user ${userId} and course ${courseId} with signatures`);
+      return { success: true, issued: true, certificateId: certificateData.id };
     } catch (error) {
       console.error('[CERTIFICATE_EXCEPTION] Error in issueCertificateIfEnabled:', error);
       return { success: false, error };
@@ -112,7 +119,7 @@ export const courseCompletionService = {
     try {
       const { data: mappings, error: mappingsError } = await supabase
         .from('skill_course_mappings')
-        .select('skill_id, expiry_date')
+        .select('skillid, expiry_date')
         .eq('courseid', courseId);
 
       if (mappingsError) throw mappingsError;
@@ -137,7 +144,7 @@ export const courseCompletionService = {
       // Get course details including enrollment completion date
       const { data: course, error: courseError } = await supabase
         .from('courses')
-        .select('title, difficulty_level')
+        .select('title, level')
         .eq('id', courseId)
         .single();
 
@@ -146,7 +153,7 @@ export const courseCompletionService = {
         return;
       }
 
-      console.log('[COURSE_COMPLETION_DEBUG] Recording achievements for course:', course.title, '(Level:', course.difficulty_level, ')');
+      console.log('[COURSE_COMPLETION_DEBUG] Recording achievements for course:', course.title, '(Level:', course.level, ')');
 
       // Get the best quiz result for this course to use as the skill score
       const { data: assessments } = await supabase
@@ -174,7 +181,7 @@ export const courseCompletionService = {
       const { data: mappings, error: mappingsError } = await supabase
         .from('skill_course_mappings')
         .select(`
-          skill_id,
+          skillid,
           skills (
             name
           )
@@ -190,19 +197,24 @@ export const courseCompletionService = {
       console.log('[COURSE_COMPLETION_DEBUG] Found', mappings.length, 'skill mappings for course:', courseId);
 
       for (const mapping of mappings) {
+        if (!mapping.skillid) {
+          console.warn('[COURSE_COMPLETION_DEBUG] Skipping skill mapping with null skillid:', mapping);
+          continue;
+        }
+
         // @ts-ignore
         const skillName = mapping.skills?.name || 'Unknown Skill';
-        console.log('[COURSE_COMPLETION_DEBUG] Recording skill achievement:', skillName, '(ID:', mapping.skill_id, ')');
+        console.log('[COURSE_COMPLETION_DEBUG] Recording skill achievement:', skillName, '(ID:', mapping.skillid, ')');
 
-        // Normalize difficulty_level to titlecase
-        const normalizedLevel = course.difficulty_level
-          ? course.difficulty_level.charAt(0).toUpperCase() + course.difficulty_level.slice(1).toLowerCase()
+        // Normalize level to titlecase
+        const normalizedLevel = course.level
+          ? course.level.charAt(0).toUpperCase() + course.level.slice(1).toLowerCase()
           : 'Beginner';
 
         // Record the skill achievement (user_skill_achievements table)
         await userSkillAchievementService.recordSkillAchievement(
           userId,
-          mapping.skill_id,
+          mapping.skillid,
           skillName,
           (normalizedLevel as 'Beginner' | 'Intermediate' | 'Advanced'),
           courseId,
@@ -216,7 +228,7 @@ export const courseCompletionService = {
             .from('skill_assignments')
             .upsert([{
               userid: userId,
-              skillid: mapping.skill_id,
+              skillid: mapping.skillid,
               visible: true,
               hidden: false,
               assignedat: new Date().toISOString(),
@@ -270,7 +282,7 @@ export const courseCompletionService = {
       const { data: mappings, error: mappingError } = await supabase
         .from('skill_course_mappings')
         .select('skill_id, expiry_date')
-        .in('course_id', courseIds);
+        .in('courseid', courseIds);
 
       if (mappingError) throw mappingError;
       if (!mappings || mappings.length === 0) {

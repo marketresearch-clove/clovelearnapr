@@ -47,7 +47,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
     status: editingCourse?.status || 'draft',
     language: editingCourse?.language || 'English',
     course_type: editingCourse?.course_type || 'regular',
-    certificate_enabled: editingCourse?.certificate_enabled !== false,
+    certificate_enabled: editingCourse?.certificate_enabled === true,
     modules: editingCourse?.modules || [],
     selectedSkillIds: [],
     aiGeneratedSkillIds: [],

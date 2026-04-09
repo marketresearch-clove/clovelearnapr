@@ -232,15 +232,15 @@ const AdminAnalyticsPage: React.FC = () => {
         setTopDepartments(topDepts);
         const topDept = (topDepts[0] as any)?.department || 'N/A';
 
-        // Average Session Time (hoursspent is already in hours)
+        // Average Session Time (hoursspent is stored in minutes)
         const { data: sessionData } = await supabase
           .from('learning_hours')
           .select('userid, hoursspent');
 
-        const totalSessionHours = (sessionData || []).reduce((sum, s) => sum + (s.hoursspent || 0), 0);
+        const totalSessionMinutes = (sessionData || []).reduce((sum, s) => sum + (s.hoursspent || 0), 0);
         const totalSessionRecords = (sessionData || []).length;
         const avgSessionTime = totalSessionRecords > 0
-          ? totalSessionHours / totalSessionRecords
+          ? (totalSessionMinutes / totalSessionRecords) / 60
           : 0;
 
         setStats((prev: any) => ({
@@ -274,11 +274,11 @@ const AdminAnalyticsPage: React.FC = () => {
             .from('certificates')
             .select('user_id, course_id');
 
-          // Calculate average session duration (hoursspent is already in hours)
-          const totalHours = (learningHours || []).reduce((sum: number, lh: any) => sum + (lh.hoursspent || 0), 0);
+          // Calculate average session duration (hoursspent is stored in minutes)
+          const totalMinutes = (learningHours || []).reduce((sum: number, lh: any) => sum + (lh.hoursspent || 0), 0);
           const totalLearningRecords = (learningHours || []).length;
           const avgSessionDuration = totalLearningRecords > 0
-            ? Math.round((totalHours / totalLearningRecords) * 100) / 100
+            ? Math.round(((totalMinutes / totalLearningRecords) / 60) * 100) / 100
             : 0;
 
           // Calculate peak activity hour (from createdat timestamps)

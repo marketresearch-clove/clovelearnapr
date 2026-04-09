@@ -45,6 +45,86 @@ export const lessonProgressService = {
       return [];
     }
   },
+  async getProgressByCourseIds(userId: string, courseIds: string[]) {
+    try {
+      if (courseIds.length === 0) return [];
+
+      const { data, error } = await supabase
+        .from('lesson_progress')
+        .select('courseid, lessonid, completed')
+        .eq('userid', userId)
+        .in('courseid', courseIds);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching lesson progress by course IDs:', error);
+      return [];
+    }
+  },
+
+  async getCompletedLessonIds(userId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('lesson_progress')
+        .select('lessonid')
+        .eq('userid', userId)
+        .eq('completed', true);
+
+      if (error) throw error;
+      return (data || []).map((row: any) => row.lessonid);
+    } catch (error) {
+      console.error('Error fetching completed lesson IDs:', error);
+      return [];
+    }
+  },
+
+  async recordLessonAccess(userId: string, lessonId: string, courseId: string) {
+    try {
+      const now = new Date().toISOString();
+      const { data: existing, error: existingError } = await supabase
+        .from('lesson_progress')
+        .select('id')
+        .eq('userid', userId)
+        .eq('lessonid', lessonId)
+        .maybeSingle();
+
+      if (existingError && existingError.code !== 'PGRST116') {
+        throw existingError;
+      }
+
+      if (existing?.id) {
+        const { error: updateError } = await supabase
+          .from('lesson_progress')
+          .update({ lastaccessedat: now })
+          .eq('id', existing.id);
+
+        if (updateError) throw updateError;
+        return existing.id;
+      }
+
+      const { data, error: insertError } = await supabase
+        .from('lesson_progress')
+        .insert([
+          {
+            userid: userId,
+            lessonid: lessonId,
+            courseid: courseId,
+            progress: 0,
+            completed: false,
+            lastaccessedat: now,
+          },
+        ])
+        .select('id')
+        .single();
+
+      if (insertError) throw insertError;
+      return data?.id || null;
+    } catch (error) {
+      console.error('Error recording lesson access:', error);
+      return null;
+    }
+  },
 
   async getCourseLessonStats(userId: string, courseId: string) {
     try {
@@ -83,14 +163,61 @@ export const lessonProgressService = {
     completed = false
   ) {
     try {
-      const response = await fetch('http://localhost:3001/api/lesson-progress/update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, lessonId, courseId, progress, completed }),
-      });
+      const now = new Date().toISOString();
 
-      if (!response.ok) throw new Error('Failed to update lesson progress');
-      return await response.json();
+      // Check if progress record exists
+      const { data: existing, error: existingError } = await supabase
+        .from('lesson_progress')
+        .select('id')
+        .eq('userid', userId)
+        .eq('lessonid', lessonId)
+        .maybeSingle();
+
+      if (existingError && existingError.code !== 'PGRST116') {
+        throw existingError;
+      }
+
+      // Prepare update data
+      const updateData: any = {
+        progress,
+        lastaccessedat: now,
+      };
+
+      if (completed) {
+        updateData.completed = true;
+        updateData.completedat = now;
+      }
+
+      if (existing?.id) {
+        // Update existing progress record
+        const { error: updateError } = await supabase
+          .from('lesson_progress')
+          .update(updateData)
+          .eq('id', existing.id);
+
+        if (updateError) throw updateError;
+        return { success: true, id: existing.id };
+      } else {
+        // Create new progress record
+        const { data, error: insertError } = await supabase
+          .from('lesson_progress')
+          .insert([
+            {
+              userid: userId,
+              lessonid: lessonId,
+              courseid: courseId,
+              progress,
+              completed,
+              lastaccessedat: now,
+              completedat: completed ? now : null,
+            },
+          ])
+          .select('id')
+          .single();
+
+        if (insertError) throw insertError;
+        return { success: true, id: data?.id };
+      }
     } catch (error) {
       console.error('Error updating lesson progress:', error);
       throw error;

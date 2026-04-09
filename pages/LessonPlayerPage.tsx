@@ -6,6 +6,7 @@ import { assessmentService } from '../lib/assessmentService';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import { learningHoursService } from '../lib/learningHoursService';
+import { lessonProgressService } from '../lib/lessonProgressService';
 import { userStatisticsService } from '../lib/userStatisticsService';
 import { enrollmentService } from '../lib/enrollmentService';
 import { quizResultsService } from '../lib/quizResultsService';
@@ -102,6 +103,8 @@ const LessonPlayerPage: React.FC = () => {
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const ttsRef = useRef<TextToSpeechRef>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const courseCompletionInProgressRef = useRef(false);
+  const courseCompletionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (window.innerWidth < 1024) {
@@ -125,6 +128,9 @@ const LessonPlayerPage: React.FC = () => {
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
+      }
+      if (courseCompletionTimeoutRef.current) {
+        clearTimeout(courseCompletionTimeoutRef.current);
       }
     };
   }, [courseId, lessonId]);
@@ -183,36 +189,66 @@ const LessonPlayerPage: React.FC = () => {
     }
   }, [modules, user?.id, courseId]);
 
+  const ensureCourseCompletion = async (percentage: number) => {
+    if (!user?.id || !courseId || courseCompletionInProgressRef.current) return;
+    courseCompletionInProgressRef.current = true;
+
+    try {
+      if (percentage !== 100) {
+        return;
+      }
+
+      const isFullyComplete = await validateCourseCompletion();
+      if (!isFullyComplete) {
+        console.log('[COURSE_COMPLETION] Course reached 100% progress but requirements are not fully met. Skipping final completion.');
+        return;
+      }
+
+      let enrollment = await enrollmentService.getEnrollment(user.id, courseId);
+      if (!enrollment) {
+        console.warn('[COURSE_COMPLETION] No enrollment found for user, creating one before completing the course');
+        enrollment = await enrollmentService.enrollCourse(user.id, courseId);
+      }
+
+      if (enrollment && !enrollment.completed) {
+        const { data: course } = await supabase
+          .from('courses')
+          .select('duration')
+          .eq('id', courseId)
+          .single();
+
+        const courseDuration = course?.duration || 0;
+        await enrollmentService.completeCourse(user.id, courseId, courseDuration);
+      }
+
+      const skillAssignResult = await courseCompletionService.markCourseAsCompleted(user.id, courseId);
+      console.log('Skills assigned:', skillAssignResult);
+
+      if (courseCompletionTimeoutRef.current) {
+        clearTimeout(courseCompletionTimeoutRef.current);
+      }
+      courseCompletionTimeoutRef.current = setTimeout(() => {
+        console.log('[COURSE_COMPLETION] Redirecting to dashboard after completing course');
+        navigate('/dashboard');
+      }, 1500);
+    } catch (error) {
+      console.error('Error ensuring course completion:', error);
+    } finally {
+      courseCompletionInProgressRef.current = false;
+    }
+  };
+
   const updateCourseCompletion = async (percentage: number) => {
     if (!user?.id || !courseId) return;
 
     try {
+      if (percentage === 100) {
+        await ensureCourseCompletion(percentage);
+        return;
+      }
+
       const enrollment = await enrollmentService.getEnrollment(user.id, courseId);
-
-      if (enrollment && percentage === 100) {
-        if (!enrollment.completed) {
-          const { data: course } = await supabase
-            .from('courses')
-            .select('duration')
-            .eq('id', courseId)
-            .single();
-
-          const courseDuration = course?.duration || 0;
-
-          await enrollmentService.completeCourse(user.id, courseId, courseDuration);
-        }
-
-        // Always ensure skills are assigned when course is 100% completed
-        // This handles cases where completion was recorded but skills weren't assigned
-        const skillAssignResult = await courseCompletionService.markCourseAsCompleted(user.id, courseId);
-        console.log('Skills assigned:', skillAssignResult);
-
-        // Redirect to dashboard after successful completion with a short delay to allow stats to update
-        setTimeout(() => {
-          console.log('[COURSE_COMPLETION] Redirecting to dashboard after completing course');
-          navigate('/dashboard');
-        }, 1500);
-      } else if (enrollment && !enrollment.completed) {
+      if (enrollment && !enrollment.completed) {
         await enrollmentService.updateProgress(user.id, courseId, percentage);
       }
     } catch (error) {
@@ -231,30 +267,7 @@ const LessonPlayerPage: React.FC = () => {
     if (!user?.id || !activeLesson?.id || !courseId) return;
 
     try {
-      const existingProgress = await supabase
-        .from('lesson_progress')
-        .select('id')
-        .eq('userid', user.id)
-        .eq('lessonid', activeLesson.id)
-        .maybeSingle();
-
-      if (!existingProgress.data) {
-        await supabase
-          .from('lesson_progress')
-          .insert([{
-            userid: user.id,
-            lessonid: activeLesson.id,
-            courseid: courseId,
-            progress: 0,
-            completed: false,
-            lastaccessedat: new Date().toISOString(),
-          }]);
-      } else {
-        await supabase
-          .from('lesson_progress')
-          .update({ lastaccessedat: new Date().toISOString() })
-          .eq('id', existingProgress.data.id);
-      }
+      await lessonProgressService.recordLessonAccess(user.id, activeLesson.id, courseId);
 
       // Only auto-enroll if lesson is LOCKED (not a free preview)
       // Free/preview lessons should not auto-enroll users
@@ -346,15 +359,8 @@ const LessonPlayerPage: React.FC = () => {
 
       let lessonProgressMap = new Map<string, any>();
       if (user?.id) {
-        const progressRes = await supabase
-          .from('lesson_progress')
-          .select('lessonid, completed, progress')
-          .eq('userid', user.id)
-          .eq('courseid', courseId);
-
-        if (progressRes.data) {
-          lessonProgressMap = new Map(progressRes.data.map((p: any) => [p.lessonid, p]));
-        }
+        const progressData = await lessonProgressService.getUserLessonProgress(user.id, courseId);
+        lessonProgressMap = new Map(progressData.map((p: any) => [p.lessonid, p]));
       }
 
       lessons.forEach((lesson: any) => {
@@ -435,16 +441,11 @@ const LessonPlayerPage: React.FC = () => {
         setPdfScrolledToEnd(false);
 
         if (user?.id) {
-          const lessonProg = await supabase
-            .from('lesson_progress')
-            .select('progress, completed')
-            .eq('userid', user.id)
-            .eq('lessonid', selected.id)
-            .maybeSingle();
+          const lessonProg = await lessonProgressService.getLessonProgress(user.id, selected.id);
 
-          if (lessonProg.data) {
-            setLessonProgress(lessonProg.data.progress || 0);
-            setLessonCompleted(lessonProg.data.completed || false);
+          if (lessonProg) {
+            setLessonProgress(lessonProg.progress || 0);
+            setLessonCompleted(lessonProg.completed || false);
           }
         }
 
@@ -699,12 +700,7 @@ const LessonPlayerPage: React.FC = () => {
     console.log(`Updating lesson progress: Lesson=${activeLesson.id}, Progress=${progress}, Completed=${completed}`);
 
     try {
-      const existingProgress = await supabase
-        .from('lesson_progress')
-        .select('id, completed')
-        .eq('userid', user.id)
-        .eq('lessonid', activeLesson.id)
-        .maybeSingle();
+      const existingProgress = await lessonProgressService.getLessonProgress(user.id, activeLesson.id);
 
       // If requesting to mark as complete, always set the UI state
       if (completed) {
@@ -712,61 +708,20 @@ const LessonPlayerPage: React.FC = () => {
       }
 
       // Skip database update if already completed, but still set UI state above
-      if (existingProgress.data?.completed && completed) {
+      if (existingProgress?.completed && completed) {
         console.log('Lesson already completed in database, skipping database update but UI is now reflected');
         return;
       }
 
-      let error;
-      if (existingProgress.data) {
-        const { error: updateError } = await supabase
-          .from('lesson_progress')
-          .update({
-            progress,
-            completed,
-            lastaccessedat: new Date().toISOString(),
-            completedat: completed && !existingProgress.data.completed ? new Date().toISOString() : existingProgress.data.completedat || null,
-          })
-          .eq('id', existingProgress.data.id);
-        error = updateError;
-      } else {
-        const { error: insertError } = await supabase
-          .from('lesson_progress')
-          .insert([{
-            userid: user.id,
-            lessonid: activeLesson.id,
-            courseid: courseId,
-            progress,
-            completed,
-            completedat: completed ? new Date().toISOString() : null,
-            lastaccessedat: new Date().toISOString(),
-          }]);
-        error = insertError;
-      }
-
-      if (error) {
-        console.error('Supabase error updating lesson progress:', error);
-        console.error('Error details:', { status: (error as any)?.status, message: (error as any)?.message });
-        // For 403 errors (RLS), still set UI state but don't throw
-        if ((error as any)?.status === 403) {
-          console.warn('RLS Policy blocking update. UI state set to completed, but database update may have failed.');
-        } else {
-          throw error;
-        }
-      }
+      await lessonProgressService.updateLessonProgress(user.id, activeLesson.id, courseId, progress, completed);
 
       if (completed) {
         await updateEnrollmentProgress();
         await recordLearningHours();
 
-        const progressRes = await supabase
-          .from('lesson_progress')
-          .select('lessonid, completed, progress')
-          .eq('userid', user.id)
-          .eq('courseid', courseId);
-
-        if (progressRes.data) {
-          const lessonProgressMap = new Map(progressRes.data.map((p: any) => [p.lessonid, p]));
+        const progressData = await lessonProgressService.getUserLessonProgress(user.id, courseId);
+        if (progressData.length > 0) {
+          const lessonProgressMap = new Map(progressData.map((p: any) => [p.lessonid, p]));
 
           const updatedModules = modules.map(module => ({
             ...module,
@@ -777,6 +732,16 @@ const LessonPlayerPage: React.FC = () => {
           }));
 
           setModules(updatedModules);
+
+          const totalLessons = updatedModules.reduce((sum, module) => sum + module.lessons.length, 0);
+          const completedLessons = updatedModules.reduce((sum, module) => sum + module.lessons.filter(lesson => lesson.completed).length, 0);
+          const updatedPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+          setCourseProgressPercentage(updatedPercentage);
+          setCourseCompleted(updatedPercentage === 100);
+
+          if (updatedPercentage === 100) {
+            await updateCourseCompletion(updatedPercentage);
+          }
         }
       }
     } catch (err) {
@@ -796,13 +761,7 @@ const LessonPlayerPage: React.FC = () => {
 
       if (!allLessons.data || allLessons.data.length === 0) return false;
 
-      const lessonProgressRes = await supabase
-        .from('lesson_progress')
-        .select('lessonid, completed')
-        .eq('userid', user.id)
-        .eq('courseid', courseId);
-
-      const lessonProgress = lessonProgressRes.data || [];
+      const lessonProgress = await lessonProgressService.getUserLessonProgress(user.id, courseId);
       const completedLessons = new Set(lessonProgress.filter((l: any) => l.completed).map((l: any) => l.lessonid));
 
       for (const lesson of allLessons.data) {
@@ -853,17 +812,12 @@ const LessonPlayerPage: React.FC = () => {
         .select('id')
         .eq('courseid', courseId);
 
-      if (!allLessons.data || allLessons.data.length === 0) return;
+      if (!allLessons.data || allLessons.data.length === 0) return 0;
 
       const totalLessons = allLessons.data.length;
 
-      const lessonStats = await supabase
-        .from('lesson_progress')
-        .select('completed')
-        .eq('userid', user.id)
-        .eq('courseid', courseId);
-
-      const completedLessons = lessonStats.data ? lessonStats.data.filter((l: any) => l.completed).length : 0;
+      const lessonStats = await lessonProgressService.getCourseLessonStats(user.id, courseId);
+      const completedLessons = lessonStats?.completedLessons || 0;
       const progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
       await supabase
@@ -875,27 +829,10 @@ const LessonPlayerPage: React.FC = () => {
         .eq('userid', user.id)
         .eq('courseid', courseId);
 
-      if (progressPercentage === 100) {
-        const isFullyComplete = await validateCourseCompletion();
-
-        if (isFullyComplete) {
-          await supabase
-            .from('enrollments')
-            .update({
-              completed: true,
-              completedat: new Date().toISOString(),
-            })
-            .eq('userid', user.id)
-            .eq('courseid', courseId);
-
-          await updateUserStatistics();
-          console.log('Course marked as completed');
-        } else {
-          console.log('Course has 100% progress but not all requirements met');
-        }
-      }
+      return progressPercentage;
     } catch (err) {
       console.error('Error updating enrollment progress:', err);
+      return 0;
     }
   };
 
@@ -953,6 +890,7 @@ const LessonPlayerPage: React.FC = () => {
         .single();
 
       const courseDuration = courseRes.data?.duration || 0;
+      const courseDurationHours = Math.round((courseDuration / 60) * 100) / 100;
 
       const stats = await supabase
         .from('user_statistics')
@@ -961,7 +899,7 @@ const LessonPlayerPage: React.FC = () => {
         .maybeSingle();
 
       const completedCoursesCount = (stats.data?.coursescompleted || 0) + 1;
-      const totalLearningHours = (stats.data?.totallearninghours || 0) + courseDuration;
+      const totalLearningHours = (stats.data?.totallearninghours || 0) + courseDurationHours;
 
       if (stats.data) {
         await supabase
@@ -979,7 +917,7 @@ const LessonPlayerPage: React.FC = () => {
           .insert([{
             userid: user.id,
             coursescompleted: 1,
-            totallearninghours: courseDuration,
+            totallearninghours: courseDurationHours,
             totalcoursesenrolled: 1,
           }]);
       }
@@ -1029,18 +967,11 @@ const LessonPlayerPage: React.FC = () => {
       // Load the actual lesson progress from database
       if (user?.id && lesson.id && courseId) {
         try {
-          const { data, error } = await supabase
-            .from('lesson_progress')
-            .select('progress, completed')
-            .eq('userid', user.id)
-            .eq('lessonid', lesson.id)
-            .maybeSingle();
+          const lessonProg = await lessonProgressService.getLessonProgress(user.id, lesson.id);
 
-          if (error && error.code !== 'PGRST116') {
-            console.error('Error loading lesson progress:', error);
-          } else if (data) {
-            setLessonProgress(data.progress || 0);
-            setLessonCompleted(data.completed || false);
+          if (lessonProg) {
+            setLessonProgress(lessonProg.progress || 0);
+            setLessonCompleted(lessonProg.completed || false);
           }
         } catch (err) {
           console.error('Error loading lesson progress:', err);
@@ -1338,7 +1269,7 @@ const LessonPlayerPage: React.FC = () => {
           </div>
         )}
         <div ref={contentScrollRef} className="flex-1 overflow-y-auto p-8">
-          <div className="max-w-4xl mx-auto">
+          <div className={`${blocks.some((b: any) => b.type === 'pdf') ? 'max-w-full' : 'max-w-4xl'} mx-auto`}>
             {blocks.map((block: any, idx: number) => {
               return (
                 <div
@@ -1425,7 +1356,7 @@ const LessonPlayerPage: React.FC = () => {
                   {block.type === 'pdf' && block.content && (
                     <>
                       {block.title && <h3 className="text-xl font-bold mb-4 text-gray-900">{block.title}</h3>}
-                      <div className="mb-4 h-96 rounded-lg overflow-hidden border border-gray-300 bg-gray-100">
+                      <div className="mb-4 h-96 sm:h-[60vh] lg:h-[calc(100vh-14rem)] rounded-lg overflow-hidden border border-gray-300 bg-gray-100">
                         <PdfViewer file={block.content} onScrollToEnd={() => setPdfScrolledToEnd(true)} />
                       </div>
                       {block.description && <p className="text-gray-800 text-sm mt-4">{block.description}</p>}
@@ -1620,8 +1551,8 @@ const LessonPlayerPage: React.FC = () => {
           : activeLesson.content?.file || pdfFile;
 
         return (
-          <div className="w-full h-full bg-black flex items-center justify-center relative">
-            <div className="w-full h-full flex">
+          <div className="w-full h-[calc(100vh-8rem)] min-h-[calc(100vh-8rem)] lg:h-[calc(100vh-8rem)] lg:max-h-[calc(100vh-8rem)] bg-black flex items-center justify-center relative overflow-hidden">
+            <div className="w-full h-full max-w-full min-h-0 flex items-center justify-center">
               <PdfViewer file={pdfSource} onScrollToEnd={() => setPdfScrolledToEnd(true)} />
             </div>
           </div>
@@ -1993,8 +1924,8 @@ const LessonPlayerPage: React.FC = () => {
               }
 
               {/* Text/Content Container */}
-              <div className="flex-1 overflow-y-auto bg-white">
-                <div className="max-w-4xl mx-auto px-6 py-8">
+              <div className={`flex-1 min-h-0 overflow-y-auto ${activeLesson?.type === 'pdf' ? 'bg-black' : 'bg-white'}`}>
+                <div className={`${activeLesson?.type === 'pdf' ? 'w-full max-w-full px-4 py-6 lg:px-6 lg:py-8' : 'max-w-4xl mx-auto px-6 py-8'}`}>
                   {/* Only render non-video content here */}
                   {!contentBlocks.some(b => b.type === 'video') && renderContent()}
                 </div>

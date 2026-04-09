@@ -7,6 +7,7 @@ import { courseAssignmentService } from '../lib/courseAssignmentService';
 import { careerPathService } from '../lib/careerPathService';
 import { userSkillAchievementService } from '../lib/userSkillAchievementService';
 import { learningJourneyService, UserJourneyAssignment, UserJourneyModuleProgress } from '../lib/learningJourneyService';
+import { lessonProgressService } from '../lib/lessonProgressService';
 import { supabase } from '../lib/supabaseClient';
 import { skillService } from '../lib/skillService';
 import { courseCompletionService } from '../lib/courseCompletionService';
@@ -1078,23 +1079,17 @@ const AssignedCoursesTab: React.FC<{ setActiveTab: (tab: any) => void }> = ({ se
       if (coursesError) throw coursesError;
 
       let progressMap = new Map<string, number>();
-      const { data: lessonProgressData } = await supabase
-        .from('lesson_progress')
-        .select('courseid, completed')
-        .eq('userid', user!.id)
-        .in('courseid', courseIds);
+      const lessonProgressData = await lessonProgressService.getProgressByCourseIds(user!.id, courseIds);
 
       const completedLessonsByCourse: Record<string, number> = {};
-      if (lessonProgressData) {
-        lessonProgressData.forEach((progress: any) => {
-          if (progress.completed) {
-            if (!completedLessonsByCourse[progress.courseid]) {
-              completedLessonsByCourse[progress.courseid] = 0;
-            }
-            completedLessonsByCourse[progress.courseid]++;
+      lessonProgressData.forEach((progress: any) => {
+        if (progress.completed) {
+          if (!completedLessonsByCourse[progress.courseid]) {
+            completedLessonsByCourse[progress.courseid] = 0;
           }
-        });
-      }
+          completedLessonsByCourse[progress.courseid]++;
+        }
+      });
 
       const { data: lessonCountsData } = await supabase
         .from('lessons')

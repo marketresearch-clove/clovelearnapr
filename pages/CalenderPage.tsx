@@ -6,6 +6,7 @@ import { calendarService, CalendarEvent } from '../lib/calendarService';
 import { enrollmentService } from '../lib/enrollmentService';
 import { courseService } from '../lib/courseService';
 import { lessonService } from '../lib/lessonService';
+import { lessonProgressService } from '../lib/lessonProgressService';
 
 const CalenderPage: React.FC = () => {
   const { user } = useAuth();
@@ -35,15 +36,8 @@ const CalenderPage: React.FC = () => {
   const fetchCompletedLessons = async () => {
     if (!user?.id) return;
     try {
-      const { data } = await supabase
-        .from('lesson_progress')
-        .select('lessonid')
-        .eq('userid', user.id)
-        .eq('completed', true);
-
-      if (data) {
-        setCompletedLessons(new Set(data.map(l => l.lessonid)));
-      }
+      const completedLessonIds = await lessonProgressService.getCompletedLessonIds(user.id);
+      setCompletedLessons(new Set(completedLessonIds));
     } catch (error) {
       console.error('Error fetching completed lessons:', error);
     }

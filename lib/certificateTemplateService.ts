@@ -5,6 +5,13 @@
 
 import { supabase } from './supabaseClient';
 
+export interface SignatureElementConfig {
+  showSignatureImage: boolean;
+  showSignedLabel: boolean;
+  showName: boolean;
+  showDesignation: boolean;
+}
+
 export interface PlaceholderConfig {
   id: string;
   name: string;
@@ -19,6 +26,10 @@ export interface PlaceholderConfig {
   maxWidth?: number;
   maxHeight?: number;
   opacity?: number;
+  imageUrl?: string; // URL of uploaded image for canvas elements
+  // Signature-specific configurations
+  signatureElements?: SignatureElementConfig;
+  signatureLabelText?: string; // Custom text for "Signed:" label
 }
 
 export interface CertificateTemplate {
@@ -228,6 +239,35 @@ export const uploadTemplateImage = async (
     return data.publicUrl;
   } catch (error) {
     console.error('Error uploading template image:', error);
+    throw error;
+  }
+};
+
+/**
+ * Upload canvas element image to storage
+ * Used for logos, watermarks, and other decorative images added to the certificate
+ */
+export const uploadCanvasImage = async (file: File): Promise<string> => {
+  try {
+    const fileExt = file.type.split('/')[1] || 'png';
+    const fileName = `canvas-elements/${Date.now()}-${Math.random().toString(36).slice(2, 9)}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('certificate-templates')
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (uploadError) throw uploadError;
+
+    const { data } = supabase.storage
+      .from('certificate-templates')
+      .getPublicUrl(fileName);
+
+    return data.publicUrl;
+  } catch (error) {
+    console.error('Error uploading canvas image:', error);
     throw error;
   }
 };

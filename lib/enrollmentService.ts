@@ -448,14 +448,26 @@ export const enrollmentService = {
       }
 
       // 10. Reset the enrollment record (clear progress AND hours spent for this course only)
+      // First get current retake_count
+      const { data: currentEnrollment } = await supabase
+        .from('enrollments')
+        .select('retake_count')
+        .eq('userid', userId)
+        .eq('courseid', courseId)
+        .maybeSingle();
+
+      const currentRetakeCount = currentEnrollment?.retake_count || 0;
+
       const { error: enrollmentError } = await supabase
         .from('enrollments')
         .update({
           progress: 0,
           completed: false,
           completedat: null,
+          completed_at: null,
           hoursspent: 0,
-          lastaccessedat: new Date().toISOString()
+          lastaccessedat: new Date().toISOString(),
+          retake_count: currentRetakeCount + 1
         })
         .eq('userid', userId)
         .eq('courseid', courseId);
