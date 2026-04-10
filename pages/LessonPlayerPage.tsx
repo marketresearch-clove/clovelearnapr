@@ -845,8 +845,9 @@ const LessonPlayerPage: React.FC = () => {
     if (!user?.id || !courseId) return;
 
     try {
-      // Calculate time spent in minutes (minimum 1 minute if lesson was viewed)
-      const timeSpent = Math.max(1, Math.floor((Date.now() - lessonStartTimeRef.current) / 60000));
+      // Calculate time spent in SECONDS (learningHoursService expects seconds)
+      // Minimum 1 second if lesson was viewed
+      const timeSpent = Math.max(1, Math.round((Date.now() - lessonStartTimeRef.current) / 1000));
 
       // Record learning hours in the learning_hours table
       await learningHoursService.recordLearningHours(user.id, courseId, timeSpent);

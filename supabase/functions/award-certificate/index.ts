@@ -114,15 +114,8 @@ serve(async (req) => {
 
             if (sigError) {
                 console.error('[SIGNATURE_FETCH_ERROR] Error fetching enabled signatures:', sigError)
-                // For disabled course or error, just return success (certificate was created)
-                return new Response(
-                    JSON.stringify({
-                        success: true,
-                        certificateId: certificateId,
-                        message: 'Certificate awarded successfully (no signatures available)'
-                    }),
-                    { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-                )
+                console.log('[SIGNATURE_FETCH_ERROR] Returning success but no signatures linked')
+                // Continue anyway - certificate was created, just missing signatures
             }
 
             // If there are enabled signatures, create the link records and populate certificate data
