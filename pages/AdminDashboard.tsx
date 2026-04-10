@@ -6,6 +6,7 @@ import UsersTable from '../components/UsersTable';
 import ModulesTable from '../components/ModulesTable';
 import useAuthGuard from '../hooks/useAuthGuard';
 import { supabase } from '../lib/supabaseClient';
+import { timeTrackingService } from '../lib/timeTrackingService'; // ADD THIS IMPORT
 
 const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('users');
@@ -61,14 +62,18 @@ const AdminDashboard: React.FC = () => {
     totalEmployees: 0,
     totalActiveLearners: 0,
     totalLearningHours: 0,
+    formattedTotalTime: '0s',
     activeCourses: 0,
     completionRate: 0,
+    completedEnrollments: 0,
+    totalEnrollments: 0,
     assessmentPassRate: 0,
     certificatesEarned: 0,
     skillCoverage: 0,
     avgCourseRating: 0,
     monthlyGrowth: 0,
     avgSessionTime: 0,
+    avgSessionTimeFormatted: '0s',
     topDepartment: '',
 
     // Career Path metrics
@@ -240,27 +245,30 @@ const AdminDashboard: React.FC = () => {
         ? (((thisMonthUsers || 0) - (lastMonthUsers || 0)) / (lastMonthUsers || 1)) * 100
         : 0;
 
-      // Fetch total learning hours (hoursspent is stored as minutes)
-      const { data: learningHours } = await supabase
-        .from('learning_hours')
-        .select('hoursspent, userid');
+      // Fetch total learning hours from enrollments (same source as DashboardPage)
+      const { data: enrollmentData } = await supabase
+        .from('enrollments')
+        .select('userid, hoursspent, completed');
 
-      const totalMinutes = (learningHours || []).reduce((sum, record) => sum + (record.hoursspent || 0), 0);
-      const totalLearningHours = Math.round(totalMinutes / 60);
+      const totalSeconds = (enrollmentData || []).reduce((sum, record) => {
+        // hoursspent is in SECONDS
+        return sum + (record.hoursspent || 0);
+      }, 0);
+      const totalLearningHours = timeTrackingService.secondsToHours(totalSeconds);
+      const formattedTotalTime = timeTrackingService.formatSeconds(totalSeconds);
 
-      // Average Session Time (calculate average hours per learning_hours record)
-      const totalSessionRecords = (learningHours || []).length;
-      const avgSessionTime = totalSessionRecords > 0
-        ? (totalMinutes / totalSessionRecords) / 60
+      // Average Session Time (calculate average time per enrollment record)
+      const totalSessionRecords = (enrollmentData || []).length;
+      const avgSessionTimeSeconds = totalSessionRecords > 0
+        ? totalSeconds / totalSessionRecords
         : 0;
+      const avgSessionTime = timeTrackingService.secondsToHours(avgSessionTimeSeconds);
+      const avgSessionTimeFormatted = timeTrackingService.formatSeconds(avgSessionTimeSeconds);
 
       // Fetch all enrollments for completion rate and department stats
-      const { data: enrollments, error: enrollmentsError } = await supabase
-        .from('enrollments')
-        .select('userid, courseid, completed');
+      const enrollments = enrollmentData;
 
       console.log('📚 Enrollments fetch:', {
-        error: enrollmentsError?.message,
         count: enrollments?.length || 0,
         data: enrollments ? `[${enrollments.slice(0, 2).map(e => `{userid:${e.userid?.slice(0, 8)}...,courseid:${e.courseid?.slice(0, 8)}...}`).join(',')}...]` : 'null'
       });
@@ -366,6 +374,11 @@ const AdminDashboard: React.FC = () => {
         count: deptProfiles?.length || 0
       });
 
+      // Fetch user statistics for XP data
+      const { data: userStats } = await supabase
+        .from('user_statistics')
+        .select('userid, totalpoints');
+
       let topDepartments: any[] = [];
       let departmentStats: any[] = [];
       let topDepartment = '';
@@ -400,12 +413,12 @@ const AdminDashboard: React.FC = () => {
           }
         });
 
-        // Add XP data (using hours spent as XP proxy)
-        learningHours?.forEach(xp => {
-          const profile = deptProfiles.find(p => p.id === xp.userid);
+        // Add XP data from user_statistics
+        (userStats || []).forEach((stats: any) => {
+          const profile = deptProfiles.find(p => p.id === stats.userid);
           if (profile) {
             const dept = profile.department;
-            deptMetrics[dept].totalXP += xp.hoursspent || 0;
+            deptMetrics[dept].totalXP += stats.totalpoints || 0;
           }
         });
 
@@ -509,14 +522,18 @@ const AdminDashboard: React.FC = () => {
         totalEmployees: totalUsersCount || 0,
         totalActiveLearners: activeCount || globalStats.totalActiveLearners || 0,
         totalLearningHours,
+        formattedTotalTime,
         activeCourses: activeCoursesCount || 0,
         completionRate,
+        completedEnrollments,
+        totalEnrollments: totalEnrollmentsCount,
         assessmentPassRate: globalStats.assessmentPassRate || 0,
         certificatesEarned: certificateCount || globalStats.certificatesEarned || 0,
         skillCoverage: globalStats.skillCoverage || 0,
         avgCourseRating: Math.round(avgRating * 10) / 10,
         monthlyGrowth: Math.round(monthlyGrowth * 10) / 10,
         avgSessionTime: Math.round(avgSessionTime * 10) / 10,
+        avgSessionTimeFormatted,
         topDepartment,
 
         // Career Path metrics
@@ -740,8 +757,8 @@ const AdminDashboard: React.FC = () => {
                       <span className="material-symbols-rounded text-indigo-600 text-lg sm:text-xl">schedule</span>
                     </div>
                   </div>
-                  <p className="text-gray-600 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Hours</p>
-                  <h3 className="text-lg sm:text-2xl font-black text-gray-900 mt-1">{stats.totalLearningHours.toLocaleString()}h</h3>
+                  <p className="text-gray-600 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Time Learned</p>
+                  <h3 className="text-lg sm:text-2xl font-black text-gray-900 mt-1">{stats.formattedTotalTime || '0s'}</h3>
                 </div>
 
                 <div className="bg-white p-3 sm:p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all" style={{ borderRadius: '15px' }}>
@@ -841,7 +858,7 @@ const AdminDashboard: React.FC = () => {
                     </div>
                   </div>
                   <p className="text-gray-600 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Session</p>
-                  <h3 className="text-lg sm:text-2xl font-black text-gray-900 mt-1">{stats.avgSessionTime}h</h3>
+                  <h3 className="text-lg sm:text-2xl font-black text-gray-900 mt-1">{stats.avgSessionTimeFormatted || '0s'}</h3>
                 </div>
               </div>
             )}
@@ -879,7 +896,7 @@ const AdminDashboard: React.FC = () => {
                           <span className="material-symbols-rounded text-blue-600 text-lg">schedule</span>
                           <div>
                             <p className="text-xs text-gray-600 font-semibold">Avg Session Duration</p>
-                            <p className="text-lg font-bold text-gray-900">{stats.avgSessionTime || 0}h</p>
+                            <p className="text-lg font-bold text-gray-900">{stats.avgSessionTimeFormatted || '0s'}</p>
                           </div>
                         </div>
                       </div>
@@ -926,15 +943,19 @@ const AdminDashboard: React.FC = () => {
                       <div className="space-y-3">
                         <div className="flex items-center gap-2">
                           <span className="w-3 h-3 rounded-full bg-green-500"></span>
-                          <span className="text-sm text-gray-700 font-medium">Completed</span>
+                          <span className="text-sm text-gray-700 font-medium">
+                            Completed: {stats.completedEnrollments} users
+                          </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="w-3 h-3 rounded-full bg-gray-200"></span>
-                          <span className="text-sm text-gray-700 font-medium">In Progress</span>
+                          <span className="text-sm text-gray-700 font-medium">
+                            In Progress: {stats.totalEnrollments - stats.completedEnrollments} users
+                          </span>
                         </div>
                         <div className="mt-4 pt-4 border-t border-gray-200">
                           <p className="text-xs text-gray-600 font-semibold mb-2">Total Enrolled</p>
-                          <p className="text-xl font-black text-gray-900">{stats.totalActiveLearners || 0} users</p>
+                          <p className="text-xl font-black text-gray-900">{stats.totalEnrollments || 0} users</p>
                         </div>
                       </div>
                     </div>

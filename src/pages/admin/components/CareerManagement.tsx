@@ -185,7 +185,6 @@ const CareerManagement: React.FC = () => {
           skillName: skill.name,
           skillFamily: skill.family,
           level: 'Advanced',
-          min_score: 70,
           min_score_beginner: 20,
           min_score_intermediate: 50,
           min_score_advanced: 70
@@ -396,7 +395,7 @@ const CareerManagement: React.FC = () => {
                     type="text"
                     value={formData.currentRole}
                     onChange={(e) => setFormData({ ...formData, currentRole: e.target.value })}
-                    className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border text-white border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border text-gray border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                     placeholder="e.g. Customer Service Manager"
                   />
                 </div>
@@ -408,7 +407,7 @@ const CareerManagement: React.FC = () => {
                     type="text"
                     value={formData.nextRole}
                     onChange={(e) => setFormData({ ...formData, nextRole: e.target.value })}
-                    className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 text-white border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 text-gray border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                     placeholder="e.g. Customer Service Director"
                   />
                 </div>
@@ -421,7 +420,7 @@ const CareerManagement: React.FC = () => {
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 bg-gray-50 text-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-3 py-2 bg-gray-50 text-gray dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                   rows={2}
                   placeholder="Optional description"
                 />

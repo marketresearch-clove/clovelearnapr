@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { timeTrackingService } from '../lib/timeTrackingService';
 
 const CompletedLearningHoursCard: React.FC = () => {
   const [stats, setStats] = useState<any>({
@@ -26,11 +27,12 @@ const CompletedLearningHoursCard: React.FC = () => {
 
       if (coursesError) throw coursesError;
 
-      const { data: learningHours, error: hoursError } = await supabase
-        .from('learning_hours')
+      // Fetch enrollments instead of learning_hours for consistent time data
+      const { data: enrollments, error: enrollmentsError } = await supabase
+        .from('enrollments')
         .select('courseid, hoursspent');
 
-      if (hoursError) throw hoursError;
+      if (enrollmentsError) throw enrollmentsError;
 
       const categoryMap = new Map();
       (courses || []).forEach((course: any) => {
@@ -39,23 +41,26 @@ const CompletedLearningHoursCard: React.FC = () => {
         }
       });
 
-      let totalMinutes = 0;
-      (learningHours || []).forEach((record: any) => {
+      let totalSeconds = 0;
+      (enrollments || []).forEach((record: any) => {
         const course = (courses || []).find((c: any) => c.id === record.courseid);
+        // hoursspent is in SECONDS
+        const timeSeconds = record.hoursspent || 0;
         if (course && categoryMap.has(course.category)) {
-          categoryMap.set(course.category, categoryMap.get(course.category) + (record.hoursspent || 0));
-          totalMinutes += record.hoursspent || 0;
+          categoryMap.set(course.category, categoryMap.get(course.category) + timeSeconds);
+          totalSeconds += timeSeconds;
         }
       });
 
-      const totalHours = Math.round(totalMinutes / 60);
+      const totalHours = timeTrackingService.formatSeconds(totalSeconds);
       const categories = Array.from(categoryMap.entries())
-        .map(([name, minutes]) => ({
+        .map(([name, seconds]) => ({
           name,
-          hours: Math.round(minutes / 60),
-          percent: totalMinutes > 0 ? Math.round((minutes / totalMinutes) * 100) : 0,
+          hours: timeTrackingService.formatSeconds(seconds),
+          seconds: seconds,
+          percent: totalSeconds > 0 ? Math.round((seconds / totalSeconds) * 100) : 0,
         }))
-        .sort((a, b) => b.hours - a.hours)
+        .sort((a, b) => b.seconds - a.seconds)
         .slice(0, 5);
 
       setStats({ totalHours, categories });
@@ -85,7 +90,7 @@ const CompletedLearningHoursCard: React.FC = () => {
   const getTooltipContent = (categoryName: string) => {
     const category = stats.categories.find((cat: any) => cat.name === categoryName);
     if (category) {
-      return `${category.hours} hrs (${category.percent}%) - ${category.name}`;
+      return `${category.hours} (${category.percent}%) - ${category.name}`;
     }
     return '';
   };
@@ -102,7 +107,7 @@ const CompletedLearningHoursCard: React.FC = () => {
       <div className="flex items-center space-x-6">
         <div className="w-1/2">
           <p className="text-sm text-gray-500">by category</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">{stats.totalHours.toLocaleString()} hrs</p>
+          <p className="text-3xl font-bold text-gray-900 mt-1">{stats.totalHours}</p>
           <p className="text-sm text-gray-500">total of all skills</p>
           <div className="mt-6 space-y-3">
             {stats.categories.map((cat: any, idx: number) => (

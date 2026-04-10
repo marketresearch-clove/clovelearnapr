@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { timeTrackingService } from '../lib/timeTrackingService';
 
 interface ModuleStat {
   moduleid: string;
@@ -221,7 +222,7 @@ const ModulesTable: React.FC = () => {
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-orange-600">
-              {Math.round(filteredAndSortedModules.reduce((sum, m) => sum + ((m.total_module_hours || 0) / 60), 0))}
+              {timeTrackingService.formatSeconds(filteredAndSortedModules.reduce((sum, m) => sum + (m.total_module_hours || 0), 0))}
             </div>
             <div className="text-xs text-gray-600 mt-1">Total Hours</div>
           </div>
@@ -267,7 +268,7 @@ const ModulesTable: React.FC = () => {
                   <div className="text-xs text-gray-600">Completed</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-orange-500">{Math.round((module.total_module_hours || 0) / 60)} hrs</div>
+                  <div className="text-lg font-bold text-orange-500">{timeTrackingService.formatSeconds(module.total_module_hours || 0)}</div>
                   <div className="text-xs text-gray-600">Total Hours</div>
                 </div>
               </div>
@@ -276,7 +277,7 @@ const ModulesTable: React.FC = () => {
               <div className="mt-3 pt-3 border-t border-gray-100">
                 <div className="flex justify-between text-xs text-gray-600">
                   <span>Avg. per User</span>
-                  <span className="font-bold text-gray-900">{Math.round((module.avg_hours_per_user || 0) / 60)} hrs</span>
+                  <span className="font-bold text-gray-900">{timeTrackingService.formatSeconds(module.avg_hours_per_user || 0)}</span>
                 </div>
               </div>
             </div>

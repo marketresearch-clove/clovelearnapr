@@ -79,12 +79,10 @@ const AssignCareerPathsTab: React.FC = () => {
     grade: [],
   });
 
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeDepartment, setActiveDepartment] = useState('All');
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
-  const [showDesignations, setShowDesignations] = useState(false);
   const [targetDate, setTargetDate] = useState('');
 
   useEffect(() => {
@@ -92,7 +90,6 @@ const AssignCareerPathsTab: React.FC = () => {
   }, []);
 
   const loadData = async () => {
-    setLoading(true);
     try {
       const { data: usersData } = await supabase
         .from('profiles')
@@ -109,8 +106,6 @@ const AssignCareerPathsTab: React.FC = () => {
       setFilterOptions({ departments, designations, locations });
     } catch (err) {
       console.error('Error loading users/paths', err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -589,7 +584,6 @@ const ManageLearningJourneys: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [activeDepartment, setActiveDepartment] = useState('All');
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
-  const [showDesignations, setShowDesignations] = useState(false);
   const [activeTab, setActiveTab] = useState<'assign' | 'manage' | 'careerPaths' | 'userCareerAssignments' | 'careerProgress'>('assign');
 
   // Career Paths View Mode
@@ -1101,15 +1095,17 @@ const ManageLearningJourneys: React.FC = () => {
     }
 
     setNewJourney(prev => {
-      const newModules = [...prev.modules, {
+      const newModule: Partial<JourneyModule> = {
         title: course ? course.title : '',
-        type: course ? 'Course' : 'Micro-Learning Module',
+        type: (course ? 'Course' : 'Micro-Learning Module') as 'Course' | 'Micro-Learning Module',
         course_id: course?.id,
         duration: duration,
         image_url: course?.thumbnail,
         provider: course?.instructorname,
         unlock_days_after_start: 0
-      }];
+      };
+
+      const newModules = [...prev.modules, newModule];
 
       // Auto-calculate total duration if needed, though currently duration is a string "X mins"
       // We could parse and sum it up if we had a total duration field for the journey

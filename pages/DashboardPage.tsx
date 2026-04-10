@@ -9,6 +9,7 @@ import { lessonProgressService } from '../lib/lessonProgressService';
 import { userStatisticsService } from '../lib/userStatisticsService';
 import { leaderboardService } from '../lib/leaderboardService';
 import { enrollmentService } from '../lib/enrollmentService';
+import { timeTrackingService } from '../lib/timeTrackingService'; // ADD THIS IMPORT
 import PlatformTutorial from '../components/PlatformTutorial';
 import Loader from '../components/Loader';
 import UserReportCard from '../components/UserReportCard';
@@ -36,6 +37,7 @@ const DashboardPage: React.FC = () => {
     coursesCompleted: 0,
     hiddenCoursesCompleted: 0,
     hoursLearned: 0,
+    formattedTime: '0s',
     certificatesEarned: 0
   });
   const [topLearners, setTopLearners] = useState<any[]>([]);
@@ -283,14 +285,17 @@ const DashboardPage: React.FC = () => {
       }).length;
 
       // Calculate total learning hours from ALL raw enrollments' hoursspent
-      const totalMinutes = rawEnrollments.reduce((sum: number, e: any) => sum + (e.hoursspent || 0), 0);
-      const hoursLearned = Math.round(totalMinutes / 60);
+      // Backend stores time in SECONDS, so convert properly
+      const totalSeconds = rawEnrollments.reduce((sum: number, e: any) => sum + (e.hoursspent || 0), 0);
+      const hoursLearned = timeTrackingService.secondsToHours(totalSeconds);
+      const formattedTime = timeTrackingService.formatSeconds(totalSeconds);
       const enrollmentsWithCourseDataCount = allEnrollments.filter((e: any) => e.courses).length;
 
       console.log('📊 Stats calculated:', {
         coursesInProgress,
         coursesCompleted,
         hoursLearned,
+        formattedTime,
         certificatesEarned,
         totalEnrollments: allEnrollments.length,
         enrollmentsWithCourseData: enrollmentsWithCourseDataCount
@@ -302,6 +307,7 @@ const DashboardPage: React.FC = () => {
         hiddenCoursesCompleted,
         hoursLearned: hoursLearned,
         certificatesEarned,
+        formattedTime: formattedTime,
       });
 
       // Fetch user rank and top learners
@@ -470,6 +476,7 @@ const DashboardPage: React.FC = () => {
         coursesCompleted: 0,
         hiddenCoursesCompleted: 0,
         hoursLearned: 0,
+        formattedTime: '0s',
         certificatesEarned: 0
       });
       setEnrolledCourses([]);
@@ -569,7 +576,7 @@ const DashboardPage: React.FC = () => {
           <StatCard title="Courses in Progress" value={stats.coursesInProgress.toString()} icon="book" color="bg-blue-500" />
           <StatCard title="Courses Completed" value={stats.coursesCompleted.toString()} icon="check_circle" color="bg-green-500" />
           <StatCard title="Hidden Completed" value={stats.hiddenCoursesCompleted.toString()} icon="visibility_off" color="bg-purple-500" />
-          <StatCard title="Hours Learned" value={`${stats.hoursLearned}h`} icon="schedule" color="bg-indigo-500" />
+          <StatCard title="Time Learned" value={stats.formattedTime} icon="schedule" color="bg-indigo-500" />
           <StatCard title="Certificates Earned" value={stats.certificatesEarned.toString()} icon="workspace_premium" color="bg-yellow-500" />
         </div>
 

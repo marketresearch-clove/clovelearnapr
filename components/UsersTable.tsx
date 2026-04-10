@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { timeTrackingService } from '../lib/timeTrackingService';
 
 interface UserData {
   id: string;
@@ -136,7 +137,7 @@ const UsersTable: React.FC = () => {
     try {
       setLoading(true);
 
-      // Fetch profiles first - with explicit ordering to debug
+      // Fetch profiles first
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, fullname, designation, location, department, role')
@@ -148,9 +149,17 @@ const UsersTable: React.FC = () => {
       }
 
       console.log('📊 Profiles fetched:', profiles?.length, 'profiles');
-      console.log('👥 Departments found:', new Set(profiles?.map((p: any) => p.department).filter(Boolean)));
 
-      // Fetch all statistics with retry logic
+      // Fetch enrollments to get actual time spent per user
+      const { data: enrollments, error: enrollmentsError } = await supabase
+        .from('enrollments')
+        .select('userid, completed, hoursspent');
+
+      if (enrollmentsError) {
+        console.warn('Enrollments fetch error:', enrollmentsError);
+      }
+
+      // Fetch user_statistics for other data
       let stats = [];
       try {
         const { data: statsData, error: statsError } = await supabase
@@ -170,18 +179,19 @@ const UsersTable: React.FC = () => {
       // Map statistics to users
       const usersWithStats = (profiles || []).map(profile => {
         const userStats = (stats || []).find((s: any) => s.userid === profile.id);
+
+        // Calculate hours and XP from enrollments
+        const userEnrollments = (enrollments || []).filter((e: any) => e.userid === profile.id);
+        const totalHoursspent = userEnrollments.reduce((sum: number, e: any) => sum + (e.hoursspent || 0), 0);
+        const completedCount = userEnrollments.filter((e: any) => e.completed).length;
+
         return {
           ...profile,
-          user_statistics: userStats ? {
-            totalpoints: userStats.totalpoints || 0,
-            totallearninghours: userStats.totallearninghours || 0,
-            coursescompleted: userStats.coursescompleted || 0,
-            totalcoursesenrolled: userStats.totalcoursesenrolled || 0
-          } : {
-            totalpoints: 0,
-            totallearninghours: 0,
-            coursescompleted: 0,
-            totalcoursesenrolled: 0
+          user_statistics: {
+            totalpoints: userStats?.totalpoints || 0, // Get XP from user_statistics
+            totallearninghours: totalHoursspent || userStats?.totallearninghours || 0, // Get hours from enrollments or user_statistics
+            coursescompleted: completedCount || (userStats?.coursescompleted || 0),
+            totalcoursesenrolled: userEnrollments.length || (userStats?.totalcoursesenrolled || 0)
           }
         };
       });
@@ -421,7 +431,9 @@ const UsersTable: React.FC = () => {
               <span className="material-symbols-rounded text-blue-600 text-2xl sm:text-3xl">schedule</span>
             </div>
             <div className="text-xl sm:text-2xl font-bold text-blue-600">
-              {Math.round(filteredAndSortedUsers.reduce((sum, u) => sum + ((u.user_statistics?.totallearninghours) || 0), 0) / filteredAndSortedUsers.length / 60)}
+              {timeTrackingService.formatSeconds(
+                Math.round(filteredAndSortedUsers.reduce((sum, u) => sum + ((u.user_statistics?.totallearninghours) || 0), 0) / filteredAndSortedUsers.length)
+              )}
             </div>
             <div className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-700 mt-1">Avg Hours</div>
           </div>
@@ -497,7 +509,7 @@ const UsersTable: React.FC = () => {
                       <span className="material-symbols-rounded text-green-600 text-base">schedule</span>
                     </div>
                     <div className="text-sm sm:text-base font-bold text-green-600">
-                      {Math.round((stats.totallearninghours || 0) / 60)}
+                      {timeTrackingService.formatSeconds(stats.totallearninghours || 0)}
                     </div>
                     <div className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-700 whitespace-nowrap">Hours</div>
                   </div>
@@ -505,7 +517,7 @@ const UsersTable: React.FC = () => {
                     <div className="flex items-center justify-center mb-1">
                       <span className="material-symbols-rounded text-orange-500 text-base">star</span>
                     </div>
-                    <div className="text-sm sm:text-base font-bold text-orange-500">{Math.round((stats.totalpoints || 0) / 100)}</div>
+                    <div className="text-sm sm:text-base font-bold text-orange-500">{stats.totalpoints || 0}</div>
                     <div className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-700 whitespace-nowrap">XP</div>
                   </div>
                 </div>
