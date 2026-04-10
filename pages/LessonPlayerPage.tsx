@@ -713,7 +713,12 @@ const LessonPlayerPage: React.FC = () => {
         return;
       }
 
-      await lessonProgressService.updateLessonProgress(user.id, activeLesson.id, courseId, progress, completed);
+      // Calculate elapsed time in seconds when completing the lesson
+      const elapsedSeconds = completed
+        ? Math.max(1, Math.round((Date.now() - lessonStartTimeRef.current) / 1000))
+        : 0;
+
+      await lessonProgressService.updateLessonProgress(user.id, activeLesson.id, courseId, progress, completed, elapsedSeconds);
 
       if (completed) {
         await updateEnrollmentProgress();

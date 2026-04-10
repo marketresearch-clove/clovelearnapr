@@ -160,7 +160,8 @@ export const lessonProgressService = {
     lessonId: string,
     courseId: string,
     progress: number,
-    completed = false
+    completed = false,
+    timeSpentSeconds = 0
   ) {
     try {
       const now = new Date().toISOString();
@@ -168,7 +169,7 @@ export const lessonProgressService = {
       // Check if progress record exists
       const { data: existing, error: existingError } = await supabase
         .from('lesson_progress')
-        .select('id')
+        .select('id, time_spent_seconds')
         .eq('userid', userId)
         .eq('lessonid', lessonId)
         .maybeSingle();
@@ -186,6 +187,14 @@ export const lessonProgressService = {
       if (completed) {
         updateData.completed = true;
         updateData.completedat = now;
+      }
+
+      // Only add time if provided
+      if (timeSpentSeconds > 0) {
+        // Accumulate time: add to existing time_spent_seconds if updating
+        const existingTime = existing?.time_spent_seconds || 0;
+        updateData.time_spent_seconds = existingTime + timeSpentSeconds;
+        console.log(`[LESSON_PROGRESS] Recording ${timeSpentSeconds}s for lesson ${lessonId}, total: ${updateData.time_spent_seconds}s`);
       }
 
       if (existing?.id) {
@@ -210,6 +219,7 @@ export const lessonProgressService = {
               completed,
               lastaccessedat: now,
               completedat: completed ? now : null,
+              time_spent_seconds: timeSpentSeconds,
             },
           ])
           .select('id')
