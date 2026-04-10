@@ -66,7 +66,7 @@ SELECT
 FROM
   lessons l
   LEFT JOIN courses c ON l.courseid = c.id
-  LEFT JOIN public.categories cat ON c.category_id = cat.id
+  LEFT JOIN public.categories cat ON c.category = cat.name
   LEFT JOIN enrollments e ON c.id = e.courseid
   LEFT JOIN lesson_stats ls ON l.id = ls.lessonid
 WHERE l.id IS NOT NULL
