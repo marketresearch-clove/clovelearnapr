@@ -363,16 +363,40 @@ export const enrollmentService = {
       }
 
       // 5. Delete certificates for this user/course
-      const { error: certificateError } = await supabase
+      // First, get certificate IDs for this user/course
+      const { data: certificatesForDeletion } = await supabase
         .from('certificates')
-        .delete()
+        .select('id')
         .eq('user_id', userId)
         .eq('course_id', courseId);
 
-      if (certificateError && certificateError.code !== 'PGRST116') {
-        throw certificateError;
+      if (certificatesForDeletion && certificatesForDeletion.length > 0) {
+        const certificateIds = certificatesForDeletion.map(c => c.id);
+
+        // Delete certificate_signatures first (foreign key constraint)
+        const { error: sigError } = await supabase
+          .from('certificate_signatures')
+          .delete()
+          .in('certificate_id', certificateIds);
+
+        if (sigError && sigError.code !== 'PGRST116') {
+          throw sigError;
+        }
+        console.log(`[RETAKE] Cleared certificate signatures for ${certificateIds.length} certificates`);
+
+        // Then delete certificates
+        const { error: certificateError } = await supabase
+          .from('certificates')
+          .delete()
+          .in('id', certificateIds);
+
+        if (certificateError && certificateError.code !== 'PGRST116') {
+          throw certificateError;
+        }
+        console.log(`[RETAKE] Cleared ${certificateIds.length} certificates`);
+      } else {
+        console.log(`[RETAKE] No certificates found to clear`);
       }
-      console.log(`[RETAKE] Cleared certificates`);
 
       // 6. Delete learning hours for this specific course (IMPORTANT: only this course, not all courses)
       const { error: learningHoursError } = await supabase

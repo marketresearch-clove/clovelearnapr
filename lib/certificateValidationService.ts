@@ -110,20 +110,31 @@ export const certificateValidationService = {
         );
       }
 
-      // Delete invalid certificates
-      const { error: deleteError } = await supabase
-        .from('certificates')
-        .delete()
-        .in('course_id', (
-          await supabase
-            .from('courses')
-            .select('id')
-            .not('certificate_enabled', 'eq', true)
-        ).data?.map((c: any) => c.id) ?? []);
+      // Get certificate IDs to delete
+      const invalidCertIds = invalid.map(cert => cert.id);
 
-      if (deleteError) {
-        console.error('❌ Error deleting invalid certificates:', deleteError);
-        return 0;
+      if (invalidCertIds.length > 0) {
+        // Delete certificate_signatures first (foreign key constraint)
+        const { error: sigError } = await supabase
+          .from('certificate_signatures')
+          .delete()
+          .in('certificate_id', invalidCertIds);
+
+        if (sigError) {
+          console.error('❌ Error deleting certificate signatures:', sigError);
+          return 0;
+        }
+
+        // Delete invalid certificates
+        const { error: deleteError } = await supabase
+          .from('certificates')
+          .delete()
+          .in('id', invalidCertIds);
+
+        if (deleteError) {
+          console.error('❌ Error deleting invalid certificates:', deleteError);
+          return 0;
+        }
       }
 
       console.log(`✅ Successfully deleted ${invalid.length} invalid certificates`);
