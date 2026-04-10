@@ -114,9 +114,11 @@ serve(async (req) => {
 
             if (sigError) {
                 console.error('[SIGNATURE_FETCH_ERROR] Error fetching enabled signatures:', sigError)
-                console.log('[SIGNATURE_FETCH_ERROR] Returning success but no signatures linked')
-                // Continue anyway - certificate was created, just missing signatures
+                // Non-blocking error - continue anyway
             }
+
+            // Log signature availability for debugging
+            console.log(`[SIGNATURE_STATUS] Found ${enabledSignatures?.length || 0} enabled signatures`)
 
             // If there are enabled signatures, create the link records and populate certificate data
             if (enabledSignatures && enabledSignatures.length > 0) {

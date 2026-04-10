@@ -46,9 +46,18 @@ export const awardCertificate = async (userId: string, courseId: string) => {
 
     // BACKFILL: If certificate has no signatures linked, try to link them now
     if (!certData.certificate_signatures || certData.certificate_signatures.length === 0) {
-      console.warn('[CERTIFICATE_BACKFILL] Certificate has no signatures linked, attempting to backfill');
+      console.warn(`[CERTIFICATE_BACKFILL] Certificate ${data.certificateId} has no signatures linked, attempting to backfill`);
       try {
-        await certificateBackfillService.backfillCertificateSignatures(certData.id);
+        const backfillResult = await certificateBackfillService.backfillCertificateSignatures(certData.id);
+
+        if (!backfillResult.success) {
+          console.error('[CERTIFICATE_BACKFILL] Backfill failed:', backfillResult.error);
+        } else if (backfillResult.signaturesAdded === 0) {
+          console.warn('[CERTIFICATE_BACKFILL] Backfill completed but added 0 signatures - No enabled signatures in certificate_signature_settings');
+        } else {
+          console.log(`[CERTIFICATE_BACKFILL] ✅ Successfully backfilled ${backfillResult.signaturesAdded} signatures for certificate ${data.certificateId}`);
+        }
+
         // Re-fetch certificate data with signatures
         const { data: updatedCertData, error: updatedFetchError } = await supabase
           .from('certificates')
@@ -75,9 +84,17 @@ export const awardCertificate = async (userId: string, courseId: string) => {
           return certData;
         }
 
+        // Final validation
+        const finalSigCount = updatedCertData?.certificate_signatures?.length || 0;
+        if (finalSigCount === 0) {
+          console.error('[CERTIFICATE_BACKFILL] ⚠️  CRITICAL: Certificate issued with NO signatures after backfill attempt');
+          console.error('[CERTIFICATE_BACKFILL] Verify that enabled signatures exist in certificate_signature_settings table');
+        }
+
         return updatedCertData || certData;
       } catch (backfillError) {
-        console.error('[CERTIFICATE_BACKFILL] Failed to backfill signatures:', backfillError);
+        console.error('[CERTIFICATE_BACKFILL] Exception during backfill:', backfillError);
+        // Continue anyway - return certificate even if backfill fails
       }
     }
 

@@ -72,7 +72,7 @@ export const courseCompletionService = {
         return { success: true, issued: false, reason: 'Certificate disabled for this course' };
       }
 
-      // Check if this course has been retaken by the user (prevent certificate re-issuance after retake)
+      // Check if this course has been retaken MULTIPLE times (allow one retake certificate, block further ones)
       const { data: enrollment } = await supabase
         .from('enrollments')
         .select('retake_count')
@@ -80,9 +80,9 @@ export const courseCompletionService = {
         .eq('courseid', courseId)
         .maybeSingle();
 
-      if (enrollment && enrollment.retake_count > 0) {
-        console.log(`[CERTIFICATE_BLOCKED] Course "${course.title}" has been retaken by user ${userId}. Skipping certificate issuance.`);
-        return { success: true, issued: false, reason: 'Certificate not available for retaken courses' };
+      if (enrollment && enrollment.retake_count > 1) {
+        console.log(`[CERTIFICATE_BLOCKED] Course "${course.title}" has been retaken ${enrollment.retake_count} times by user ${userId}. No certificates for multiple retakes.`);
+        return { success: true, issued: false, reason: 'Certificate not available for multiple retakes' };
       }
 
       // Check if certificate already issued for this user and course
