@@ -375,9 +375,14 @@ const AdminDashboard: React.FC = () => {
       });
 
       // Fetch user statistics for XP data
-      const { data: userStats } = await supabase
+      const { data: userStats, error: userStatsError } = await supabase
         .from('user_statistics')
         .select('userid, totalpoints');
+
+      if (userStatsError) {
+        console.warn('⚠️ Error fetching user statistics:', userStatsError?.message);
+      }
+      console.log('📊 User stats fetched:', userStats?.length || 0, 'records', userStats?.slice(0, 2));
 
       let topDepartments: any[] = [];
       let departmentStats: any[] = [];
