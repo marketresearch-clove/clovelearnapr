@@ -159,28 +159,28 @@ const UsersTable: React.FC = () => {
         console.warn('Enrollments fetch error:', enrollmentsError);
       }
 
-      // Fetch user_statistics for other data
-      let stats = [];
+      // Fetch leaderboard data for XP (source of truth for user points)
+      let leaderboardStats: any[] = [];
       try {
-        const { data: statsData, error: statsError } = await supabase
-          .from('user_statistics')
-          .select('userid, totalpoints, totallearninghours, coursescompleted, totalcoursesenrolled');
+        const { data: leaderboardData, error: leaderboardError } = await supabase
+          .from('leaderboard')
+          .select('userid, totalpoints, coursescompleted');
 
-        if (statsError) {
-          console.warn('Stats error:', statsError);
-        } else if (statsData) {
-          stats = statsData;
-          console.log('📈 Statistics fetched:', statsData.length, 'records');
+        if (leaderboardError) {
+          console.warn('Leaderboard error:', leaderboardError);
+        } else if (leaderboardData) {
+          leaderboardStats = leaderboardData;
+          console.log('📈 Leaderboard data fetched:', leaderboardData.length, 'records');
         }
       } catch (e) {
-        console.warn('Error fetching user statistics:', e);
+        console.warn('Error fetching leaderboard data:', e);
       }
 
       // Map statistics to users
       const usersWithStats = (profiles || []).map(profile => {
-        const userStats = (stats || []).find((s: any) => s.userid === profile.id);
+        const leaderboardEntry = (leaderboardStats || []).find((s: any) => s.userid === profile.id);
 
-        // Calculate hours and XP from enrollments
+        // Calculate hours and completed courses from enrollments
         const userEnrollments = (enrollments || []).filter((e: any) => e.userid === profile.id);
         const totalHoursspent = userEnrollments.reduce((sum: number, e: any) => sum + (e.hoursspent || 0), 0);
         const completedCount = userEnrollments.filter((e: any) => e.completed).length;
@@ -188,10 +188,10 @@ const UsersTable: React.FC = () => {
         return {
           ...profile,
           user_statistics: {
-            totalpoints: userStats?.totalpoints || 0, // Get XP from user_statistics
-            totallearninghours: totalHoursspent || userStats?.totallearninghours || 0, // Get hours from enrollments or user_statistics
-            coursescompleted: completedCount || (userStats?.coursescompleted || 0),
-            totalcoursesenrolled: userEnrollments.length || (userStats?.totalcoursesenrolled || 0)
+            totalpoints: leaderboardEntry?.totalpoints || 0, // Get XP from leaderboard
+            totallearninghours: totalHoursspent || 0, // Get hours from enrollments
+            coursescompleted: completedCount || leaderboardEntry?.coursescompleted || 0,
+            totalcoursesenrolled: userEnrollments.length || 0
           }
         };
       });

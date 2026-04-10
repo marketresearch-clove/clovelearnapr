@@ -1,10 +1,10 @@
--- Migration: Fix module_learning_stats_summary view overcounting
+-- Migration: Fix module_learning_stats_summary view to use lesson_progress time data
 -- Date: April 10, 2026
--- Purpose: Fix hours calculation for modules (was summing across multiple enrollments)
--- Issue: View was joining learning_hours improperly, causing duplicate hour counts
---        If a user completed course in 69 seconds but was enrolled in 4 courses, it would show 4+ minutes
+-- Purpose: Fix hours calculation for modules (use actual lesson time, not course time)
+-- Issue: Previous view used enrollments.hoursspent (course total) not lesson.time_spent_seconds
+--        If user spent 69 seconds on a lesson, it was showing 4+ minutes if enrolled in 4 courses
 
--- Drop and recreate the view with correct aggregation
+-- Drop and recreate the view with correct aggregation using lesson_progress table
 DROP VIEW IF EXISTS public.module_learning_stats_summary CASCADE;
 
 CREATE OR REPLACE VIEW public.module_learning_stats_summary AS
@@ -27,11 +27,11 @@ SELECT
            COUNT(DISTINCT e.userid) * 100
     END, 2
   ) as avg_completion_percentage,
-  -- Learning hours: Get from enrollments table (single source of truth)
-  -- Sum hoursspent only for users who actually worked on this lesson
+  -- Learning hours: Get time_spent_seconds from lesson_progress table (per lesson, not per course)
+  -- This is the actual time users spent on THIS lesson
   COALESCE(
     ROUND(
-      (SUM(CASE WHEN lp.userid IS NOT NULL THEN COALESCE(e.hoursspent, 0) ELSE 0 END)::numeric),
+      (SUM(COALESCE(lp.time_spent_seconds, 0))::numeric / 3600),
       2
     ),
     0
@@ -40,7 +40,7 @@ SELECT
   ROUND(
     CASE
       WHEN COUNT(DISTINCT e.userid) = 0 THEN 0
-      ELSE COALESCE(SUM(CASE WHEN lp.userid IS NOT NULL THEN COALESCE(e.hoursspent, 0) ELSE 0 END)::numeric, 0) /
+      ELSE COALESCE(SUM(COALESCE(lp.time_spent_seconds, 0))::numeric / 3600, 0) /
            COUNT(DISTINCT e.userid)
     END,
     2
@@ -53,7 +53,7 @@ FROM
   LEFT JOIN courses c ON l.courseid = c.id
   LEFT JOIN public.categories cat ON c.category_id = cat.id
   LEFT JOIN enrollments e ON c.id = e.courseid
-  -- Join lesson_progress to track which lessons were actually accessed
+  -- Join lesson_progress directly: this has time_spent_seconds per lesson per user
   LEFT JOIN lesson_progress lp ON l.id = lp.lessonid AND e.userid = lp.userid
 WHERE l.id IS NOT NULL
 GROUP BY
@@ -69,6 +69,6 @@ ORDER BY
 
 COMMENT ON VIEW public.module_learning_stats_summary IS
 'Aggregated learning statistics for modules (lessons) with FIXED hours calculation.
-Gets hoursspent from enrollments table (single source), only for users with lesson_progress.
-FIX: Removed problematic learning_hours JOIN that was causing duplicate counting.
-Now: User spent 69s on course = 69s in module_hours (not 4x 69s if in 4 courses).';
+Uses time_spent_seconds from lesson_progress table (per-lesson, not per-course time).
+FIX: Now correctly sums actual lesson time, not course enrollment time.
+Example: User spent 69s on lesson = 1m 9s in module_hours (not multiplied by course enrollments).';

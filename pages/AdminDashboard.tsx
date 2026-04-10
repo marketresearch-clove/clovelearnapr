@@ -374,15 +374,15 @@ const AdminDashboard: React.FC = () => {
         count: deptProfiles?.length || 0
       });
 
-      // Fetch user statistics for XP data
-      const { data: userStats, error: userStatsError } = await supabase
-        .from('user_statistics')
+      // Fetch user XP data from leaderboard table (source of truth for points)
+      const { data: leaderboardData, error: leaderboardError } = await supabase
+        .from('leaderboard')
         .select('userid, totalpoints');
 
-      if (userStatsError) {
-        console.warn('⚠️ Error fetching user statistics:', userStatsError?.message);
+      if (leaderboardError) {
+        console.warn('⚠️ Error fetching leaderboard data:', leaderboardError?.message);
       }
-      console.log('📊 User stats fetched:', userStats?.length || 0, 'records', userStats?.slice(0, 2));
+      console.log('📊 Leaderboard data fetched:', leaderboardData?.length || 0, 'records');
 
       let topDepartments: any[] = [];
       let departmentStats: any[] = [];
@@ -418,18 +418,25 @@ const AdminDashboard: React.FC = () => {
           }
         });
 
-        // Add XP data from user_statistics
-        (userStats || []).forEach((stats: any) => {
-          const profile = deptProfiles.find(p => p.id === stats.userid);
+        // Add XP data from leaderboard table
+        (leaderboardData || []).forEach((leaderboardEntry: any) => {
+          const profile = deptProfiles.find(p => p.id === leaderboardEntry.userid);
           if (profile) {
             const dept = profile.department;
-            deptMetrics[dept].totalXP += stats.totalpoints || 0;
+            deptMetrics[dept].totalXP += leaderboardEntry.totalpoints || 0;
           }
         });
 
-        // Convert to array and sort by user count initially
+        // Convert to array and sort by courses completed, then by XP (not just user count)
         topDepartments = Object.values(deptMetrics)
-          .sort((a: any, b: any) => b.userCount - a.userCount)
+          .sort((a: any, b: any) => {
+            // Primary sort: courses completed (descending)
+            if (b.coursesCompleted !== a.coursesCompleted) {
+              return b.coursesCompleted - a.coursesCompleted;
+            }
+            // Secondary sort: total XP (descending) when courses completed are equal
+            return b.totalXP - a.totalXP;
+          })
           .slice(0, 10);
 
         topDepartment = (topDepartments[0] as any)?.department || 'N/A';
