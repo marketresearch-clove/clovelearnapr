@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import Loader from '../components/Loader';
 import { supabase } from '../lib/supabaseClient';
+import { timeTrackingService } from '../lib/timeTrackingService';
 import { exportToExcel, exportToPDF, exportToCSV } from '../lib/exportUtils';
 import {
   fetchLearnerDetailedAnalytics,
@@ -83,182 +84,288 @@ const AdminReportsPage: React.FC = () => {
 
       if (reportType === 'learner-details') {
         reportData = await fetchLearnerDetailedAnalytics();
+        // Convert seconds to HH:MM:SS format for display
+        reportData = reportData.map((row: any) => ({
+          ...row,
+          'Total Learning Hours': row['Total Learning Hours']
+            ? timeTrackingService.formatAsHMS(row['Total Learning Hours'])
+            : '00:00:00',
+          'Average Assessment Score': row['Average Assessment Score']
+            ? `${row['Average Assessment Score'].toFixed(1)}%`
+            : '0%'
+        }));
       } else if (reportType === 'learning-hours') {
         reportData = await fetchLearningHoursAnalytics();
+        // Format seconds to HH:MM:SS for all time columns
+        reportData = reportData.map((row: any) => ({
+          ...row,
+          'Total Hours': row['Total Hours']
+            ? timeTrackingService.formatAsHMS(row['Total Hours'])
+            : '00:00:00',
+          'This Month Hours': row['This Month Hours']
+            ? timeTrackingService.formatAsHMS(row['This Month Hours'])
+            : '00:00:00',
+          'Last Month Hours': row['Last Month Hours']
+            ? timeTrackingService.formatAsHMS(row['Last Month Hours'])
+            : '00:00:00',
+          'Average Daily Minutes': row['Average Daily Minutes'] || 0
+        }));
       } else if (reportType === 'skill-progression') {
         reportData = await fetchSkillProgressionAnalytics();
+        // Format skill progression data with percentage display
+        reportData = reportData.map((row: any) => ({
+          ...row,
+          'Progress %': row['Progress %'] ? `${row['Progress %'].toFixed(1)}%` : '0%',
+          'Status': row['Status'] || 'Not Started'
+        }));
       } else if (reportType === 'department-analytics') {
         reportData = await fetchDepartmentAnalytics();
+        // Format department data with percentage and time display
+        reportData = reportData.map((row: any) => ({
+          ...row,
+          'Enrollment Rate %': row['Enrollment Rate %'] ? `${row['Enrollment Rate %'].toFixed(1)}%` : '0%',
+          'Average Completion Rate %': row['Average Completion Rate %'] ? `${row['Average Completion Rate %'].toFixed(1)}%` : '0%',
+          'Total Hours Invested': row['Total Hours Invested']
+            ? timeTrackingService.formatAsHMS(row['Total Hours Invested'])
+            : '00:00:00',
+          'Average Score': row['Average Score'] ? `${row['Average Score'].toFixed(1)}%` : '0%'
+        }));
       } else if (reportType === 'admin-activity') {
         reportData = await fetchAdminUserActivityReport();
       } else if (reportType === 'career-path-progress') {
         reportData = await fetchCareerPathProgressAnalytics();
+        // Format career path data
+        reportData = reportData.map((row: any) => ({
+          ...row,
+          'Progress %': row['Progress %'] ? `${row['Progress %'].toFixed(1)}%` : '0%',
+          'Status': row['Status'] || 'In Progress'
+        }));
       } else if (reportType === 'course-details') {
         reportData = await fetchCourseAnalyticsDetail();
+        // Format course analytics data
+        reportData = reportData.map((row: any) => ({
+          ...row,
+          'Average Hours': row['Average Hours'] ? `${row['Average Hours']}h` : '0h',
+          'Rating': row['Rating'] ? `${parseFloat(row['Rating']).toFixed(1)}★` : 'No ratings'
+        }));
       } else if (reportType === 'engagement-metrics') {
         reportData = await fetchEngagementMetricsAnalytics();
+        // Format engagement metrics with HH:MM:SS time display
+        reportData = reportData.map((row: any) => ({
+          ...row,
+          'Total Time Spent (Hours)': row['Total Time Spent (Hours)']
+            ? timeTrackingService.formatAsHMS(row['Total Time Spent (Hours)'])
+            : '00:00:00',
+          'Average Session Duration (Min)': row['Average Session Duration (Min)']
+            ? timeTrackingService.formatAsHMS(row['Average Session Duration (Min)'] * 60)
+            : '00:00:00',
+          'Session Count': row['Session Count'] || 0,
+          'Days Active': row['Days Active'] || 0,
+          'Streak (Days)': row['Streak (Days)'] || 0,
+          'Content Interaction Rate %': row['Content Interaction Rate %']
+            ? `${row['Content Interaction Rate %'].toFixed(1)}%`
+            : '0%',
+          'Assessment Attempt Rate': row['Assessment Attempt Rate'] || 0
+        }));
       } else if (reportType === 'user-completion') {
-        const { data: profiles, error: profilesError } = await supabase.from('profiles').select('id, fullname, email, department, role');
-        const { data: enrollments, error: enrollmentsError } = await supabase.from('enrollments').select('userid, completed, courseid');
+      const { data: profiles, error: profilesError } = await supabase.from('profiles').select('id, fullname, email, department, role');
+      const { data: enrollments, error: enrollmentsError } = await supabase.from('enrollments').select('userid, completed, courseid');
 
-        console.log('📋 User Completion Report:', {
-          profilesError: profilesError?.message,
-          profilesCount: profiles?.length || 0,
-          enrollmentsError: enrollmentsError?.message,
-          enrollmentsCount: enrollments?.length || 0
+      console.log('📋 User Completion Report:', {
+        profilesError: profilesError?.message,
+        profilesCount: profiles?.length || 0,
+        enrollmentsError: enrollmentsError?.message,
+        enrollmentsCount: enrollments?.length || 0
+      });
+
+      reportData = profiles?.map((p: any) => {
+        const userEnrolls = enrollments?.filter(e => e.userid === p.id) || [];
+        return {
+          'Full Name': p.fullname,
+          'Email': p.email,
+          'Department': p.department || 'N/A',
+          'Total Enrolled': userEnrolls.length,
+          'Completed': userEnrolls.filter(e => e.completed).length,
+          'Progress %': userEnrolls.length > 0 ? Math.round((userEnrolls.filter(e => e.completed).length / userEnrolls.length) * 100) : 0
+        };
+      }) || [];
+    } else if (reportType === 'course-inventory') {
+      const { data: courses, error: coursesError } = await supabase
+        .from('courses')
+        .select('id, title, description, createdat, category');
+      const { data: enrollments, error: enrollmentsError } = await supabase
+        .from('enrollments')
+        .select('courseid, completed, hoursspent');
+      const { data: assessments, error: assessmentsError } = await supabase
+        .from('assessments')
+        .select('courseid, id');
+      const { data: courseFeedback, error: feedbackError } = await supabase
+        .from('course_feedback')
+        .select('courseid, rating');
+
+      console.log('📚 Course Performance Inventory Report:', {
+        coursesError: coursesError?.message,
+        coursesCount: courses?.length || 0,
+        enrollmentsError: enrollmentsError?.message,
+        enrollmentsCount: enrollments?.length || 0,
+        assessmentsError: assessmentsError?.message,
+        assessmentsCount: assessments?.length || 0,
+        feedbackError: feedbackError?.message,
+        feedbackCount: courseFeedback?.length || 0
+      });
+
+      reportData = courses?.map((c: any) => {
+        const courseEnrolls = enrollments?.filter(e => e.courseid === c.id) || [];
+        const completions = courseEnrolls.filter(e => e.completed).length;
+        const totalTimeSeconds = courseEnrolls.reduce((sum: number, e: any) => sum + (e.hoursspent || 0), 0);
+        const avgTimeSeconds = courseEnrolls.length > 0 ? Math.round(totalTimeSeconds / courseEnrolls.length) : 0;
+        const assessmentCount = assessments?.filter(a => a.courseid === c.id).length || 0;
+
+        // Calculate average rating from course_feedback
+        const courseRatings = courseFeedback?.filter(f => f.courseid === c.id) || [];
+        const validRatings = courseRatings.filter(f => f.rating !== null && f.rating !== undefined);
+        const avgRating = validRatings.length > 0
+          ? `${(validRatings.reduce((sum: number, f: any) => sum + (Number(f.rating) || 0), 0) / validRatings.length).toFixed(1)}★`
+          : 'No ratings';
+
+        return {
+          'Course Title': c.title,
+          'Description': c.description || 'N/A',
+          'Category': c.category || 'Uncategorized',
+          'Total Enrollments': courseEnrolls.length,
+          'Completions': completions,
+          'Completion Rate %': courseEnrolls.length > 0 ? Math.round((completions / courseEnrolls.length) * 100) : 0,
+          'Average Hours': avgTimeSeconds > 0 ? timeTrackingService.formatAsHMS(avgTimeSeconds) : '00:00:00',
+          'Assessments': assessmentCount,
+          'Average Rating': avgRating,
+          'Created Date': c.createdat ? new Date(c.createdat).toLocaleDateString() : 'N/A'
+        };
+      }) || [];
+    } else if (reportType === 'assessment-results') {
+      const { data: results } = await supabase
+        .from('assessment_results')
+        .select('id, percentage, passed, completedat, userid, assessmentid');
+
+      // Fetch related data
+      const userIds = [...new Set(results?.map(r => r.userid) || [])];
+      const assessmentIds = [...new Set(results?.map(r => r.assessmentid) || [])];
+
+      const { data: profiles } = userIds.length > 0 ? await supabase.from('profiles').select('id, fullname, email, department').in('id', userIds) : { data: [] };
+      const { data: assessments } = assessmentIds.length > 0 ? await supabase.from('assessments').select('id, title, courseid').in('id', assessmentIds) : { data: [] };
+      const { data: courses } = await supabase.from('courses').select('id, title');
+
+      reportData = results?.map((r: any) => {
+        const profile = (profiles || [])?.find(p => p.id === r.userid);
+        const assessment = (assessments || [])?.find(a => a.id === r.assessmentid);
+        const course = (courses || [])?.find(c => c.id === assessment?.courseid);
+
+        return {
+          'Student Name': profile?.fullname || 'Unknown',
+          'Email': profile?.email || 'N/A',
+          'Department': profile?.department || 'N/A',
+          'Course': course?.title || 'Unknown',
+          'Assessment': assessment?.title || 'Unknown',
+          'Score %': r.percentage,
+          'Passed': r.passed ? 'Yes' : 'No',
+          'Submitted Date': new Date(r.completedat).toLocaleDateString()
+        };
+      }) || [];
+    } else if (reportType === 'skill-matrix') {
+      const { data: skillMatrix } = await supabase.rpc('get_skill_matrix_data');
+      reportData = skillMatrix || [];
+    } else if (reportType === 'skill-matrix-live') {
+      const { data: profiles } = await supabase.from('profiles').select('id, fullname, email, department, role');
+      const { data: skills } = await supabase.from('skills').select('id, name');
+      const { data: userSkills } = await supabase.from('user_skill_achievements').select('user_id, skill_id');
+
+      const matrix: any = {};
+
+      profiles?.forEach((p: any) => {
+        matrix[p.id] = {
+          'Full Name': p.fullname,
+          'Email': p.email,
+          'Department': p.department || 'N/A',
+        };
+        skills?.forEach((s: any) => {
+          matrix[p.id][s.name] = 'Not Acquired';
         });
+      });
 
-        reportData = profiles?.map((p: any) => {
-          const userEnrolls = enrollments?.filter(e => e.userid === p.id) || [];
-          return {
-            'Full Name': p.fullname,
-            'Email': p.email,
-            'Department': p.department || 'N/A',
-            'Total Enrolled': userEnrolls.length,
-            'Completed': userEnrolls.filter(e => e.completed).length,
-            'Progress %': userEnrolls.length > 0 ? Math.round((userEnrolls.filter(e => e.completed).length / userEnrolls.length) * 100) : 0
-          };
-        }) || [];
-      } else if (reportType === 'course-inventory') {
-        const { data: courses, error: coursesError } = await supabase.from('courses').select('id, title, description, created_at');
-        const { data: enrollments, error: enrollmentsError } = await supabase.from('enrollments').select('courseid, completed');
+      userSkills?.forEach((us: any) => {
+        const user = profiles?.find((p: any) => p.id === us.user_id);
+        const skill = skills?.find((s: any) => s.id === us.skill_id);
+        if (user && skill) {
+          matrix[user.id][skill.name] = 'Acquired';
+        }
+      });
 
-        console.log('📚 Course Inventory Report:', {
-          coursesError: coursesError?.message,
-          coursesCount: courses?.length || 0,
-          enrollmentsError: enrollmentsError?.message,
-          enrollmentsCount: enrollments?.length || 0
-        });
+      reportData = Object.values(matrix);
+    } else if (reportType === 'compliance') {
+      const { data: certs } = await supabase
+        .from('certificates')
+        .select('user_id, course_id, issued_at');
+      const { data: profiles } = await supabase.from('profiles').select('id, fullname, department');
+      const { data: courses } = await supabase.from('courses').select('id, title');
 
-        reportData = courses?.map((c: any) => {
-          const courseEnrolls = enrollments?.filter(e => e.courseid === c.id) || [];
-          return {
-            'Course Title': c.title,
-            'Description': c.description || 'N/A',
-            'Total Enrollments': courseEnrolls.length,
-            'Completions': courseEnrolls.filter(e => e.completed).length,
-            'Completion Rate %': courseEnrolls.length > 0 ? Math.round((courseEnrolls.filter(e => e.completed).length / courseEnrolls.length) * 100) : 0,
-            'Assessments': 0,
-            'Created Date': new Date(c.created_at).toLocaleDateString()
-          };
-        }) || [];
-      } else if (reportType === 'assessment-results') {
-        const { data: results } = await supabase
-          .from('assessment_results')
-          .select('id, percentage, passed, completedat, userid, assessmentid');
-
-        // Fetch related data
-        const userIds = [...new Set(results?.map(r => r.userid) || [])];
-        const assessmentIds = [...new Set(results?.map(r => r.assessmentid) || [])];
-
-        const { data: profiles } = userIds.length > 0 ? await supabase.from('profiles').select('id, fullname, email, department').in('id', userIds) : { data: [] };
-        const { data: assessments } = assessmentIds.length > 0 ? await supabase.from('assessments').select('id, title, courseid').in('id', assessmentIds) : { data: [] };
-        const { data: courses } = await supabase.from('courses').select('id, title');
-
-        reportData = results?.map((r: any) => {
-          const profile = (profiles || [])?.find(p => p.id === r.userid);
-          const assessment = (assessments || [])?.find(a => a.id === r.assessmentid);
-          const course = (courses || [])?.find(c => c.id === assessment?.courseid);
-
-          return {
-            'Student Name': profile?.fullname || 'Unknown',
-            'Email': profile?.email || 'N/A',
-            'Department': profile?.department || 'N/A',
-            'Course': course?.title || 'Unknown',
-            'Assessment': assessment?.title || 'Unknown',
-            'Score %': r.percentage,
-            'Passed': r.passed ? 'Yes' : 'No',
-            'Submitted Date': new Date(r.completedat).toLocaleDateString()
-          };
-        }) || [];
-      } else if (reportType === 'skill-matrix') {
-        const { data: skillMatrix } = await supabase.rpc('get_skill_matrix_data');
-        reportData = skillMatrix || [];
-      } else if (reportType === 'skill-matrix-live') {
-        const { data: profiles } = await supabase.from('profiles').select('id, fullname, email, department, role');
-        const { data: skills } = await supabase.from('skills').select('id, name');
-        const { data: userSkills } = await supabase.from('user_skill_achievements').select('user_id, skill_id');
-
-        const matrix: any = {};
-
-        profiles?.forEach((p: any) => {
-          matrix[p.id] = {
-            'Full Name': p.fullname,
-            'Email': p.email,
-            'Department': p.department || 'N/A',
-          };
-          skills?.forEach((s: any) => {
-            matrix[p.id][s.name] = 'Not Acquired';
-          });
-        });
-
-        userSkills?.forEach((us: any) => {
-          const user = profiles?.find((p: any) => p.id === us.user_id);
-          const skill = skills?.find((s: any) => s.id === us.skill_id);
-          if (user && skill) {
-            matrix[user.id][skill.name] = 'Acquired';
-          }
-        });
-
-        reportData = Object.values(matrix);
-      } else if (reportType === 'compliance') {
-        const { data: certs } = await supabase
-          .from('certificates')
-          .select('user_id, course_id, issued_at');
-        const { data: profiles } = await supabase.from('profiles').select('id, fullname, department');
-        const { data: courses } = await supabase.from('courses').select('id, title');
-
-        reportData = certs?.map((c: any) => {
-          const profile = profiles?.find(p => p.id === c.user_id);
-          const course = courses?.find(co => co.id === c.course_id);
-          return {
-            'User': profile?.fullname || 'Unknown',
-            'Department': profile?.department || 'N/A',
-            'Certificate': course?.title || 'Unknown',
-            'Issued Date': new Date(c.issued_at).toLocaleDateString(),
-            'Status': 'Valid'
-          };
-        }) || [];
-      }
-
-      // Apply department filter
-      if (filterDept !== 'all' && reportData.length > 0 && reportData[0]['Department']) {
-        reportData = reportData.filter(row => row['Department'] === filterDept);
-      }
-
-      setData(reportData);
-      setTotalRecords(reportData.length);
-    } catch (error) {
-      console.error('Error fetching report:', error);
-      setData([]);
-      setTotalRecords(0);
-    } finally {
-      setLoading(false);
+      reportData = certs?.map((c: any) => {
+        const profile = profiles?.find(p => p.id === c.user_id);
+        const course = courses?.find(co => co.id === c.course_id);
+        return {
+          'User': profile?.fullname || 'Unknown',
+          'Department': profile?.department || 'N/A',
+          'Certificate': course?.title || 'Unknown',
+          'Issued Date': new Date(c.issued_at).toLocaleDateString(),
+          'Status': 'Valid'
+        };
+      }) || [];
     }
-  };
 
-  const handleExportExcel = () => {
-    if (data.length === 0) return;
-    const filename = `${reportType}-report-${new Date().toISOString().split('T')[0]}`;
-    exportToExcel(data, filename);
-  };
+    // Apply department filter - handle different column name variations
+    if (filterDept !== 'all' && reportData.length > 0) {
+      const firstRow = reportData[0];
+      const deptColumn = Object.keys(firstRow).find(key =>
+        key.toLowerCase().includes('department') ||
+        key.toLowerCase() === 'dept'
+      );
 
-  const handleExportPDF = () => {
-    if (data.length === 0) return;
-    const filename = `${reportType}-report-${new Date().toISOString().split('T')[0]}`;
-    const title = `${reportType.replace('-', ' ').toUpperCase()} REPORT`;
-    exportToPDF(data, filename, title);
-  };
+      if (deptColumn) {
+        reportData = reportData.filter(row => row[deptColumn] === filterDept);
+      }
+    }
 
-  const handleExportCSV = () => {
-    if (data.length === 0) return;
-    const filename = `${reportType}-report-${new Date().toISOString().split('T')[0]}`;
-    exportToCSV(data, filename);
-  };
+    setData(reportData);
+    setTotalRecords(reportData.length);
+  } catch (error) {
+    console.error('Error fetching report:', error);
+    setData([]);
+    setTotalRecords(0);
+  } finally {
+    setLoading(false);
+  }
+};
 
-  return (
-    <AdminLayout title="LMS Analytics & Learning Reports">
-      <style>{`
+const handleExportExcel = () => {
+  if (data.length === 0) return;
+  const filename = `${reportType}-report-${new Date().toISOString().split('T')[0]}`;
+  exportToExcel(data, filename);
+};
+
+const handleExportPDF = () => {
+  if (data.length === 0) return;
+  const filename = `${reportType}-report-${new Date().toISOString().split('T')[0]}`;
+  const title = `${reportType.replace('-', ' ').toUpperCase()} REPORT`;
+  exportToPDF(data, filename, title);
+};
+
+const handleExportCSV = () => {
+  if (data.length === 0) return;
+  const filename = `${reportType}-report-${new Date().toISOString().split('T')[0]}`;
+  exportToCSV(data, filename);
+};
+
+return (
+  <AdminLayout title="LMS Analytics & Learning Reports">
+    <style>{`
         .reports-sidebar {
           padding-right: 12px;
         }
@@ -276,166 +383,166 @@ const AdminReportsPage: React.FC = () => {
           background: #94a3b8;
         }
       `}</style>
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        {/* Report Sidebar */}
-        <div className="reports-sidebar lg:col-span-1 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto lg:sticky lg:top-8 pl-2">
-          {Object.entries(reportsByCategory).map(([category, categoryReports]: [string, any]) => (
-            <div key={category} className="space-y-2">
-              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider px-2 py-1">{category}</h4>
-              {categoryReports.map((report: any) => (
-                <button
-                  key={report.id}
-                  onClick={() => setReportType(report.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all ${reportType === report.id
-                    ? 'bg-[#4f46e5] text-white shadow-lg shadow-primary/20 scale-[1.02]'
-                    : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-100'}`}
-                >
-                  <span className="material-symbols-rounded text-base">{report.icon}</span>
-                  <span className="text-left line-clamp-2">{report.label}</span>
-                </button>
-              ))}
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+      {/* Report Sidebar */}
+      <div className="reports-sidebar lg:col-span-1 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto lg:sticky lg:top-8 pl-2">
+        {Object.entries(reportsByCategory).map(([category, categoryReports]: [string, any]) => (
+          <div key={category} className="space-y-2">
+            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider px-2 py-1">{category}</h4>
+            {categoryReports.map((report: any) => (
+              <button
+                key={report.id}
+                onClick={() => setReportType(report.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all ${reportType === report.id
+                  ? 'bg-[#4f46e5] text-white shadow-lg shadow-primary/20 scale-[1.02]'
+                  : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-100'}`}
+              >
+                <span className="material-symbols-rounded text-base">{report.icon}</span>
+                <span className="text-left line-clamp-2">{report.label}</span>
+              </button>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      {/* Report Content */}
+      <div className="lg:col-span-4 space-y-6">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          {/* Report Header */}
+          <div className="p-6 border-b border-gray-100">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">
+                  {reports.find(r => r.id === reportType)?.label}
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">Total Records: {totalRecords}</p>
+              </div>
             </div>
-          ))}
+
+            {/* Filters and Export Buttons */}
+            <div className="flex flex-wrap gap-3 items-center">
+              {departments.length > 0 && (
+                <select
+                  value={filterDept}
+                  onChange={(e) => setFilterDept(e.target.value)}
+                  className="px-3 py-2 pr-8 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">All Departments</option>
+                  {departments.map(dept => (
+                    <option key={dept} value={dept}>{dept}</option>
+                  ))}
+                </select>
+              )}
+
+              <div className="flex gap-2 ml-auto">
+                <button
+                  onClick={handleExportExcel}
+                  disabled={data.length === 0}
+                  title="Download as Excel"
+                  className="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-2 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors border border-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="material-symbols-rounded text-sm">download</span>
+                  <span className="hidden sm:inline">Excel</span>
+                </button>
+                <button
+                  onClick={handleExportPDF}
+                  disabled={data.length === 0}
+                  title="Download as PDF"
+                  className="flex items-center gap-2 bg-red-50 text-red-700 px-3 py-2 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors border border-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="material-symbols-rounded text-sm">picture_as_pdf</span>
+                  <span className="hidden sm:inline">PDF</span>
+                </button>
+                <button
+                  onClick={handleExportCSV}
+                  disabled={data.length === 0}
+                  title="Download as CSV"
+                  className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-2 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors border border-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="material-symbols-rounded text-sm">download</span>
+                  <span className="hidden sm:inline">CSV</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Report Data Table */}
+          <div className="overflow-x-auto max-h-[calc(100vh-400px)] overflow-y-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-gray-50 sticky top-0">
+                <tr>
+                  {data.length > 0 && Object.keys(data[0]).map(header => (
+                    <th
+                      key={header}
+                      className="px-6 py-4 text-[11px] font-bold text-gray-600 uppercase tracking-wider border-b border-gray-100"
+                    >
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {loading ? (
+                  <tr>
+                    <td colSpan={Object.keys(data[0] || {}).length || 10} className="px-6 py-20 text-center">
+                      <Loader size="lg" message="Loading report data..." />
+                    </td>
+                  </tr>
+                ) : data.length > 0 ? (
+                  data.map((row, i) => (
+                    <tr key={i} className="hover:bg-blue-50/50 transition-colors">
+                      {Object.values(row).map((val: any, j) => {
+                        let displayValue = val;
+                        let cellClass = 'px-6 py-4 text-sm text-gray-700';
+
+                        if (typeof val === 'number') {
+                          if (val.toString().includes('%') || val > 0 && val <= 100) {
+                            cellClass = 'px-6 py-4 text-sm font-semibold text-blue-600';
+                          }
+                          displayValue = typeof val === 'number' ? val.toFixed(val % 1 !== 0 ? 2 : 0) : val;
+                        } else if (val === 'Active' || val === 'Completed') {
+                          cellClass = 'px-6 py-4 text-sm font-semibold text-green-600';
+                        } else if (val === 'Inactive' || val === 'Failed') {
+                          cellClass = 'px-6 py-4 text-sm font-semibold text-red-600';
+                        }
+
+                        return (
+                          <td key={j} className={cellClass}>
+                            {displayValue}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={Object.keys(data[0] || {}).length || 10} className="px-6 py-20 text-center text-gray-400 italic">
+                      No data available for this report
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Report Summary */}
+          {data.length > 0 && (
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 text-xs text-gray-600">
+              <p>Showing <strong>{data.length}</strong> records • Last updated: {new Date().toLocaleString()}</p>
+            </div>
+          )}
         </div>
 
-        {/* Report Content */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            {/* Report Header */}
-            <div className="p-6 border-b border-gray-100">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">
-                    {reports.find(r => r.id === reportType)?.label}
-                  </h3>
-                  <p className="text-sm text-gray-500 mt-1">Total Records: {totalRecords}</p>
-                </div>
-              </div>
-
-              {/* Filters and Export Buttons */}
-              <div className="flex flex-wrap gap-3 items-center">
-                {departments.length > 0 && (
-                  <select
-                    value={filterDept}
-                    onChange={(e) => setFilterDept(e.target.value)}
-                    className="px-3 py-2 pr-8 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="all">All Departments</option>
-                    {departments.map(dept => (
-                      <option key={dept} value={dept}>{dept}</option>
-                    ))}
-                  </select>
-                )}
-
-                <div className="flex gap-2 ml-auto">
-                  <button
-                    onClick={handleExportExcel}
-                    disabled={data.length === 0}
-                    title="Download as Excel"
-                    className="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-2 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors border border-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <span className="material-symbols-rounded text-sm">download</span>
-                    <span className="hidden sm:inline">Excel</span>
-                  </button>
-                  <button
-                    onClick={handleExportPDF}
-                    disabled={data.length === 0}
-                    title="Download as PDF"
-                    className="flex items-center gap-2 bg-red-50 text-red-700 px-3 py-2 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors border border-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <span className="material-symbols-rounded text-sm">picture_as_pdf</span>
-                    <span className="hidden sm:inline">PDF</span>
-                  </button>
-                  <button
-                    onClick={handleExportCSV}
-                    disabled={data.length === 0}
-                    title="Download as CSV"
-                    className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-2 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors border border-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <span className="material-symbols-rounded text-sm">download</span>
-                    <span className="hidden sm:inline">CSV</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Report Data Table */}
-            <div className="overflow-x-auto max-h-[calc(100vh-400px)] overflow-y-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-gray-50 sticky top-0">
-                  <tr>
-                    {data.length > 0 && Object.keys(data[0]).map(header => (
-                      <th
-                        key={header}
-                        className="px-6 py-4 text-[11px] font-bold text-gray-600 uppercase tracking-wider border-b border-gray-100"
-                      >
-                        {header}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {loading ? (
-                    <tr>
-                      <td colSpan={Object.keys(data[0] || {}).length || 10} className="px-6 py-20 text-center">
-                        <Loader size="lg" message="Loading report data..." />
-                      </td>
-                    </tr>
-                  ) : data.length > 0 ? (
-                    data.map((row, i) => (
-                      <tr key={i} className="hover:bg-blue-50/50 transition-colors">
-                        {Object.values(row).map((val: any, j) => {
-                          let displayValue = val;
-                          let cellClass = 'px-6 py-4 text-sm text-gray-700';
-
-                          if (typeof val === 'number') {
-                            if (val.toString().includes('%') || val > 0 && val <= 100) {
-                              cellClass = 'px-6 py-4 text-sm font-semibold text-blue-600';
-                            }
-                            displayValue = typeof val === 'number' ? val.toFixed(val % 1 !== 0 ? 2 : 0) : val;
-                          } else if (val === 'Active' || val === 'Completed') {
-                            cellClass = 'px-6 py-4 text-sm font-semibold text-green-600';
-                          } else if (val === 'Inactive' || val === 'Failed') {
-                            cellClass = 'px-6 py-4 text-sm font-semibold text-red-600';
-                          }
-
-                          return (
-                            <td key={j} className={cellClass}>
-                              {displayValue}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={Object.keys(data[0] || {}).length || 10} className="px-6 py-20 text-center text-gray-400 italic">
-                        No data available for this report
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Report Summary */}
-            {data.length > 0 && (
-              <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 text-xs text-gray-600">
-                <p>Showing <strong>{data.length}</strong> records • Last updated: {new Date().toLocaleString()}</p>
-              </div>
-            )}
-          </div>
-
-          {/* Report Description */}
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-            <p className="text-xs text-blue-900">
-              <strong>💡 Tip:</strong> These comprehensive learning reports provide detailed analytics on learner progress, engagement, skills, and performance. Use filters to segment data by department and export in multiple formats for analysis.
-            </p>
-          </div>
+        {/* Report Description */}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <p className="text-xs text-blue-900">
+            <strong>💡 Tip:</strong> These comprehensive learning reports provide detailed analytics on learner progress, engagement, skills, and performance. Use filters to segment data by department and export in multiple formats for analysis.
+          </p>
         </div>
       </div>
-    </AdminLayout>
-  );
+    </div>
+  </AdminLayout>
+);
 };
 
 export default AdminReportsPage;

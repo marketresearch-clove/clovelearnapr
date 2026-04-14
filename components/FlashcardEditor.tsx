@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { flashcardService, Flashcard } from '../lib/flashcardService';
 import { generateFlashcardContent, AIGenerationOptions } from '../lib/aiService';
+import { stripHtmlTags, sanitizeHtml } from '../lib/contentUtils';
 import './FlashcardEditor.css';
 
 interface FlashcardEditorProps {
@@ -166,8 +167,8 @@ const FlashcardEditor: React.FC<FlashcardEditorProps> = ({
             const aiCards: Flashcard[] = generatedData.map((item, index) => ({
                 id: crypto.randomUUID(),
                 flashcard_set_id: flashcardSetId || '',
-                front: item.front,
-                back: item.back,
+                front: stripHtmlTags(item.front || '').trim(),
+                back: stripHtmlTags(item.back || '').trim(),
                 order: flashcards.length + index,
                 is_ai_generated: true,
                 difficulty: aiDifficulty === 'beginner' ? 'easy' : aiDifficulty === 'intermediate' ? 'medium' : 'hard',

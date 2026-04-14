@@ -244,6 +244,39 @@ export const uploadTemplateImage = async (
 };
 
 /**
+ * Set a template as active and automatically deactivate all others
+ * Only one template can be active at a time
+ */
+export const setActivateTemplate = async (id: string): Promise<CertificateTemplate> => {
+  try {
+    // First, deactivate all templates except the one being activated
+    const { error: deactivateError } = await supabase
+      .from('certificate_templates')
+      .update({ is_active: false })
+      .neq('id', id);
+
+    if (deactivateError) throw deactivateError;
+
+    // Then activate the selected template
+    const { data, error: activateError } = await supabase
+      .from('certificate_templates')
+      .update({
+        is_active: true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (activateError) throw activateError;
+    return data;
+  } catch (error) {
+    console.error('Error setting active template:', error);
+    throw error;
+  }
+};
+
+/**
  * Upload canvas element image to storage
  * Used for logos, watermarks, and other decorative images added to the certificate
  */

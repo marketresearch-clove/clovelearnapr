@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  getAllTemplates, 
-  createTemplate, 
-  updateTemplate, 
+import {
+  getAllTemplates,
+  createTemplate,
+  updateTemplate,
   deleteTemplate,
+  setActivateTemplate,
   CertificateTemplate,
   PlaceholderConfig
 } from '../lib/certificateTemplateService';
@@ -58,7 +59,7 @@ const CertificateTemplateManager: React.FC<TemplateManagerProps> = ({
         width: 3125,
         height: 2209,
       });
-      
+
       setTemplates([...templates, template]);
       setEditingTemplate(template);
       setIsCreating(false);
@@ -107,12 +108,32 @@ const CertificateTemplateManager: React.FC<TemplateManagerProps> = ({
 
   const handleToggleActive = async (template: CertificateTemplate) => {
     try {
-      const updated = await updateTemplate({
-        id: template.id,
-        is_active: !template.is_active,
-      });
-      setTemplates(templates.map(t => t.id === updated.id ? updated : t));
-      setSuccessMessage(`Template ${updated.is_active ? 'activated' : 'deactivated'}`);
+      let updated: CertificateTemplate;
+
+      // When activating a template, use setActivateTemplate to automatically deactivate others
+      if (!template.is_active) {
+        // Activating: deactivate all others automatically
+        updated = await setActivateTemplate(template.id);
+        // Update local state: deactivate all other templates
+        setTemplates(templates.map(t => ({
+          ...t,
+          is_active: t.id === template.id
+        })));
+        setSuccessMessage('Template activated and other templates deactivated');
+      } else {
+        // Deactivating: simple toggle (but prevent deactivating if it's the only active one)
+        const activeCount = templates.filter(t => t.is_active).length;
+        if (activeCount <= 1) {
+          setErrorMessage('At least one template must remain active');
+          return;
+        }
+        updated = await updateTemplate({
+          id: template.id,
+          is_active: false,
+        });
+        setTemplates(templates.map(t => t.id === updated.id ? updated : t));
+        setSuccessMessage('Template deactivated');
+      }
     } catch (error) {
       console.error('Error toggling template status:', error);
       setErrorMessage('Failed to update template status');
@@ -213,16 +234,15 @@ const CertificateTemplateManager: React.FC<TemplateManagerProps> = ({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {templates.map((template) => (
-            <div 
-              key={template.id} 
-              className={`bg-white rounded-xl shadow-sm border transition-all overflow-hidden flex flex-col ${
-                template.is_active ? 'border-primary ring-1 ring-primary/20' : 'border-gray-200'
-              }`}
+            <div
+              key={template.id}
+              className={`bg-white rounded-xl shadow-sm border transition-all overflow-hidden flex flex-col ${template.is_active ? 'border-primary ring-1 ring-primary/20' : 'border-gray-200'
+                }`}
             >
               <div className="aspect-[1.4/1] bg-gray-100 relative group">
                 {template.background_image_url ? (
-                  <img 
-                    src={template.background_image_url} 
+                  <img
+                    src={template.background_image_url}
                     alt={template.template_name}
                     className="w-full h-full object-cover"
                   />
@@ -232,7 +252,7 @@ const CertificateTemplateManager: React.FC<TemplateManagerProps> = ({
                     <span className="text-xs">No background image</span>
                   </div>
                 )}
-                
+
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                   <button
                     onClick={() => setEditingTemplate(template)}
@@ -260,16 +280,15 @@ const CertificateTemplateManager: React.FC<TemplateManagerProps> = ({
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleToggleActive(template)}
-                      className={`text-xs font-medium px-2 py-1 rounded transition-colors ${
-                        template.is_active 
-                          ? 'text-gray-400 hover:text-gray-600' 
-                          : 'text-primary hover:bg-primary/10'
-                      }`}
+                      className={`text-xs font-medium px-2 py-1 rounded transition-colors ${template.is_active
+                        ? 'text-gray-400 hover:text-gray-600'
+                        : 'text-primary hover:bg-primary/10'
+                        }`}
                     >
                       {template.is_active ? 'Deactivate' : 'Set as Active'}
                     </button>
                   </div>
-                  
+
                   {!readOnly && (
                     <button
                       onClick={() => handleDeleteTemplate(template.id)}

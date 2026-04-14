@@ -7,6 +7,7 @@ import 'katex/dist/katex.min.css';
 import { supabase } from '../lib/supabaseClient';
 import { durationService } from '../lib/durationService';
 import { generateLessonContent, generateTextVariation, AIGenerationOptions } from '../lib/aiService';
+import { stripHtmlTags, getHtmlPreview, sanitizeHtml } from '../lib/contentUtils';
 import FlashcardEditor from './FlashcardEditor';
 
 // Register Quill modules

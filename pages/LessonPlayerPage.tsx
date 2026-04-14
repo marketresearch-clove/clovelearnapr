@@ -13,12 +13,17 @@ import { quizResultsService } from '../lib/quizResultsService';
 import { courseCompletionService } from '../lib/courseCompletionService';
 import { convertYouTubeUrl, isYouTubeUrl } from '../lib/youtubeHelper';
 import { printAcknowledgement, downloadAcknowledgementPDF } from '../lib/acknowledgementDocumentService';
+import { stripHtmlTags, sanitizeHtml } from '../lib/contentUtils';
 
 import PdfViewer from '../components/PdfViewer';
 import InlineQuizRenderer from '../components/InlineQuizRenderer';
 import FlashcardRenderer from '../components/FlashcardRenderer';
 import ReactPlayer from 'react-player';
+const ReactPlayerAny = ReactPlayer as any;
 import TextToSpeech, { TextToSpeechRef } from '../components/TextToSpeech';
+import CourseCompletionPopup from '../components/CourseCompletionPopup';
+
+const VIDEO_COMPLETE_THRESHOLD = 0.85;
 
 // Custom scrollbar styles
 const customScrollbarStyles = `
@@ -79,6 +84,10 @@ const LessonPlayerPage: React.FC = () => {
   const [totalLessonsCount, setTotalLessonsCount] = useState(0);
   const [courseProgressPercentage, setCourseProgressPercentage] = useState(0);
   const [courseCompleted, setCourseCompleted] = useState(false);
+  const [courseData, setCourseData] = useState<any>(null);
+  const [showCourseCompletionModal, setShowCourseCompletionModal] = useState(false);
+  const [completionMeta, setCompletionMeta] = useState<any>(null);
+  const [completionStats, setCompletionStats] = useState({ pointsEarned: 0, timeTakenSeconds: 0, quizPercentage: 0 });
   const [lessonProgress, setLessonProgress] = useState(0);
   const [lessonCompleted, setLessonCompleted] = useState(false);
   const [quizPassed, setQuizPassed] = useState(false);
@@ -96,7 +105,11 @@ const LessonPlayerPage: React.FC = () => {
   const [totalSentences, setTotalSentences] = useState(0);
   const [playedDuration, setPlayedDuration] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
+  const [videoProgressPercent, setVideoProgressPercent] = useState(0);
+  const [resumeTime, setResumeTime] = useState(0);
   const [currentTTSBlockId, setCurrentTTSBlockId] = useState<string | null>(null);
+  const videoAutoCompleteRef = useRef(false);
+  const lastProgressSaveRef = useRef(0);
   const [ttsEnabled, setTtsEnabled] = useState(false);
   const playerRef = useRef<any>(null);
   const lessonStartTimeRef = useRef<number>(0);
@@ -221,16 +234,51 @@ const LessonPlayerPage: React.FC = () => {
         await enrollmentService.completeCourse(user.id, courseId, courseDuration);
       }
 
-      const skillAssignResult = await courseCompletionService.markCourseAsCompleted(user.id, courseId);
-      console.log('Skills assigned:', skillAssignResult);
+      const courseCompletionResult = await courseCompletionService.markCourseAsCompleted(user.id, courseId);
+      console.log('Course completion result:', courseCompletionResult);
 
-      if (courseCompletionTimeoutRef.current) {
-        clearTimeout(courseCompletionTimeoutRef.current);
+      const { data: skillMappings, error: skillMappingsError } = await supabase
+        .from('skill_course_mappings')
+        .select('skills(name)')
+        .eq('courseid', courseId);
+
+      if (skillMappingsError) {
+        console.warn('Unable to load skill mappings for completion modal:', skillMappingsError);
       }
-      courseCompletionTimeoutRef.current = setTimeout(() => {
-        console.log('[COURSE_COMPLETION] Redirecting to dashboard after completing course');
-        navigate('/dashboard');
-      }, 1500);
+
+      const skillNames = (skillMappings || [])
+        .map((mapping: any) => mapping.skills?.name)
+        .filter((name: string) => !!name);
+
+      const certificateId = courseCompletionResult?.certificateId;
+      const certificateUrl = certificateId
+        ? `${window.location.origin}/certificate/${certificateId}`
+        : `${window.location.origin}/course/${courseId}`;
+
+      const completionDate = new Date().toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+
+      setCompletionMeta({
+        courseName: courseData?.title || 'Course',
+        userName: user?.fullname || user?.email || 'Learner',
+        completionDate,
+        certificateId,
+        certificateUrl,
+        certificatePreviewUrl: courseData?.thumbnail || undefined,
+        organization: courseData?.organization || 'SkillSpire LMS',
+        issueYear: new Date().getFullYear().toString(),
+        issueMonth: (new Date().getMonth() + 1).toString(),
+        credentialId: certificateId || courseId,
+        skillsEarned: skillNames,
+        pointsEarned: completionStats.pointsEarned,
+        timeTakenSeconds:
+          completionStats.timeTakenSeconds || (courseData?.duration ? courseData.duration * 60 : 0),
+        quizPercentage: completionStats.quizPercentage,
+      });
+      setShowCourseCompletionModal(true);
     } catch (error) {
       console.error('Error ensuring course completion:', error);
     } finally {
@@ -262,6 +310,28 @@ const LessonPlayerPage: React.FC = () => {
       lessonStartTimeRef.current = Date.now();
     }
   }, [activeLesson?.id, user?.id, courseId]);
+
+  useEffect(() => {
+    if (!courseId || !activeLesson || activeLesson.type !== 'video') {
+      setResumeTime(0);
+      videoAutoCompleteRef.current = false;
+      lastProgressSaveRef.current = 0;
+      return;
+    }
+
+    const storageKey = `lms_video_progress_${courseId}_${activeLesson.id}`;
+    const saved = localStorage.getItem(storageKey);
+    const savedSeconds = saved ? parseFloat(saved) : 0;
+
+    if (!Number.isNaN(savedSeconds) && savedSeconds > 2) {
+      setResumeTime(savedSeconds);
+    } else {
+      setResumeTime(0);
+    }
+
+    videoAutoCompleteRef.current = false;
+    lastProgressSaveRef.current = 0;
+  }, [courseId, activeLesson?.id, activeLesson?.type]);
 
   const recordLessonAccess = async () => {
     if (!user?.id || !activeLesson?.id || !courseId) return;
@@ -342,6 +412,19 @@ const LessonPlayerPage: React.FC = () => {
     setError(null);
     try {
       const lessons = await lessonService.getLessonsByCourseId(courseId);
+      const { data: courseDetails, error: courseError } = await supabase
+        .from('courses')
+        .select('id, title, thumbnail, category, duration, certificate_enabled')
+        .eq('id', courseId)
+        .single();
+
+      if (courseError) {
+        console.warn('Error loading course info:', courseError);
+      }
+
+      if (!currentController.signal.aborted) {
+        setCourseData(courseDetails || null);
+      }
 
       // If this request was aborted, don't update state
       if (currentController.signal.aborted) {
@@ -650,6 +733,12 @@ const LessonPlayerPage: React.FC = () => {
         const pointsEarned = Math.round(percentage);
         const totalPoints = 100;
 
+        setCompletionStats({
+          pointsEarned,
+          quizPercentage: percentage,
+          timeTakenSeconds: quizResult.timeTaken || 0,
+        });
+
         const quizResultData = {
           userId: user.id,
           courseId: courseId,
@@ -707,19 +796,19 @@ const LessonPlayerPage: React.FC = () => {
         setLessonCompleted(true);
       }
 
-      // Skip database update if already completed, but still set UI state above
-      if (existingProgress?.completed && completed) {
-        console.log('Lesson already completed in database, skipping database update but UI is now reflected');
-        return;
+      // Skip database update if already completed, but still update UI
+      const shouldSkipDbUpdate = existingProgress?.completed && completed;
+
+      if (!shouldSkipDbUpdate) {
+        // Calculate elapsed time in seconds when completing the lesson
+        const elapsedSeconds = completed
+          ? Math.max(1, Math.round((Date.now() - lessonStartTimeRef.current) / 1000))
+          : 0;
+
+        await lessonProgressService.updateLessonProgress(user.id, activeLesson.id, courseId, progress, completed, elapsedSeconds);
       }
 
-      // Calculate elapsed time in seconds when completing the lesson
-      const elapsedSeconds = completed
-        ? Math.max(1, Math.round((Date.now() - lessonStartTimeRef.current) / 1000))
-        : 0;
-
-      await lessonProgressService.updateLessonProgress(user.id, activeLesson.id, courseId, progress, completed, elapsedSeconds);
-
+      // Always update modules and UI when marking complete, regardless of DB state
       if (completed) {
         await updateEnrollmentProgress();
         await recordLearningHours();
@@ -1286,17 +1375,17 @@ const LessonPlayerPage: React.FC = () => {
                 >
                   {block.type === 'text' && (
                     <>
-                      {block.title && <h2 className="text-2xl font-bold mb-4 text-gray-900">{block.title}</h2>}
+                      {block.title && <h2 className="text-2xl font-bold mb-4 text-gray-900">{stripHtmlTags(block.title)}</h2>}
                       <div
                         className="prose prose-lg max-w-none"
-                        dangerouslySetInnerHTML={{ __html: block.content }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(block.content) }}
                       />
-                      {block.description && <p className="text-gray-800 text-sm mt-4 italic">{block.description}</p>}
+                      {block.description && <p className="text-gray-800 text-sm mt-4 italic">{stripHtmlTags(block.description)}</p>}
                     </>
                   )}
                   {block.type === 'video' && block.content && (
                     <>
-                      {block.title && <h3 className="text-xl font-bold mb-4 text-gray-900">{block.title}</h3>}
+                      {block.title && <h3 className="text-xl font-bold mb-4 text-gray-900">{stripHtmlTags(block.title)}</h3>}
                       <div className="w-full aspect-video rounded-lg shadow-lg mb-4 overflow-hidden bg-black">
                         {(() => {
                           const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/)?([a-zA-Z0-9_-]{11})/;
@@ -1310,7 +1399,7 @@ const LessonPlayerPage: React.FC = () => {
                                 width="100%"
                                 height="100%"
                                 src={embedUrl}
-                                title={block.title || "Video"}
+                                title={stripHtmlTags(block.title) || "Video"}
                                 frameBorder="0"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowFullScreen
@@ -1320,7 +1409,7 @@ const LessonPlayerPage: React.FC = () => {
                           } else {
                             const normalizedUrl = isYouTubeUrl(block.content) ? convertYouTubeUrl(block.content) : block.content;
                             return (
-                              <ReactPlayer
+                              <ReactPlayerAny
                                 ref={playerRef}
                                 url={normalizedUrl}
                                 controls
@@ -1329,12 +1418,14 @@ const LessonPlayerPage: React.FC = () => {
                                 playing={isPlayerPlaying}
                                 playsinline
                                 progressInterval={100}
-                                onReady={(player) => {
-                                  playerRef.current = player;
+                                onReady={() => {
+                                  if (!playerRef.current) {
+                                    return;
+                                  }
                                 }}
-                                onPlaybackRateReady={(player) => {
+                                onPlaybackRateReady={() => {
                                   try {
-                                    const internalPlayer = player.getInternalPlayer();
+                                    const internalPlayer = playerRef.current?.getInternalPlayer();
                                     if (internalPlayer?.setPlaybackRate) {
                                       internalPlayer.setPlaybackRate(playbackSpeed);
                                     }
@@ -1350,7 +1441,7 @@ const LessonPlayerPage: React.FC = () => {
                                       rel: 0
                                     }
                                   }
-                                }}
+                                } as any}
                               />
                             );
                           }
@@ -1361,7 +1452,7 @@ const LessonPlayerPage: React.FC = () => {
                   )}
                   {block.type === 'pdf' && block.content && (
                     <>
-                      {block.title && <h3 className="text-xl font-bold mb-4 text-gray-900">{block.title}</h3>}
+                      {block.title && <h3 className="text-xl font-bold mb-4 text-gray-900">{stripHtmlTags(block.title)}</h3>}
                       <div className="mb-4 h-96 sm:h-[60vh] lg:h-[calc(100vh-14rem)] rounded-lg overflow-hidden border border-gray-300 bg-gray-100">
                         <PdfViewer file={block.content} onScrollToEnd={() => setPdfScrolledToEnd(true)} />
                       </div>
@@ -1386,6 +1477,7 @@ const LessonPlayerPage: React.FC = () => {
                       title={block.title || 'Flashcards'}
                       description={block.description}
                       userId={user?.id}
+                      ttsEnabled={ttsEnabled}
                       inlineFlashcards={block.data?.flashcards}
                     />
                   )}
@@ -1610,19 +1702,78 @@ const LessonPlayerPage: React.FC = () => {
           const videoId = match ? match[1] : null;
 
           if (videoId) {
-            const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+            const embedUrl = `https://www.youtube.com/watch?v=${videoId}`;
             return (
               <div className="w-full h-full bg-black flex items-center justify-center">
                 <div className="w-full h-full relative">
-                  <iframe
+                  {resumeTime > 0 && (
+                    <div className="absolute right-4 top-4 z-10 rounded-2xl bg-slate-900/80 px-4 py-2 text-sm text-slate-100 shadow-lg">
+                      Resume at {new Date(resumeTime * 1000).toISOString().substr(14, 5)}
+                    </div>
+                  )}
+                  <ReactPlayerAny
+                    ref={playerRef}
+                    url={embedUrl}
+                    controls
                     width="100%"
                     height="100%"
-                    src={embedUrl}
-                    title="Video Player"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    style={{ display: 'block' }}
+                    playing={isPlayerPlaying}
+                    playsinline
+                    progressInterval={1000}
+                    onReady={() => {
+                      if (resumeTime > 0 && playerRef.current?.seekTo) {
+                        playerRef.current.seekTo(resumeTime, 'seconds');
+                      }
+                    }}
+                    onProgress={(state: any) => {
+                      const currentTime = state.playedSeconds || state.played * (videoDuration || 1);
+                      const durationSeconds = videoDuration || 0;
+                      const progressPercentage = durationSeconds > 0 ? Math.round((currentTime / durationSeconds) * 100) : 0;
+
+                      setPlayedDuration(currentTime);
+                      setVideoProgressPercent(progressPercentage);
+
+                      const storageKey = `lms_video_progress_${courseId}_${activeLesson?.id}`;
+                      if (storageKey && currentTime - lastProgressSaveRef.current >= 5) {
+                        localStorage.setItem(storageKey, currentTime.toString());
+                        lastProgressSaveRef.current = currentTime;
+                      }
+
+                      if (durationSeconds > 0 && progressPercentage >= VIDEO_COMPLETE_THRESHOLD * 100 && !lessonCompleted && !videoAutoCompleteRef.current) {
+                        videoAutoCompleteRef.current = true;
+                        updateLessonProgress(100, true).catch(() => {
+                          videoAutoCompleteRef.current = false;
+                        });
+                      }
+                    }}
+                    onDuration={(duration: any) => {
+                      setVideoDuration(duration);
+                      if (resumeTime > 0 && playerRef.current?.seekTo) {
+                        playerRef.current.seekTo(resumeTime, 'seconds');
+                      }
+                    }}
+                    onPlay={() => setIsPlayerPlaying(true)}
+                    onPause={() => setIsPlayerPlaying(false)}
+                    onEnded={() => {
+                      setIsPlayerPlaying(false);
+                      setVideoProgressPercent(100);
+                      if (!lessonCompleted && !videoAutoCompleteRef.current) {
+                        videoAutoCompleteRef.current = true;
+                        updateLessonProgress(100, true).catch(() => {
+                          videoAutoCompleteRef.current = false;
+                        });
+                      }
+                    }}
+                    config={{
+                      youtube: {
+                        playerVars: {
+                          showinfo: 1,
+                          modestbranding: 1,
+                          rel: 0,
+                          origin: window.location.origin,
+                        }
+                      }
+                    } as any}
                   />
                 </div>
               </div>
@@ -1632,7 +1783,12 @@ const LessonPlayerPage: React.FC = () => {
             return (
               <div className="w-full h-full bg-black flex items-center justify-center">
                 <div className="w-full h-full relative">
-                  <ReactPlayer
+                  {resumeTime > 0 && (
+                    <div className="absolute right-4 top-4 z-10 rounded-2xl bg-slate-900/80 px-4 py-2 text-sm text-slate-100 shadow-lg">
+                      Resume at {new Date(resumeTime * 1000).toISOString().substr(14, 5)}
+                    </div>
+                  )}
+                  <ReactPlayerAny
                     ref={playerRef}
                     url={normalizedUrl}
                     controls
@@ -1640,19 +1796,54 @@ const LessonPlayerPage: React.FC = () => {
                     height="100%"
                     playing={isPlayerPlaying}
                     playsinline
-                    progressInterval={100}
-                    onReady={(player) => {
-                      playerRef.current = player;
+                    progressInterval={1000}
+                    onReady={() => {
+                      if (resumeTime > 0 && playerRef.current?.seekTo) {
+                        playerRef.current.seekTo(resumeTime, 'seconds');
+                      }
                     }}
-                    onProgress={(state) => {
-                      setPlayedDuration(state.played * (videoDuration || 1));
+                    onProgress={(state: any) => {
+                      const currentTime = state.playedSeconds || state.played * (videoDuration || 1);
+                      const durationSeconds = videoDuration || 0;
+                      const progressPercentage = durationSeconds > 0 ? Math.round((currentTime / durationSeconds) * 100) : 0;
+
+                      setPlayedDuration(currentTime);
+                      setVideoProgressPercent(progressPercentage);
+
+                      const storageKey = `lms_video_progress_${courseId}_${activeLesson?.id}`;
+                      if (storageKey && currentTime - lastProgressSaveRef.current >= 5) {
+                        localStorage.setItem(storageKey, currentTime.toString());
+                        lastProgressSaveRef.current = currentTime;
+                      }
+
+                      if (durationSeconds > 0 && progressPercentage >= VIDEO_COMPLETE_THRESHOLD * 100 && !lessonCompleted && !videoAutoCompleteRef.current) {
+                        videoAutoCompleteRef.current = true;
+                        updateLessonProgress(100, true).catch(() => {
+                          videoAutoCompleteRef.current = false;
+                        });
+                      }
                     }}
-                    onDuration={(duration) => {
+                    onDuration={(duration: any) => {
                       setVideoDuration(duration);
+                      if (resumeTime > 0 && playerRef.current?.seekTo) {
+                        playerRef.current.seekTo(resumeTime, 'seconds');
+                      }
                     }}
-                    onPlaybackRateReady={(player) => {
+                    onPlay={() => setIsPlayerPlaying(true)}
+                    onPause={() => setIsPlayerPlaying(false)}
+                    onEnded={() => {
+                      setIsPlayerPlaying(false);
+                      setVideoProgressPercent(100);
+                      if (!lessonCompleted && !videoAutoCompleteRef.current) {
+                        videoAutoCompleteRef.current = true;
+                        updateLessonProgress(100, true).catch(() => {
+                          videoAutoCompleteRef.current = false;
+                        });
+                      }
+                    }}
+                    onPlaybackRateReady={() => {
                       try {
-                        const internalPlayer = player.getInternalPlayer();
+                        const internalPlayer = playerRef.current?.getInternalPlayer();
                         if (internalPlayer?.setPlaybackRate) {
                           internalPlayer.setPlaybackRate(playbackSpeed);
                         }
@@ -1665,10 +1856,11 @@ const LessonPlayerPage: React.FC = () => {
                         playerVars: {
                           showinfo: 1,
                           modestbranding: 1,
-                          rel: 0
+                          rel: 0,
+                          origin: window.location.origin,
                         }
                       }
-                    }}
+                    } as any}
                   />
                 </div>
               </div>
@@ -1721,6 +1913,15 @@ const LessonPlayerPage: React.FC = () => {
   return (
     <>
       <style>{customScrollbarStyles}</style>
+      {showCourseCompletionModal && completionMeta && (
+        <CourseCompletionPopup
+          meta={completionMeta}
+          onClose={() => {
+            setShowCourseCompletionModal(false);
+            navigate('/dashboard');
+          }}
+        />
+      )}
       <div className="flex flex-col h-screen w-full bg-white overflow-hidden">
         {/* ========== TOP HEADER BAR ========== */}
         <header className="h-16 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between px-4 shrink-0 border-b border-slate-700 z-40 shadow-md">
@@ -2233,7 +2434,7 @@ const QuizBlockRenderer: React.FC<QuizBlockRendererProps> = ({
   assessmentId,
 }) => {
   const quizQuestions = block.data?.questions || block.questions || [];
-  const quizTitle = block.title || 'Quiz';
+  const quizTitle = stripHtmlTags(block.title) || 'Quiz';
   const quizDescription = block.description || '';
   const duration = block.data?.duration || block.duration || 30;
   const passingScore = block.data?.passingScore || block.passingScore || 70;
@@ -2252,7 +2453,7 @@ const QuizBlockRenderer: React.FC<QuizBlockRendererProps> = ({
 
   return (
     <>
-      {block.title && <h3 className="text-xl font-bold mb-4 text-gray-900">{block.title}</h3>}
+      {block.title && <h3 className="text-xl font-bold mb-4 text-gray-900">{stripHtmlTags(block.title)}</h3>}
       {block.description && <p className="text-gray-800 text-sm mb-6">{block.description}</p>}
       <InlineQuizRenderer
         lessonId={lessonId}
@@ -2284,7 +2485,7 @@ const AcknowledgementBlockRenderer: React.FC<{
   const data = block.data || {};
   const checkboxLabel = data.checkboxLabel || 'I acknowledge that I have read and understood the above policy.';
   const signatureLabel = data.signatureLabel || 'Type your full name as your digital signature';
-  const policyTitle = data.policyTitle || block.title || 'Policy Document';
+  const policyTitle = stripHtmlTags(data.policyTitle || block.title || 'Policy Document');
   const isComplete = isAcknowledged && signature.trim().length > 0;
 
   if (isLocked) {
@@ -2378,7 +2579,7 @@ const AcknowledgementBlockRenderer: React.FC<{
       {block.content && (
         <div
           className="prose prose-sm max-w-none bg-white border border-gray-200 rounded-xl p-6 max-h-80 overflow-y-auto text-gray-800 shadow-inner"
-          dangerouslySetInnerHTML={{ __html: block.content }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(block.content) }}
         />
       )}
 

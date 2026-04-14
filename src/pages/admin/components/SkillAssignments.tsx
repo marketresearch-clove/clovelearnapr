@@ -238,14 +238,17 @@ const SkillAssignments: React.FC = () => {
           id,
           user_id,
           skill_id,
-          skill_name,
-          course_id,
-          course_title,
-          course_level,
-          completed_at,
-          percentage_achieved
+          proficiency_level,
+          achieved_at,
+          skills (
+            name,
+            family,
+            skill_course_mappings (
+              courses (title, level)
+            )
+          )
         `)
-        .order('completed_at', { ascending: false });
+        .order('achieved_at', { ascending: false });
 
       if (achieveError) throw achieveError;
 
@@ -290,25 +293,13 @@ const SkillAssignments: React.FC = () => {
         skillid: achievement.skill_id,
         visible: true,
         hidden: false,
-        assignedat: achievement.completed_at,
+        assignedat: achievement.achieved_at,
         expiry_date: null,
-        createdat: achievement.completed_at,
+        createdat: achievement.achieved_at,
         profiles: profilesMap[achievement.user_id] || { fullname: 'Unknown User', email: '' },
-        skills: {
-          name: achievement.skill_name,
-          family: '',
-          skill_course_mappings: [
-            {
-              courses: {
-                title: achievement.course_title,
-                level: achievement.course_level
-              }
-            }
-          ]
-        },
+        skills: achievement.skills || { name: 'Unknown Skill', family: '' },
         source: 'course_acquired',
-        is_acquired: true,
-        percentage_achieved: achievement.percentage_achieved
+        is_acquired: true
       })) || [];
 
       // Combine and deduplicate
@@ -333,8 +324,7 @@ const SkillAssignments: React.FC = () => {
             assignedat: a.assignedat,
             expiry_date: a.expiry_date,
             source: 'course_acquired',
-            is_acquired: true,
-            percentage_achieved: a.percentage_achieved
+            is_acquired: true
           });
         } else {
           // Achievement without admin assignment - add it standalone

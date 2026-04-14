@@ -48,7 +48,6 @@ export interface UserReportData {
     careerPaths: any[];
     skills: any[];
     statistics: any;
-    leaderboardRank: number;
 }
 
 class SearchService {
@@ -396,10 +395,10 @@ class SearchService {
             // Get user skills
             const { data: userSkillsData } = await supabase
                 .from('user_skill_achievements')
-                .select('id, user_id, skill_id, level, proficiency_percentage')
+                .select('id, user_id, skill_id, skill_name, course_level, course_id, course_title, percentage_achieved, completed_at')
                 .eq('user_id', userId);
 
-            // Fetch skill details
+            // Fetch skill details for name/description
             const skillIds = (userSkillsData || []).map((s: any) => s.skill_id).filter(Boolean);
             const { data: skillDetails } = skillIds.length > 0
                 ? await supabase
@@ -413,21 +412,26 @@ class SearchService {
 
             // Map user skills with skill details
             const userSkills = (userSkillsData || []).map((us: any) => ({
-                ...us,
-                skills: skillMap.get(us.skill_id) || { name: 'Unknown Skill', description: '' }
+                id: us.id,
+                user_id: us.user_id,
+                skill_id: us.skill_id,
+                skills: {
+                    name: us.skill_name || 'Unknown Skill',
+                    description: skillMap.get(us.skill_id)?.description || ''
+                }
             }));
 
             // Get user statistics
             const { data: statistics } = await supabase
                 .from('user_statistics')
                 .select('*')
-                .eq('user_id', userId)
+                .eq('userid', userId)
                 .single();
 
-            const leaderboardRank = statistics?.leaderboard_rank || 0;
             const currentStreak = statistics?.currentstreak || 0;
             const totalLearningHours = statistics?.totallearninghours || 0;
             const totalPoints = statistics?.totalpoints || 0;
+            const leaderboardRank = statistics?.leaderboardrank || 0;
 
             return {
                 profile: {
@@ -448,7 +452,6 @@ class SearchService {
                     totalPoints,
                     leaderboardRank,
                 },
-                leaderboardRank,
             };
         } catch (error) {
             console.error('Error fetching user report card:', error);

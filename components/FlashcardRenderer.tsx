@@ -13,6 +13,7 @@ interface FlashcardRendererProps {
     userId?: string;
     onComplete?: (completion: FlashcardSetCompletion) => void;
     inlineFlashcards?: any[]; // Flashcards stored inline in lesson content
+    ttsEnabled?: boolean;
 }
 
 interface CardState {
@@ -30,6 +31,7 @@ const FlashcardRenderer: React.FC<FlashcardRendererProps> = ({
     userId,
     onComplete,
     inlineFlashcards = [],
+    ttsEnabled = false,
 }) => {
     const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
     const [cardStates, setCardStates] = useState<Record<string, CardState>>({});
@@ -54,6 +56,13 @@ const FlashcardRenderer: React.FC<FlashcardRendererProps> = ({
 
     // Auto-read the front side when card changes
     useEffect(() => {
+        if (!ttsEnabled) {
+            if (ttsRef.current) {
+                ttsRef.current.stop();
+            }
+            return;
+        }
+
         if (flashcards.length > 0 && currentCardIndex < flashcards.length) {
             const currentCard = flashcards[currentCardIndex];
             const currentState = cardStates[currentCard.id];
@@ -79,7 +88,7 @@ const FlashcardRenderer: React.FC<FlashcardRendererProps> = ({
                 }
             }
         }
-    }, [currentCardIndex, flashcards]);
+    }, [currentCardIndex, flashcards, ttsEnabled]);
 
     const handleQuizAnswer = (cardId: string, answerIndex: number) => {
         const card = flashcards.find(c => c.id === cardId);
@@ -229,6 +238,10 @@ const FlashcardRenderer: React.FC<FlashcardRendererProps> = ({
             };
         });
 
+        if (!ttsEnabled) {
+            return;
+        }
+
         // Get the new flipped state and set text accordingly
         const currentState = cardStates[cardId];
         const willBeFlipped = !currentState?.isFlipped;
@@ -338,7 +351,7 @@ const FlashcardRenderer: React.FC<FlashcardRendererProps> = ({
     return (
         <div className="flashcard-container">
             {/* TTS Component - Visible Controls Only */}
-            {ttsText && (
+            {ttsEnabled && ttsText && (
                 <TextToSpeech
                     ref={ttsRef}
                     text={ttsText}

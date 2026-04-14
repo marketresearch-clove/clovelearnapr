@@ -215,15 +215,21 @@ const AdminDashboard: React.FC = () => {
         .select('id', { count: 'exact', head: true })
         .eq('status', 'published');
 
-      // Average Course Rating (average of course averages, not individual reviews)
-      const { data: courseRatings } = await supabase
-        .from('courses')
-        .select('averagerating')
-        .gt('averagerating', 0);
+      // Average Course Rating (calculated from course_feedback table - real user ratings)
+      const { data: courseFeedback } = await supabase
+        .from('course_feedback')
+        .select('rating');
 
-      const avgRating = courseRatings && courseRatings.length > 0
-        ? courseRatings.reduce((sum, c) => sum + (c.averagerating || 0), 0) / courseRatings.length
+      const validRatings = (courseFeedback || []).filter((f: any) => f.rating !== null && f.rating !== undefined);
+      const avgRating = validRatings.length > 0
+        ? Math.round((validRatings.reduce((sum: number, f: any) => sum + (Number(f.rating) || 0), 0) / validRatings.length) * 100) / 100
         : 0;
+
+      console.log('⭐ Course Rating fetch from feedback:', {
+        totalFeedbacks: courseFeedback?.length || 0,
+        validRatings: validRatings.length,
+        avgRating: avgRating
+      });
 
       // Monthly Growth (new users this month vs last month)
       const now = new Date();
@@ -248,7 +254,7 @@ const AdminDashboard: React.FC = () => {
       // Fetch total learning hours from enrollments (same source as DashboardPage)
       const { data: enrollmentData } = await supabase
         .from('enrollments')
-        .select('userid, hoursspent, completed');
+        .select('userid, courseid, hoursspent, completed');
 
       const totalSeconds = (enrollmentData || []).reduce((sum, record) => {
         // hoursspent is in SECONDS
@@ -260,7 +266,7 @@ const AdminDashboard: React.FC = () => {
       // Average Session Time (calculate average time per enrollment record)
       const totalSessionRecords = (enrollmentData || []).length;
       const avgSessionTimeSeconds = totalSessionRecords > 0
-        ? totalSeconds / totalSessionRecords
+        ? Math.round(totalSeconds / totalSessionRecords)
         : 0;
       const avgSessionTime = timeTrackingService.secondsToHours(avgSessionTimeSeconds);
       const avgSessionTimeFormatted = timeTrackingService.formatSeconds(avgSessionTimeSeconds);
@@ -282,10 +288,13 @@ const AdminDashboard: React.FC = () => {
       // Fetch course popularity
       const courseCounts = new Map();
       (enrollments || []).forEach((enrollment: any) => {
-        courseCounts.set(
-          enrollment.courseid,
-          (courseCounts.get(enrollment.courseid) || 0) + 1
-        );
+        // Only count enrollments with valid course IDs
+        if (enrollment.courseid) {
+          courseCounts.set(
+            enrollment.courseid,
+            (courseCounts.get(enrollment.courseid) || 0) + 1
+          );
+        }
       });
 
       const { data: courseDetails, error: coursesError } = await supabase
@@ -301,7 +310,7 @@ const AdminDashboard: React.FC = () => {
         .map(([courseId, count]) => {
           const course = (courseDetails || []).find((c: any) => c.id === courseId);
           return {
-            title: course?.title || 'Unknown',
+            title: course?.title || (courseId ? courseId.slice(0, 8) : 'Unknown'),
             enrollment: count,
             percentage: totalEnrollmentsCount > 0
               ? Math.round((count / totalEnrollmentsCount) * 100)
@@ -310,6 +319,18 @@ const AdminDashboard: React.FC = () => {
         })
         .sort((a, b) => b.enrollment - a.enrollment)
         .slice(0, 5);
+
+      // Fallback: If no courses have enrollments, show all available courses with 0 enrollments
+      let displayCoursePopularity = coursePopularity;
+      if (coursePopularity.length === 0 && courseDetails && courseDetails.length > 0) {
+        displayCoursePopularity = courseDetails
+          .map((course: any) => ({
+            title: course.title,
+            enrollment: 0,
+            percentage: 0,
+          }))
+          .slice(0, 5);
+      }
 
       // Fetch top skills in organization
       const { data: skillsData, error: skillsError } = await supabase
@@ -427,19 +448,29 @@ const AdminDashboard: React.FC = () => {
           }
         });
 
-        // Convert to array and sort by courses completed, then by XP (not just user count)
+        // Convert to array and sort by XP points (primary), then by courses completed
         topDepartments = Object.values(deptMetrics)
+          .filter((dept: any) => dept.department && dept.department.trim())
           .sort((a: any, b: any) => {
-            // Primary sort: courses completed (descending)
+            // Primary sort: Total XP Points (descending) - department's total engagement
+            if (b.totalXP !== a.totalXP) {
+              return b.totalXP - a.totalXP;
+            }
+            // Secondary sort: courses completed (descending) when XP is equal
             if (b.coursesCompleted !== a.coursesCompleted) {
               return b.coursesCompleted - a.coursesCompleted;
             }
-            // Secondary sort: total XP (descending) when courses completed are equal
-            return b.totalXP - a.totalXP;
+            // Tertiary sort: user count when above are equal
+            return b.userCount - a.userCount;
           })
           .slice(0, 10);
 
-        topDepartment = (topDepartments[0] as any)?.department || 'N/A';
+        topDepartment = (topDepartments[0] as any)?.department || 'Unassigned';
+        console.log('🏢 Top Department by XP:', {
+          department: topDepartment,
+          xpPoints: (topDepartments[0] as any)?.totalXP || 0,
+          coursesCompleted: (topDepartments[0] as any)?.coursesCompleted || 0
+        });
 
         // Department completion stats
         const departmentMap = new Map();
@@ -556,7 +587,7 @@ const AdminDashboard: React.FC = () => {
         topCareerPath,
 
         // Advanced metrics
-        coursePopularity,
+        coursePopularity: displayCoursePopularity,
         departmentStats,
         topDepartments,
         teamsManagedData: [],
@@ -967,7 +998,7 @@ const AdminDashboard: React.FC = () => {
                         </div>
                         <div className="mt-4 pt-4 border-t border-gray-200">
                           <p className="text-xs text-gray-600 font-semibold mb-2">Total Enrolled</p>
-                          <p className="text-xl font-black text-gray-900">{stats.totalEnrollments || 0} users</p>
+                          <p className="text-xl font-black text-gray-900">{stats.totalEnrollments || 0} Courses</p>
                         </div>
                       </div>
                     </div>

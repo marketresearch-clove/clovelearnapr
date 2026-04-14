@@ -36,8 +36,8 @@ export const learningHoursService = {
       const { data: existing, error: queryError } = await supabase
         .from('learning_hours')
         .select('*')
-        .eq('user_id', userId)
-        .eq('course_id', courseId)
+        .eq('userid', userId)
+        .eq('courseid', courseId)
         .eq('logged_date', recordDate)
         .maybeSingle();
 
@@ -67,8 +67,8 @@ export const learningHoursService = {
           .from('learning_hours')
           .insert([
             {
-              user_id: userId,
-              course_id: courseId,
+              userid: userId,
+              courseid: courseId,
               time_spent_seconds: timeSpentSeconds,
               hours: timeTrackingService.secondsToHours(timeSpentSeconds),
               logged_date: recordDate,
@@ -97,7 +97,7 @@ export const learningHoursService = {
       const { data, error } = await supabase
         .from('learning_hours')
         .select('time_spent_seconds')
-        .eq('user_id', userId)
+        .eq('userid', userId)
         .eq('logged_date', today);
 
       if (error) throw error;
@@ -128,8 +128,8 @@ export const learningHoursService = {
       const { data, error } = await supabase
         .from('learning_hours')
         .select('time_spent_seconds')
-        .eq('user_id', userId)
-        .eq('course_id', courseId);
+        .eq('userid', userId)
+        .eq('courseid', courseId);
 
       if (error) throw error;
 
@@ -159,7 +159,7 @@ export const learningHoursService = {
       let query = supabase
         .from('learning_hours')
         .select('*')
-        .eq('user_id', userId);
+        .eq('userid', userId);
 
       if (startDate) {
         query = query.gte('logged_date', startDate);
@@ -188,7 +188,7 @@ export const learningHoursService = {
       const { data, error } = await supabase
         .from('learning_hours')
         .select('*')
-        .eq('course_id', courseId)
+        .eq('courseid', courseId)
         .eq('logged_date', date);
 
       if (error) throw error;
@@ -297,8 +297,8 @@ export const learningHoursService = {
   mapFromDb(data: any): LearningHours {
     return {
       id: data.id,
-      userId: data.user_id,
-      courseId: data.course_id,
+      userId: data.userid || data.user_id,
+      courseId: data.courseid || data.course_id,
       timeSpentSeconds: data.time_spent_seconds || 0,
       hoursSpent: data.hours, // deprecated field
       date: data.logged_date,

@@ -1,13 +1,357 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(apiKey);
-const MODEL_NAME = "gemini-2.5-flash";
+const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY;
+const openrouterApiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+const genAI = new GoogleGenerativeAI(geminiApiKey);
+const DEFAULT_MODEL_NAME = "gemini-2.5-flash";
+const DEFAULT_OPENROUTER_MODEL = "google/gemma-4-31b"; // More reliable than Nemotron
 const API_VERSION = "v1beta";
+const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 
-export const generateCourseContent = async (title: string, options: { modulesCount?: number, lessonsPerModule?: number, difficulty?: string, contentType?: string, additionalPrompt?: string, quizQuestionsCount?: number, flashcardLimit?: number } = {}) => {
-  const model = genAI.getGenerativeModel({ model: MODEL_NAME }, { apiVersion: API_VERSION });
-  const { modulesCount = 3, lessonsPerModule = 3, difficulty = 'beginner', contentType = 'text', additionalPrompt = '', quizQuestionsCount = 5, flashcardLimit = 15 } = options;
+/**
+ * Utility function to retry API calls with exponential backoff
+ * Handles temporary failures like 503 errors from high demand
+ */
+const retryWithBackoff = async <T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelay: number = 1000
+): Promise<T> => {
+  let lastError: Error;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error as Error;
+
+      // Check if it's a retryable error (503, 429, network errors, etc.)
+      const isRetryable = error instanceof Error && (
+        error.message.includes('503') ||
+        error.message.includes('429') ||
+        error.message.includes('502') ||
+        error.message.includes('500') ||
+        error.message.includes('fetch') ||
+        error.message.includes('network') ||
+        error.message.includes('timeout') ||
+        error.message.includes('high demand') ||
+        error.message.includes('temporarily unavailable') ||
+        error.message.includes('overloaded')
+      );
+
+      if (!isRetryable || attempt === maxRetries) {
+        throw error;
+      }
+
+      // Exponential backoff with jitter
+      const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 1000;
+      console.warn(`AI API call failed (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${Math.round(delay)}ms:`, error.message);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+
+  throw lastError!;
+};
+
+/**
+ * Call OpenRouter API with retry logic
+ * Uses smaller max_tokens and delays to avoid truncation
+ */
+const callOpenRouterAPI = async (
+  prompt: string,
+  modelName: string = DEFAULT_OPENROUTER_MODEL,
+  maxRetries: number = 3,
+  baseDelay: number = 3000,
+  maxTokens: number = 600
+): Promise<string> => {
+  if (!openrouterApiKey) {
+    throw new Error('OpenRouter API key not configured. Set VITE_OPENROUTER_API_KEY in .env.local');
+  }
+
+  let lastTruncationError: string | null = null;
+  let currentMaxTokens = maxTokens;
+  let currentPrompt = prompt;
+
+  return retryWithBackoff(async () => {
+    console.log(`Calling OpenRouter with model: ${modelName}, maxTokens: ${currentMaxTokens}`);
+
+    const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openrouterApiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000',
+        'X-Title': 'Skill Spire LMS',
+      },
+      body: JSON.stringify({
+        model: modelName,
+        messages: [
+          {
+            role: 'user',
+            content: currentPrompt,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: currentMaxTokens,
+      }),
+    });
+
+    let data;
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      console.error('Failed to parse OpenRouter response:', parseError);
+      throw new Error(`OpenRouter returned invalid JSON: ${response.statusText}`);
+    }
+
+    console.log('OpenRouter response status:', response.status, 'data:', data);
+
+    // Check for error object in response (OpenRouter sometimes returns 200 with error inside)
+    if (data?.error) {
+      const errorMsg = data.error.message || data.error.error || JSON.stringify(data.error);
+      console.error('OpenRouter API Error (in response body):', { status: response.status, error: data.error });
+
+      // Check specific error types
+      if (errorMsg.includes('authentication') || errorMsg.includes('invalid') || errorMsg.includes('Unauthorized')) {
+        throw new Error(`OpenRouter authentication failed: ${errorMsg}`);
+      }
+
+      if (errorMsg.includes('not found') || errorMsg.includes('model')) {
+        throw new Error(`OpenRouter model not found: ${modelName}. Error: ${errorMsg}`);
+      }
+
+      if (errorMsg.includes('overloaded') || errorMsg.includes('busy') || errorMsg.includes('429')) {
+        throw new Error(`OpenRouter service overloaded: ${errorMsg}`);
+      }
+
+      throw new Error(`OpenRouter error: ${errorMsg}`);
+    }
+
+    // Check HTTP status AFTER checking for error objects
+    if (!response.ok) {
+      const errorMsg = data?.message || JSON.stringify(data);
+      console.error('OpenRouter API HTTP Error:', { status: response.status, error: data });
+
+      // Check if it's an auth error
+      if (response.status === 401 || response.status === 403) {
+        throw new Error(`OpenRouter authentication failed: ${errorMsg}`);
+      }
+
+      // Check if it's a not found error (model doesn't exist)
+      if (response.status === 404) {
+        throw new Error(`OpenRouter model not found: ${modelName}. Error: ${errorMsg}`);
+      }
+
+      throw new Error(`OpenRouter API error: ${response.status} - ${errorMsg}`);
+    }
+
+    // Now check for valid response structure
+    if (!data.choices || !Array.isArray(data.choices) || data.choices.length === 0) {
+      console.error('Invalid OpenRouter response format - no choices:', data);
+      throw new Error(`Invalid response format from OpenRouter: no choices in response. Got: ${JSON.stringify(data).substring(0, 200)}`);
+    }
+
+    const choice = data.choices[0];
+    const content = choice?.message?.content;
+
+    // Check if response was truncated (finish_reason: 'length')
+    if (choice?.finish_reason === 'length') {
+      console.warn('⚠️ OpenRouter response truncated (finish_reason: length)');
+      lastTruncationError = 'Token limit reached';
+
+      // Retry with smaller token limit
+      if (currentMaxTokens > 300) {
+        currentMaxTokens = Math.max(300, Math.floor(currentMaxTokens * 0.7));
+        console.log(`Retrying with reduced maxTokens: ${currentMaxTokens}`);
+        throw new Error('TRUNCATED_RETRY');
+      } else {
+        // Already at minimum, give up
+        throw new Error(`TRUNCATED_FAILED: Even with ${currentMaxTokens} tokens, response truncated. Prompt too complex.`);
+      }
+    }
+
+    if (!content || content.trim().length === 0) {
+      console.error('No content in OpenRouter response:', choice);
+      throw new Error('EMPTY_RESPONSE');
+    }
+
+    return content;
+  }, maxRetries, baseDelay);
+};
+
+/**
+ * Strip HTML tags from a string
+ */
+const stripHtmlTags = (html: string): string => {
+  if (!html) return '';
+  // Remove HTML tags
+  return html.replace(/<[^>]*>/g, '');
+};
+
+/**
+ * Recursively clean course content generated by AI
+ * Ensures titles don't contain HTML tags
+ */
+const cleanAIGeneratedContent = (content: any): any => {
+  if (Array.isArray(content)) {
+    return content.map(item => cleanAIGeneratedContent(item));
+  }
+
+  if (typeof content === 'object' && content !== null) {
+    const cleaned: any = {};
+    for (const [key, value] of Object.entries(content)) {
+      if (key === 'title' && typeof value === 'string') {
+        // Strip HTML from titles
+        cleaned[key] = stripHtmlTags(value).trim();
+      } else if (typeof value === 'object') {
+        cleaned[key] = cleanAIGeneratedContent(value);
+      } else {
+        cleaned[key] = value;
+      }
+    }
+    return cleaned;
+  }
+
+  return content;
+};
+
+/**
+ * Generate course content in TRUE granular chunks - optimized for OpenRouter free tier
+ * ONE API CALL = ONE CONTENT TYPE ONLY
+ * Avoids token limits and truncation issues
+ */
+const generateCourseContentChunked = async (
+  title: string,
+  options: any
+): Promise<any> => {
+  const { modulesCount = 3, lessonsPerModule = 3, difficulty = 'beginner', contentType = 'text', additionalPrompt = '', quizQuestionsCount = 5, flashcardLimit = 15, modelName, onStatusUpdate } = options;
+
+  const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+  try {
+    // STEP 1: Generate course outline ONLY (modules + lesson titles) - MINIMAL
+    onStatusUpdate?.('Generating course structure...');
+    const outlinePrompt = `Create outline for "${title}" (${modulesCount} modules, ${lessonsPerModule} lessons each).
+    JSON only: {"modules": [{"title": "Module Title", "lessons": ["Lesson 1", "Lesson 2"]}]}`;
+
+    const outline = JSON.parse(await callOpenRouterAPI(outlinePrompt, modelName, 3, 2000, 600));
+    await delay(1500);
+
+    // STEP 2: Generate course description - MINIMAL
+    onStatusUpdate?.('Creating description...');
+    const descPrompt = `1-sentence description of "${title}". JSON: {"description": "..."}`;
+    const descData = JSON.parse(await callOpenRouterAPI(descPrompt, modelName, 2, 2000, 300));
+    await delay(1500);
+
+    // STEP 3: Generate EACH LESSON individually - MINIMAL OUTPUT
+    const modules = outline.modules.map((m: any) => ({
+      title: m.title,
+      description: `Learn about ${m.title}`,
+      lessons: m.lessons,
+    }));
+
+    for (let mIdx = 0; mIdx < modules.length; mIdx++) {
+      for (let lIdx = 0; lIdx < modules[mIdx].lessons.length; lIdx++) {
+        const lessonTitle = modules[mIdx].lessons[lIdx];
+        onStatusUpdate?.(`Writing: ${lessonTitle}...`);
+
+        const lessonPrompt = `2-3 sentence explanation for "${lessonTitle}".
+        JSON: {"content": "explanation here", "duration": 10}`;
+
+        const lessonData = JSON.parse(await callOpenRouterAPI(lessonPrompt, modelName, 2, 2000, 500));
+        modules[mIdx].lessons[lIdx] = {
+          title: lessonTitle,
+          type: 'text',
+          content: lessonData.content || lessonTitle,
+          duration: lessonData.duration || 10,
+        };
+        await delay(1500);
+      }
+    }
+
+    // STEP 4: Generate EACH QUIZ individually (one per module) - MINIMAL
+    for (let mIdx = 0; mIdx < modules.length; mIdx++) {
+      onStatusUpdate?.(`Creating quiz: ${modules[mIdx].title}...`);
+
+      const quizPrompt = `${quizQuestionsCount} short quiz questions on "${modules[mIdx].title}".
+      Balance option lengths. JSON: [{"question": "Q?", "options": ["A", "B", "C", "D"], "correctAnswer": 0}]`;
+
+      const quizData = JSON.parse(await callOpenRouterAPI(quizPrompt, modelName, 2, 2000, 600));
+      modules[mIdx].lessons.push({
+        title: `${modules[mIdx].title} Quiz`,
+        type: 'quiz',
+        content: quizData || [],
+        duration: quizQuestionsCount * 2,
+      });
+      await delay(1500);
+    }
+
+    // STEP 5: Generate flashcards separately if needed - MINIMAL
+    if (contentType.includes('flashcard')) {
+      onStatusUpdate?.('Generating flashcards...');
+      const flashcardPrompt = `${flashcardLimit} flashcard pairs for "${title}". Short Q&A format.
+      JSON: [{"front": "Q?", "back": "A?"}]`;
+
+      const flashcards = JSON.parse(await callOpenRouterAPI(flashcardPrompt, modelName, 2, 2000, 600));
+      modules.push({
+        title: 'Flashcards',
+        description: 'Quick reference cards',
+        lessons: [{
+          title: 'Key Terms',
+          type: 'flashcard',
+          content: flashcards || [],
+          duration: flashcardLimit,
+        }],
+      });
+      await delay(1500);
+    }
+
+    // STEP 6: Compile final response
+    onStatusUpdate?.('Finalizing course...');
+    const courseContent = {
+      title,
+      description: descData.description || `Learn ${title}`,
+      modules: modules.map((m: any, idx: number) => ({
+        id: `m${idx + 1}`,
+        title: m.title,
+        description: m.description,
+        lessons: (m.lessons || []).map((l: any, lidx: number) => ({
+          id: `l${lidx + 1}`,
+          title: l.title,
+          type: l.type || 'text',
+          content: Array.isArray(l.content) ? l.content : [{ title: l.title, type: l.type, content: l.content }],
+          duration: l.duration || 10,
+          islocked: false,
+        })),
+      })),
+    };
+
+    return courseContent;
+  } catch (error) {
+    console.error('Error in chunked generation:', error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    if (errorMsg.includes('TRUNCATED')) {
+      throw new Error('OpenRouter: Content too long. Use Gemini or try shorter course.');
+    }
+    if (errorMsg.includes('EMPTY')) {
+      throw new Error('OpenRouter: Empty response. Try again or switch provider.');
+    }
+    throw new Error(`OpenRouter generation failed: ${errorMsg}`);
+  }
+};
+
+/**
+ * Generate course content - optimized for both Gemini and OpenRouter
+ * For OpenRouter (free tier with rate limits), breaks down into smaller API calls
+ * For Gemini, uses single large call for efficiency
+ */
+export const generateCourseContent = async (title: string, options: { modulesCount?: number, lessonsPerModule?: number, difficulty?: string, contentType?: string, additionalPrompt?: string, quizQuestionsCount?: number, flashcardLimit?: number, modelName?: string, provider?: string, onStatusUpdate?: (status: string) => void } = {}) => {
+  const { modulesCount = 3, lessonsPerModule = 3, difficulty = 'beginner', contentType = 'text', additionalPrompt = '', quizQuestionsCount = 5, flashcardLimit = 15, modelName = DEFAULT_MODEL_NAME, provider = 'gemini', onStatusUpdate } = options;
+
+  // For OpenRouter free tier, use chunked generation to avoid rate limits
+  if (provider === 'openrouter') {
+    return generateCourseContentChunked(title, { modulesCount, lessonsPerModule, difficulty, contentType, additionalPrompt, quizQuestionsCount, flashcardLimit, modelName, onStatusUpdate });
+  }
 
   const includesFlashcards = contentType?.includes('flashcard');
   const flashcardCount = includesFlashcards ? flashcardLimit : 0;
@@ -79,14 +423,25 @@ export const generateCourseContent = async (title: string, options: { modulesCou
     - Make flashcards practical and suitable for spaced repetition learning.
     ` : ''}
     
-    Ensure the "text" content is comprehensive and educational. 
+    Ensure the "text" content is comprehensive and educational.
     Do not include any markdown formatting or extra text outside the JSON.
   `;
 
   try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = await response.text();
+    let text: string;
+
+    if (provider === 'openrouter') {
+      text = await callOpenRouterAPI(prompt, modelName, 4, 3000);
+    } else {
+      const model = genAI.getGenerativeModel({ model: modelName }, { apiVersion: API_VERSION });
+      const result = await retryWithBackoff(async () => {
+        const response = await model.generateContent(prompt);
+        return response;
+      }, 4, 3000); // 4 retries, starting with 3 second delay for better 503 handling
+
+      const response = await result.response;
+      text = await response.text();
+    }
 
     // Clean the response to ensure it's valid JSON
     let cleanedText = text.trim();
@@ -111,10 +466,45 @@ export const generateCourseContent = async (title: string, options: { modulesCou
     cleanedText = cleanedText.replace(/\\([^"\\\/bfnrtu])/g, '$1');
 
     const generated = JSON.parse(cleanedText);
-    return generated;
+
+    // Clean up any HTML tags in titles
+    const cleanedGenerated = cleanAIGeneratedContent(generated);
+
+    return cleanedGenerated;
   } catch (error) {
     console.error("Error generating course content:", error);
-    throw new Error("Failed to generate course content from AI.");
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    const is503 = errorMsg.includes('503') || errorMsg.includes('overloaded') || errorMsg.includes('busy');
+    const isRateLimit = errorMsg.includes('429') || errorMsg.includes('rate limit');
+    const isAuthError = errorMsg.includes('401') || errorMsg.includes('Unauthorized') || errorMsg.includes('authentication') || errorMsg.includes('API key');
+    const isModelError = errorMsg.includes('404') || errorMsg.includes('not found') || errorMsg.includes('model not found');
+    const isJsonError = errorMsg.includes('JSON') || errorMsg.includes('no choices');
+
+    let message = "Failed to generate course content from AI.";
+
+    if (provider === 'openrouter') {
+      if (isAuthError) {
+        message = "❌ OpenRouter authentication failed. Check your API key (VITE_OPENROUTER_API_KEY) in .env.local";
+      } else if (isModelError) {
+        message = "❌ OpenRouter model not available. Try switching to a different model from the dropdown.";
+      } else if (isRateLimit || is503) {
+        message = "⏳ OpenRouter is busy right now. Try again in a moment or switch to Google Gemini.";
+      } else if (isJsonError) {
+        message = "❌ OpenRouter returned an unexpected response format. Check the browser console for details.";
+      } else {
+        message = `OpenRouter error: ${errorMsg.substring(0, 100)}`;
+      }
+    } else {
+      if (isAuthError) {
+        message = "❌ Google API key is invalid. Check your VITE_GEMINI_API_KEY in .env.local";
+      } else if (is503) {
+        message = "⏳ Google AI service is temporarily overloaded. Try again in a few moments or switch to OpenRouter.";
+      } else if (isRateLimit) {
+        message = "⏳ Google AI rate limit reached. Try switching to OpenRouter.";
+      }
+    }
+
+    throw new Error(message);
   }
 };
 
@@ -136,7 +526,8 @@ export const generateLessonContent = async (
   courseTitle?: string,
   options: AIGenerationOptions = {}
 ) => {
-  const model = genAI.getGenerativeModel({ model: MODEL_NAME }, { apiVersion: API_VERSION });
+  const modelName = (options as any).modelName || DEFAULT_MODEL_NAME;
+  const model = genAI.getGenerativeModel({ model: modelName }, { apiVersion: API_VERSION });
 
   const {
     tone = 'professional',
@@ -175,7 +566,11 @@ export const generateLessonContent = async (
   `;
 
   try {
-    const result = await model.generateContent(prompt);
+    const result = await retryWithBackoff(async () => {
+      const response = await model.generateContent(prompt);
+      return response;
+    }, 4, 3000); // 4 retries, starting with 3 second delay for better 503 handling
+
     const response = await result.response;
     const text = await response.text();
 
@@ -186,16 +581,21 @@ export const generateLessonContent = async (
     };
   } catch (error) {
     console.error("Error generating lesson content:", error);
-    throw new Error("Failed to generate lesson content from AI.");
+    const is503 = error instanceof Error && error.message.includes('503');
+    const message = is503
+      ? "Google AI service is temporarily overloaded. Please try again in a few moments."
+      : "Failed to generate lesson content from AI.";
+    throw new Error(message);
   }
 };
 
 export const generateTextVariation = async (
   existingContent: string,
   lessonTitle: string,
-  variationType: 'shorter' | 'longer' | 'simpler' | 'more_detailed' | 'different_perspective' = 'different_perspective'
+  variationType: 'shorter' | 'longer' | 'simpler' | 'more_detailed' | 'different_perspective' = 'different_perspective',
+  modelName?: string
 ) => {
-  const model = genAI.getGenerativeModel({ model: MODEL_NAME }, { apiVersion: API_VERSION });
+  const model = genAI.getGenerativeModel({ model: modelName || DEFAULT_MODEL_NAME }, { apiVersion: API_VERSION });
 
   const variationGuide = {
     shorter: 'Create a more concise version (reduce by 50%)',
@@ -220,7 +620,11 @@ export const generateTextVariation = async (
   `;
 
   try {
-    const result = await model.generateContent(prompt);
+    const result = await retryWithBackoff(async () => {
+      const response = await model.generateContent(prompt);
+      return response;
+    }, 4, 3000); // 4 retries, starting with 3 second delay for better 503 handling
+
     const response = await result.response;
     const text = await response.text();
 
@@ -232,7 +636,11 @@ export const generateTextVariation = async (
     };
   } catch (error) {
     console.error("Error generating text variation:", error);
-    throw new Error("Failed to generate text variation from AI.");
+    const is503 = error instanceof Error && error.message.includes('503');
+    const message = is503
+      ? "Google AI service is temporarily overloaded. Please try again in a few moments."
+      : "Failed to generate text variation from AI.";
+    throw new Error(message);
   }
 };
 
@@ -240,31 +648,65 @@ export const generateQuizQuestions = async (
   lessonContent: string,
   lessonTitle: string,
   numberOfQuestions: number = 5,
-  difficulty: 'beginner' | 'intermediate' | 'advanced' = 'intermediate'
+  difficulty: 'beginner' | 'intermediate' | 'advanced' = 'intermediate',
+  modelName?: string
 ) => {
-  const model = genAI.getGenerativeModel({ model: MODEL_NAME }, { apiVersion: API_VERSION });
+  const model = genAI.getGenerativeModel({ model: modelName || DEFAULT_MODEL_NAME }, { apiVersion: API_VERSION });
+
+  // Strip HTML tags from content for cleaner AI processing
+  const stripHtml = (html: string) => {
+    if (!html) return '';
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || '';
+  };
+
+  const cleanContent = stripHtml(lessonContent);
 
   const prompt = `
-    You are an expert in creating educational assessments.
-    
+    You are an expert in creating educational assessments with high-quality multiple-choice questions.
+
     Based on this lesson content for "${lessonTitle}":
-    ${lessonContent}
-    
+    ${cleanContent}
+
     Create ${numberOfQuestions} multiple-choice quiz questions with difficulty level: ${difficulty}
-    
+
+    CRITICAL REQUIREMENTS:
+    1. Randomize the position of the correct answer (correctAnswer index should be 0, 1, 2, or 3 randomly)
+    2. Do NOT always place correct answers at the same position
+    3. Create plausible, realistic distractors (wrong answer options)
+    4. Make questions clear and unambiguous
+
+    ⚠️ TEXT LENGTH BALANCE (IMPORTANT FOR AVOIDING ANSWER HINTS):
+    - ALL four options must have SIMILAR text length (within 5-15 words each)
+    - Do NOT make the correct answer noticeably longer or shorter than wrong answers
+    - Wrong answers should be as detailed and realistic as the correct answer
+    - This prevents test-takers from guessing based on text length alone
+    - Example GOOD: All options are 8-12 words
+    - Example BAD: Correct = 20 words, Wrong = 5 words (gives away the answer)
+
     Format the response as a JSON array with the following structure for each question:
     {
       "question": "Question text here",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
-      "correctAnswer": 0,
+      "options": ["Option A (8-12 words)", "Option B (8-12 words)", "Option C (8-12 words)", "Option D (8-12 words)"],
+      "correctAnswer": <number between 0-3>,
       "explanation": "Why this is the correct answer"
     }
-    
+
+    CHECKLIST before returning:
+    ✓ All options are similar length
+    ✓ Correct answer is NOT the longest or shortest option
+    ✓ All options are plausible but only ONE is correct
+    ✓ correctAnswer index varies (not always 0, 1, 2, or 3)
+
     Return ONLY valid JSON array, no other text.
   `;
 
   try {
-    const result = await model.generateContent(prompt);
+    const result = await retryWithBackoff(async () => {
+      const response = await model.generateContent(prompt);
+      return response;
+    }, 4, 3000); // 4 retries, starting with 3 second delay for better 503 handling
+
     const response = await result.response;
     const text = await response.text();
 
@@ -288,7 +730,21 @@ export const generateQuizQuestions = async (
     // Fix common JSON issues like bad escapes
     cleanedText = cleanedText.replace(/\\([^"\\\/bfnrtu])/g, '$1');
 
-    const questions = JSON.parse(cleanedText);
+    let questions = JSON.parse(cleanedText);
+
+    // Validate and log text length balance for each question
+    questions = questions.map((question: any) => {
+      const optionLengths = question.options.map((opt: string) => opt.split(' ').length);
+      const maxLength = Math.max(...optionLengths);
+      const minLength = Math.min(...optionLengths);
+      const balance = maxLength - minLength;
+
+      if (balance > 10) {
+        console.warn(`⚠️ Question "${question.question.substring(0, 50)}..." has unbalanced option lengths:`, optionLengths, `(difference: ${balance} words)`);
+      }
+
+      return question;
+    });
 
     return {
       questions,
@@ -297,7 +753,11 @@ export const generateQuizQuestions = async (
     };
   } catch (error) {
     console.error("Error generating quiz questions:", error);
-    throw new Error("Failed to generate quiz questions from AI.");
+    const is503 = error instanceof Error && error.message.includes('503');
+    const message = is503
+      ? "Google AI service is temporarily overloaded. Please try again in a few moments."
+      : "Failed to generate quiz questions from AI.";
+    throw new Error(message);
   }
 };
 
@@ -307,9 +767,10 @@ export const generateSkillsForCourse = async (
   category: string = '',
   level: string = 'beginner',
   existingFamilies: string[] = [],
-  existingSkills: Array<{ name: string; family: string }> = []
+  existingSkills: Array<{ name: string; family: string }> = [],
+  modelName?: string
 ) => {
-  const model = genAI.getGenerativeModel({ model: MODEL_NAME }, { apiVersion: API_VERSION });
+  const model = genAI.getGenerativeModel({ model: modelName || DEFAULT_MODEL_NAME }, { apiVersion: API_VERSION });
 
   const existingSkillsText = existingSkills.length > 0
     ? `\nExisting skills already in the system (reuse these by exact name when relevant):\n${existingSkills.map(s => `- "${s.name}" (family: ${s.family})`).join('\n')}\n`
@@ -342,7 +803,11 @@ export const generateSkillsForCourse = async (
   `;
 
   try {
-    const result = await model.generateContent(prompt);
+    const result = await retryWithBackoff(async () => {
+      const response = await model.generateContent(prompt);
+      return response;
+    }, 4, 3000); // 4 retries, starting with 3 second delay for better 503 handling
+
     const response = await result.response;
     const text = await response.text();
 
@@ -375,14 +840,19 @@ export const generateSkillsForCourse = async (
     };
   } catch (error) {
     console.error("Error generating skills for course:", error);
-    throw new Error("Failed to generate skills suggestions from AI.");
+    const is503 = error instanceof Error && error.message.includes('503');
+    const message = is503
+      ? "Google AI service is temporarily overloaded. Please try again in a few moments."
+      : "Failed to generate skills suggestions from AI.";
+    throw new Error(message);
   }
 };
 
 export const generateFlashcardContent = async (
   options: AIGenerationOptions = {}
 ): Promise<Array<{ front: string; back: string }>> => {
-  const model = genAI.getGenerativeModel({ model: MODEL_NAME }, { apiVersion: API_VERSION });
+  const modelName = (options as any).modelName || DEFAULT_MODEL_NAME;
+  const model = genAI.getGenerativeModel({ model: modelName }, { apiVersion: API_VERSION });
 
   const {
     topic = '',
@@ -438,7 +908,11 @@ export const generateFlashcardContent = async (
   `;
 
   try {
-    const result = await model.generateContent(prompt);
+    const result = await retryWithBackoff(async () => {
+      const response = await model.generateContent(prompt);
+      return response;
+    }, 4, 3000); // 4 retries, starting with 3 second delay for better 503 handling
+
     const response = await result.response;
     const text = await response.text();
 
@@ -484,6 +958,10 @@ export const generateFlashcardContent = async (
     return validatedFlashcards;
   } catch (error) {
     console.error('Error generating flashcards:', error);
-    throw new Error('Failed to generate flashcards from AI. Please try again.');
+    const is503 = error instanceof Error && error.message.includes('503');
+    const message = is503
+      ? "Google AI service is temporarily overloaded. Please try again in a few moments."
+      : "Failed to generate flashcards from AI. Please try again.";
+    throw new Error(message);
   }
 };

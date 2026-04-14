@@ -34,12 +34,13 @@ export const courseCompletionService = {
       await courseCompletionService.recordCourseSkillAchievements(userId, courseId);
 
       // Issue certificate if enabled for this course
-      await courseCompletionService.issueCertificateIfEnabled(userId, courseId);
+      const certificateResponse = await courseCompletionService.issueCertificateIfEnabled(userId, courseId);
+      const issuedCertificateId = certificateResponse?.certificateId || null;
 
       // Update career path readiness
       await courseCompletionService.updateCareerPathsForUser(userId);
 
-      return { success: true };
+      return { success: true, certificateId: issuedCertificateId };
     } catch (error) {
       console.error('Error marking course as completed:', error);
       return { success: false, error };

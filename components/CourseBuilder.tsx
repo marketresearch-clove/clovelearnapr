@@ -22,7 +22,11 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
   const [loading, setLoading] = useState(!!editingCourse);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
+  const [generationStatus, setGenerationStatus] = useState<string>('');
+  const [generationOutput, setGenerationOutput] = useState<string[]>([]);
   const [showAIModal, setShowAIModal] = useState(false);
+  const [aiProvider, setAIProvider] = useState<'gemini' | 'openrouter'>('gemini');
+  const [selectedModel, setSelectedModel] = useState<string>('gemini-2.5-flash');
   const [aiOptions, setAIOptions] = useState({
     modulesCount: 3,
     lessonsPerModule: 3,
@@ -141,17 +145,36 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
 
     setIsGenerating(true);
     setGenerationProgress(10);
+    setGenerationStatus('Connecting to AI...');
+    setGenerationOutput([]);
     setShowAIModal(false);
 
     try {
-      // Simulate progress
+      // Simulate progress with status updates
       const progressInterval = setInterval(() => {
         setGenerationProgress(prev => {
           if (prev >= 90) {
             clearInterval(progressInterval);
             return 90;
           }
-          return prev + Math.floor(Math.random() * 10);
+          const newProgress = prev + Math.floor(Math.random() * 10);
+
+          // Update status based on progress
+          if (newProgress < 20) {
+            setGenerationStatus('Thinking about course structure...');
+          } else if (newProgress < 35) {
+            setGenerationStatus('Writing lesson content...');
+          } else if (newProgress < 50) {
+            setGenerationStatus('Creating quiz questions...');
+          } else if (newProgress < 65) {
+            setGenerationStatus('Generating flashcards...');
+          } else if (newProgress < 80) {
+            setGenerationStatus('Mapping skills...');
+          } else {
+            setGenerationStatus('Finalizing course...');
+          }
+
+          return newProgress;
         });
       }, 800);
 
@@ -164,6 +187,12 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
       const enrichedOptions = {
         ...aiOptions,
         additionalPrompt: [courseTypePrompt, aiOptions.additionalPrompt].filter(Boolean).join(' '),
+        modelName: selectedModel,
+        provider: aiProvider,
+        onStatusUpdate: (status: string) => {
+          setGenerationStatus(status);
+          setGenerationOutput(prev => [...prev, `✓ ${status}`]);
+        },
       };
 
       const content = await generateCourseContent(courseData.title, enrichedOptions);
@@ -200,6 +229,19 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
 
       clearInterval(progressInterval);
       setGenerationProgress(100);
+      setGenerationStatus('✓ Course generation complete!');
+
+      // Add generated content summary to output
+      const moduleCount = content.modules?.length || 0;
+      const lessonCount = content.modules?.reduce((sum: number, m: any) => sum + (m.lessons?.length || 0), 0) || 0;
+      const contentSummary = [
+        `📚 Generated "${content.title || courseData.title}"`,
+        `📖 Modules: ${moduleCount}`,
+        `📝 Lessons: ${lessonCount}`,
+        ...(content.description ? [`📄 Description: ${content.description.substring(0, 60)}...`] : []),
+      ];
+
+      setGenerationOutput(prev => [...prev, '', '=== GENERATION COMPLETE ===', ...contentSummary]);
 
       // Calculate total duration from AI generated content (in minutes)
       let totalDurationMinutes = 0;
@@ -230,13 +272,18 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
       setTimeout(() => {
         setIsGenerating(false);
         setGenerationProgress(0);
+        setGenerationStatus('');
+        setGenerationOutput([]);
         setStep(2); // Move to Modules & Lessons editor
       }, 500);
     } catch (error) {
       console.error('Error generating course content:', error);
-      alert('Failed to generate course content. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate course content.';
+      alert(errorMessage);
       setIsGenerating(false);
       setGenerationProgress(0);
+      setGenerationStatus('');
+      setGenerationOutput([]);
     }
   };
 
@@ -353,9 +400,56 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
           ))}
         </nav>
 
-        <div className="p-4">
+        <div className="p-4 space-y-3">
+          {/* Provider Selection */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-2">AI Provider</label>
+            <select
+              value={aiProvider}
+              onChange={(e) => {
+                setAIProvider(e.target.value as 'gemini' | 'openrouter');
+                setSelectedModel(e.target.value === 'gemini' ? 'gemini-2.5-flash' : 'nvidia/nemotron-3-super-120b-a12b:free');
+              }}
+              disabled={isGenerating}
+              className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs text-gray-900 hover:border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none disabled:opacity-50"
+            >
+              <option value="gemini">Google Gemini</option>
+              <option value="openrouter">OpenRouter</option>
+            </select>
+          </div>
+
+          {/* Model Selection Dropdown */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-2">AI Model</label>
+            <select
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+              disabled={isGenerating}
+              className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs text-gray-900 hover:border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none disabled:opacity-50"
+            >
+              {aiProvider === 'gemini' ? (
+                <>
+                  <option value="gemini-2.5-flash">★ Gemini 2.5 Flash (Recommended - High Rate Limits)</option>
+                  <option value="gemini-2.5-pro">Gemini 2.5 Pro (Advanced Reasoning - Limited Free)</option>
+                  <option value="gemini-2.0-flash">⚠ Gemini 2.0 Flash (Legacy - Shutting Down 6/1/2026)</option>
+                  <option value="gemini-2.0-flash-001">⚠ Gemini 2.0 Flash 001 (Legacy - Shutting Down 6/1/2026)</option>
+                  <option value="gemini-2.0-flash-lite-001">⚠ Gemini 2.0 Flash Lite 001 (Legacy - Shutting Down 6/1/2026)</option>
+                </>
+              ) : (
+                <>
+                  <option value="nvidia/nemotron-3-super-120b-a12b:free">Nvidia Nemotron 3 Super 120B (Free)</option>
+                  <option value="nvidia/nemotron-3-nano-30b-a3b:free">Nvidia Nemotron 3 Nano 30B (Free)</option>
+                  <option value="qwen/qwen3-next-80b-a3b-instruct:free">Qwen 3 Next 80B Instruct (Free)</option>
+                  <option value="google/gemma-4-26b-a4b-it:free">Google Gemma 4 26B IT (Free)</option>
+                  <option value="google/gemma-4-31b-it:free">Google Gemma 4 31B IT (Free)</option>
+                </>
+              )}
+            </select>
+            <p className="text-xs text-gray-500 mt-1">Switch if you hit rate limits</p>
+          </div>
+
           {isGenerating ? (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex items-center justify-between text-xs font-medium text-indigo-600">
                 <div className="flex items-center gap-1">
                   <span className="material-symbols-outlined text-sm animate-spin">sync</span>
@@ -369,6 +463,29 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
                   style={{ width: `${generationProgress}%` }}
                 />
               </div>
+              {generationStatus && (
+                <div className="px-3 py-2 bg-indigo-50 border border-indigo-200 rounded-lg">
+                  <p className="text-xs text-indigo-700 font-medium leading-relaxed">
+                    {generationStatus}
+                  </p>
+                </div>
+              )}
+              {generationOutput.length > 0 && (
+                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg max-h-40 overflow-y-auto">
+                  <div className="text-xs text-gray-600 font-mono space-y-1">
+                    {generationOutput.map((line, idx) => (
+                      <div key={idx} className={`leading-relaxed ${
+                        line.startsWith('✓') ? 'text-green-600' :
+                        line.startsWith('📚') || line.startsWith('📖') || line.startsWith('📝') || line.startsWith('📄') ? 'text-blue-600' :
+                        line === '=== GENERATION COMPLETE ===' ? 'text-indigo-600 font-semibold' :
+                        'text-gray-600'
+                      }`}>
+                        {line}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <button

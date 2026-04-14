@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { assessmentService } from '../lib/assessmentService';
 import { quizResultsService } from '../lib/quizResultsService';
+import { shuffleQuizQuestions } from '../lib/contentUtils';
 
 interface QuizQuestion {
   id: number;
@@ -23,6 +24,11 @@ interface InlineQuizRendererProps {
   userId?: string;
   assessmentId?: string;
 }
+
+const getQuestionsFingerprint = (questions: QuizQuestion[]) =>
+  questions
+    .map((question) => `${question.id}:${question.correctAnswer}:${question.options.join('|')}`)
+    .join(';');
 
 const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
   lessonId,
@@ -47,6 +53,10 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
   const [showPreviousResult, setShowPreviousResult] = useState(false);
   const [isLoadingPrevious, setIsLoadingPrevious] = useState(true);
   const [isStarted, setIsStarted] = useState(false);
+  const [shuffledQuestions, setShuffledQuestions] = useState<QuizQuestion[]>(() =>
+    questions && questions.length > 0 ? shuffleQuizQuestions(questions) : []
+  );
+  const questionsFingerprintRef = useRef<string>(getQuestionsFingerprint(questions));
 
   useEffect(() => {
     const loadPreviousResult = async () => {
@@ -74,6 +84,29 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
     loadPreviousResult();
   }, [userId, assessmentId]);
 
+  // Shuffle questions and their options once when the quiz becomes available.
+  // Avoid reshuffling when the same quiz data is passed back with a new reference.
+  useEffect(() => {
+    if (!questions || questions.length === 0) return;
+
+    const fingerprint = getQuestionsFingerprint(questions);
+    if (fingerprint === questionsFingerprintRef.current) {
+      return;
+    }
+
+    questionsFingerprintRef.current = fingerprint;
+    try {
+      const shuffled = shuffleQuizQuestions(questions);
+      setShuffledQuestions(shuffled);
+      setCurrentQuestion(0);
+      setSelectedOption(null);
+      setAnswers({});
+    } catch (error) {
+      console.error('Error shuffling questions:', error);
+      setShuffledQuestions(questions);
+    }
+  }, [questions]);
+
   useEffect(() => {
     if (submitted || showPreviousResult || !isStarted) return;
 
@@ -94,14 +127,14 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
     setSelectedOption(optionIndex);
     setAnswers({
       ...answers,
-      [questions[currentQuestion].id]: optionIndex,
+      [shuffledQuestions[currentQuestion].id]: optionIndex,
     });
   };
 
   const handleNextQuestion = () => {
-    if (currentQuestion < questions.length - 1) {
+    if (currentQuestion < shuffledQuestions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
-      const nextQ = questions[currentQuestion + 1];
+      const nextQ = shuffledQuestions[currentQuestion + 1];
       setSelectedOption(answers[nextQ.id] ?? null);
     }
   };
@@ -109,7 +142,7 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
   const handlePreviousQuestion = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion(currentQuestion - 1);
-      const prevQ = questions[currentQuestion - 1];
+      const prevQ = shuffledQuestions[currentQuestion - 1];
       setSelectedOption(answers[prevQ.id] ?? null);
     }
   };
@@ -118,21 +151,21 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
     setIsSubmitting(true);
     try {
       let score = 0;
-      questions.forEach((question) => {
+      shuffledQuestions.forEach((question) => {
         const userAnswer = answers[question.id];
         if (userAnswer !== undefined && userAnswer === question.correctAnswer) {
           score += 1;
         }
       });
 
-      const percentage = (score / questions.length) * 100;
+      const percentage = (score / shuffledQuestions.length) * 100;
       const passed = percentage >= passingScore;
 
       const quizResult = {
         score,
         percentage: Math.round(percentage * 100) / 100,
         passed,
-        totalQuestions: questions.length,
+        totalQuestions: shuffledQuestions.length,
         timeTaken: (duration * 60) - timeLeft,
         answers: Object.entries(answers).reduce((acc, [qId, optIdx]) => {
           acc[qId] = optIdx.toString();
@@ -171,17 +204,30 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
-  const progressPercent = ((currentQuestion + 1) / questions.length) * 100;
-  const currentQ = questions[currentQuestion];
-  const options = currentQ?.options || [];
+  const progressPercent = ((currentQuestion + 1) / shuffledQuestions.length) * 100;
+  const currentQ = shuffledQuestions[currentQuestion];
+
+  // Strip letter prefixes from options and add fresh labels based on position
+  const stripLetterPrefix = (text: string): string => {
+    return text.replace(/^[A-Z]\.\s*/, '').trim();
+  };
+
+  const getLetterLabel = (index: number): string => {
+    return String.fromCharCode(65 + index); // A=65, B=66, etc.
+  };
+
+  const options = (currentQ?.options || []).map(option => {
+    const cleanedOption = stripLetterPrefix(option);
+    return cleanedOption;
+  });
 
   if (showPreviousResult && previousResult) {
     return (
       <div className="w-full h-full bg-white flex items-center justify-center relative">
         <div className="max-w-2xl w-full p-8 text-center">
           <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 ${previousResult.passed
-              ? 'bg-green-100 text-green-600'
-              : 'bg-red-100 text-red-600'
+            ? 'bg-green-100 text-green-600'
+            : 'bg-red-100 text-red-600'
             }`}>
             <span className="material-symbols-rounded text-4xl">
               {previousResult.passed ? 'check_circle' : 'cancel'}
@@ -223,8 +269,8 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
       <div className="w-full h-full bg-white flex items-center justify-center relative">
         <div className="max-w-2xl w-full p-8 text-center">
           <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 ${result.passed
-              ? 'bg-green-100 text-green-600'
-              : 'bg-red-100 text-red-600'
+            ? 'bg-green-100 text-green-600'
+            : 'bg-red-100 text-red-600'
             }`}>
             <span className="material-symbols-rounded text-4xl">
               {result.passed ? 'check_circle' : 'cancel'}
@@ -269,7 +315,7 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
     );
   }
 
-  if (questions.length === 0) {
+  if (shuffledQuestions.length === 0) {
     return (
       <div className="w-full h-full bg-white flex items-center justify-center relative">
         <div className="max-w-2xl w-full p-8 text-center">
@@ -302,7 +348,7 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
                 </div>
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                   <span className="material-symbols-rounded text-indigo-600 block mb-1">list_alt</span>
-                  <span className="text-2xl font-bold text-gray-900">{questions.length}</span>
+                  <span className="text-2xl font-bold text-gray-900">{shuffledQuestions.length}</span>
                   <span className="text-gray-800 text-sm block">Questions</span>
                 </div>
               </div>
@@ -338,7 +384,7 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-2xl font-bold">{title}</h1>
-              <p className="text-indigo-100 text-sm mt-1">Question {currentQuestion + 1} of {questions.length}</p>
+              <p className="text-indigo-100 text-sm mt-1">Question {currentQuestion + 1} of {shuffledQuestions.length}</p>
             </div>
             <div className="text-right">
               <div className="text-3xl font-bold">{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}</div>
@@ -373,20 +419,21 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
             <div className="space-y-3">
               {options.map((option, index) => {
                 const isSelected = selectedOption === index;
+                const letterLabel = getLetterLabel(index);
                 return (
                   <button
-                    key={index}
+                    key={`${currentQ.id}-${index}-${option}`}
                     onClick={() => handleOptionSelect(index)}
                     className={`w-full text-left p-5 rounded-xl border-2 transition-all duration-200 flex items-center gap-4 group ${isSelected
-                        ? 'bg-indigo-50 border-indigo-400 ring-1 ring-indigo-300'
-                        : 'bg-slate-50 border-slate-200 hover:border-indigo-300 hover:bg-slate-100'
+                      ? 'bg-indigo-50 border-indigo-400 ring-1 ring-indigo-300'
+                      : 'bg-slate-50 border-slate-200 hover:border-indigo-300 hover:bg-slate-100'
                       }`}
                   >
-                    <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${isSelected
-                        ? 'border-indigo-600 bg-indigo-600'
-                        : 'border-slate-400 group-hover:border-indigo-400'
+                    <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors font-semibold text-sm ${isSelected
+                      ? 'border-indigo-600 bg-indigo-600 text-white'
+                      : 'border-slate-400 group-hover:border-indigo-400 text-slate-700'
                       }`}>
-                      {isSelected && <span className="material-symbols-rounded text-white text-sm">check</span>}
+                      {letterLabel}
                     </div>
                     <span className={`text-base ${isSelected ? 'text-indigo-900 font-semibold' : 'text-gray-900'}`}>
                       {option}
@@ -414,7 +461,7 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
               <span className="material-symbols-rounded">arrow_back</span> Previous
             </button>
 
-            {currentQuestion === questions.length - 1 ? (
+            {currentQuestion === shuffledQuestions.length - 1 ? (
               <button
                 onClick={handleSubmit}
                 disabled={selectedOption === null || isSubmitting}

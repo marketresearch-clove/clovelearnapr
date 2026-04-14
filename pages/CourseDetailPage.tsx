@@ -9,6 +9,7 @@ import { enrollmentService } from '../lib/enrollmentService';
 import { feedbackService } from '../lib/feedbackService';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
+import { stripHtmlTags } from '../lib/contentUtils';
 import pdfFile from '../Assets/business-risk-management.pdf';
 import pptxFile from '../Assets/business-risk-management.pptx';
 import videoFile from '../Assets/main-output-1.mp4';
@@ -520,8 +521,8 @@ const CourseDetailPage: React.FC = () => {
                   )}
                 </div>
 
-                <h1 className="text-3xl lg:text-4xl font-heading font-bold text-black mb-4">{course.title}</h1>
-                <p className="text-black/70 mb-6 leading-relaxed">{course.description}</p>
+                <h1 className="text-3xl lg:text-4xl font-heading font-bold text-black mb-4">{stripHtmlTags(course.title)}</h1>
+                <p className="text-black/70 mb-6 leading-relaxed">{stripHtmlTags(course.description)}</p>
 
                 <div className="flex items-center gap-3 mb-8">
                   <img
@@ -582,7 +583,7 @@ const CourseDetailPage: React.FC = () => {
                       course.syllabus.map((module, idx) => (
                         <div key={module.id} className="border-b border-gray-200 last:border-0">
                           <div className="bg-gray-50 px-6 py-4 flex items-center justify-between font-semibold text-black">
-                            <span>Module {idx + 1}: {module.title}</span>
+                            <span>Module {idx + 1}: {stripHtmlTags(module.title)}</span>
                             <span className="text-xs text-black/50 font-normal">{module.lessons.length} lessons</span>
                           </div>
                           <div className="divide-y divide-gray-200">
@@ -596,7 +597,7 @@ const CourseDetailPage: React.FC = () => {
                                   <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-black/40 group-hover:bg-[#4f46e5]/10 group-hover:text-[#4f46e5] transition-colors">
                                     <span className="material-symbols-rounded text-lg">play_arrow</span>
                                   </div>
-                                  <span className="text-black group-hover:text-[#4f46e5] transition-colors">{lesson.title}</span>
+                                  <span className="text-black group-hover:text-[#4f46e5] transition-colors">{stripHtmlTags(lesson.title)}</span>
                                 </div>
                                 <div className="flex items-center gap-4">
                                   {lesson.isFree && <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">Preview</span>}

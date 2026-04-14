@@ -3,6 +3,7 @@ import AdminLayout from '../components/AdminLayout';
 import { supabase } from '../lib/supabaseClient';
 import { exportToExcel, exportToPDF } from '../lib/exportUtils';
 import { courseService } from '../lib/courseService';
+import { timeTrackingService } from '../lib/timeTrackingService';
 import { RiFileExcel2Line, RiFilePdfLine } from 'react-icons/ri';
 
 const AdminAnalyticsPage: React.FC = () => {
@@ -135,15 +136,21 @@ const AdminAnalyticsPage: React.FC = () => {
         .from('courses')
         .select('id', { count: 'exact', head: true });
 
-      // Average Course Rating (average of course averages, not individual reviews)
-      const { data: courseRatings } = await supabase
-        .from('courses')
-        .select('average_rating')
-        .gt('average_rating', 0);
+      // Average Course Rating (calculated from course_feedback table)
+      const { data: courseFeedback } = await supabase
+        .from('course_feedback')
+        .select('rating');
 
-      const avgRating = courseRatings && courseRatings.length > 0
-        ? courseRatings.reduce((sum, c) => sum + (c.average_rating || 0), 0) / courseRatings.length
+      const validRatings = (courseFeedback || []).filter((f: any) => f.rating !== null && f.rating !== undefined);
+      const avgRating = validRatings.length > 0
+        ? Math.round((validRatings.reduce((sum: number, f: any) => sum + (Number(f.rating) || 0), 0) / validRatings.length) * 100) / 100
         : 0;
+
+      console.log('⭐ Course Rating fetch from feedback:', {
+        totalFeedbacks: courseFeedback?.length || 0,
+        validRatings: validRatings.length,
+        avgRating: avgRating
+      });
 
       // Monthly Growth (new users this month vs last month)
       const now = new Date();
@@ -176,15 +183,20 @@ const AdminAnalyticsPage: React.FC = () => {
         .not('department', 'is', null);
 
       if (allProfiles && allProfiles.length > 0) {
-        // Get enrollment data for courses enrolled and completed
+        // Get enrollment data for courses enrolled and completed (including hoursspent for average session time)
         const { data: enrollments } = await supabase
           .from('enrollments')
-          .select('userid, completed');
+          .select('userid, courseid, hoursspent, completed');
 
-        // Get XP data (assuming XP is stored in user_xp or similar table, using learning_hours as proxy)
-        const { data: xpData } = await supabase
-          .from('learning_hours')
-          .select('userid, hoursspent');
+        // Get XP data from leaderboard table (source of truth for points)
+        const { data: leaderboardData, error: leaderboardError } = await supabase
+          .from('leaderboard')
+          .select('userid, totalpoints');
+
+        if (leaderboardError) {
+          console.warn('⚠️ Error fetching leaderboard data:', leaderboardError?.message);
+        }
+        console.log('📊 Leaderboard data fetched:', leaderboardData?.length || 0, 'records');
 
         // Calculate metrics per department - use deptProfiles for department-specific data
         const deptMetrics: any = {};
@@ -215,33 +227,51 @@ const AdminAnalyticsPage: React.FC = () => {
           }
         });
 
-        // Add XP data (using hours spent as XP proxy)
-        xpData?.forEach(xp => {
-          const profile = deptProfiles?.find(p => p.id === xp.userid);
+        // Add XP data from leaderboard table
+        (leaderboardData || []).forEach((leaderboardEntry: any) => {
+          const profile = deptProfiles?.find(p => p.id === leaderboardEntry.userid);
           if (profile) {
             const dept = profile.department;
-            deptMetrics[dept].totalXP += xp.hoursspent || 0;
+            deptMetrics[dept].totalXP += leaderboardEntry.totalpoints || 0;
           }
         });
 
-        // Convert to array and sort by user count initially
+        // Convert to array and sort by total XP (primary metric), then by courses completed, then by user count
         const topDepts = Object.values(deptMetrics)
-          .sort((a: any, b: any) => b.userCount - a.userCount)
+          .filter((dept: any) => dept.department && dept.department.trim())
+          .sort((a: any, b: any) => {
+            // Primary sort: Total XP Points (descending) - department's total engagement
+            if (b.totalXP !== a.totalXP) {
+              return b.totalXP - a.totalXP;
+            }
+            // Secondary sort: courses completed (descending) when XP is equal
+            if (b.coursesCompleted !== a.coursesCompleted) {
+              return b.coursesCompleted - a.coursesCompleted;
+            }
+            // Tertiary sort: user count when above are equal
+            return b.userCount - a.userCount;
+          })
           .slice(0, 10);
 
         setTopDepartments(topDepts);
         const topDept = (topDepts[0] as any)?.department || 'N/A';
 
-        // Average Session Time (hoursspent is stored in minutes)
-        const { data: sessionData } = await supabase
-          .from('learning_hours')
-          .select('userid, hoursspent');
+        console.log('🏢 Top Department by XP:', {
+          department: topDept,
+          xpPoints: (topDepts[0] as any)?.totalXP || 0,
+          coursesCompleted: (topDepts[0] as any)?.coursesCompleted || 0
+        });
 
-        const totalSessionMinutes = (sessionData || []).reduce((sum, s) => sum + (s.hoursspent || 0), 0);
-        const totalSessionRecords = (sessionData || []).length;
-        const avgSessionTime = totalSessionRecords > 0
-          ? (totalSessionMinutes / totalSessionRecords) / 60
+        // Average Session Time (calculate average time per enrollment record)
+        // Use enrollments table where hoursspent is in SECONDS
+        const totalSeconds = (enrollments || []).reduce((sum: number, record: any) => {
+          return sum + (record.hoursspent || 0);
+        }, 0);
+        const totalSessionRecords = (enrollments || []).length;
+        const avgSessionTimeSeconds = totalSessionRecords > 0
+          ? Math.round(totalSeconds / totalSessionRecords)
           : 0;
+        const avgSessionTime = timeTrackingService.secondsToHours(avgSessionTimeSeconds);
 
         setStats((prev: any) => ({
           ...prev,
@@ -250,7 +280,7 @@ const AdminAnalyticsPage: React.FC = () => {
           avgCourseRating: Math.round(avgRating * 10) / 10,
           monthlyGrowth: Math.round(monthlyGrowth * 10) / 10,
           topDepartment: topDept,
-          avgSessionTime: Math.round(avgSessionTime * 10) / 10,
+          avgSessionTime: Math.round(avgSessionTime * 100) / 100,
           certificatesEarned: 0, // Will be set with actual count from database
         }));
 
@@ -274,22 +304,45 @@ const AdminAnalyticsPage: React.FC = () => {
             .from('certificates')
             .select('user_id, course_id');
 
-          // Calculate average session duration (hoursspent is stored in minutes)
-          const totalMinutes = (learningHours || []).reduce((sum: number, lh: any) => sum + (lh.hoursspent || 0), 0);
-          const totalLearningRecords = (learningHours || []).length;
-          const avgSessionDuration = totalLearningRecords > 0
-            ? Math.round(((totalMinutes / totalLearningRecords) / 60) * 100) / 100
-            : 0;
+          // Fetch real-time analytics from API
+          let avgSessionDuration = 0;
+          let peakActivityHour = 0;
 
-          // Calculate peak activity hour (from createdat timestamps)
-          const hourCounts: any = {};
-          (enrollments || []).forEach((e: any) => {
-            if (e.createdat) {
-              const hour = new Date(e.createdat).getHours();
-              hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+          try {
+            // Get average session duration
+            const avgSessionRes = await fetch('/api/admin/realTimeAnalytics?action=avg-session-duration');
+            if (avgSessionRes.ok) {
+              const avgData = await avgSessionRes.json();
+              avgSessionDuration = timeTrackingService.secondsToHours(avgData.avgDurationSeconds);
             }
-          });
-          const peakActivityHour = Object.entries(hourCounts).sort((a: any, b: any) => b[1] - a[1])[0]?.[0] || 0;
+
+            // Get peak activity hour
+            const peakActivityRes = await fetch('/api/admin/realTimeAnalytics?action=peak-activity');
+            if (peakActivityRes.ok) {
+              const peakData = await peakActivityRes.json();
+              peakActivityHour = peakData?.hour || 0;
+            }
+          } catch (error) {
+            console.warn('[ANALYTICS] Error fetching real-time analytics, falling back to manual calculation', error);
+
+            // Fallback: Calculate average session duration from learning_hours
+            const totalSeconds = (learningHours || []).reduce((sum: number, lh: any) => sum + (lh.hoursspent || 0), 0);
+            const totalLearningRecords = (learningHours || []).length;
+            const avgSessionDurationSeconds = totalLearningRecords > 0
+              ? totalSeconds / totalLearningRecords
+              : 0;
+            avgSessionDuration = timeTrackingService.secondsToHours(avgSessionDurationSeconds);
+
+            // Fallback: Calculate peak activity hour
+            const hourCounts: any = {};
+            (enrollments || []).forEach((e: any) => {
+              if (e.createdat) {
+                const hour = new Date(e.createdat).getHours();
+                hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+              }
+            });
+            peakActivityHour = Object.entries(hourCounts).sort((a: any, b: any) => b[1] - a[1])[0]?.[0] || 0;
+          }
 
           // Calculate engagement quality score (0-100)
           const completionRate = engData && engData.length > 0
@@ -597,7 +650,7 @@ const AdminAnalyticsPage: React.FC = () => {
             <KPICard title="Avg Rating" value={stats.avgCourseRating} icon="star" trend="+0.3" color="yellow" />
             <KPICard title="Monthly Growth" value={`${stats.monthlyGrowth}%`} icon="trending_up" trend="+12%" color="cyan" />
             <KPICard title="Top Department" value={stats.topDepartment} icon="business" trend="Leading" color="violet" />
-            <KPICard title="Avg Session" value={`${stats.avgSessionTime}h`} icon="timer" trend="+0.5h" color="rose" />
+            <KPICard title="Avg Session" value={`${stats.avgSessionTime.toFixed(1)}h`} icon="timer" trend="+0.5h" color="rose" />
           </div>
         )}
 

@@ -146,7 +146,9 @@ export const fetchLearnerDetailedAnalytics = async (): Promise<LearnerDetailRepo
                 ? Math.round(userAssessments.reduce((sum, a) => sum + a.percentage, 0) / userAssessments.length)
                 : 0;
 
-            const totalHours = userHours.reduce((sum, h) => sum + h.hoursspent, 0);
+            // hoursspent is stored in SECONDS - convert to hours
+            const totalSeconds = userHours.reduce((sum, h) => sum + (h.hoursspent || 0), 0);
+            const totalHours = totalSeconds / 3600; // Convert seconds to hours
 
             return {
                 'Learner Name': profile.fullname || 'Unknown',
@@ -195,19 +197,31 @@ export const fetchLearningHoursAnalytics = async (): Promise<LearningHoursReport
 
         const report: LearningHoursReport[] = profiles.map(profile => {
             const userHours = learningHours?.filter(h => h.userid === profile.id) || [];
-            const totalHours = userHours.reduce((sum, h) => sum + h.hoursspent, 0);
+            // hoursspent is stored in SECONDS - convert to hours
+            const totalSeconds = userHours.reduce((sum, h) => sum + (h.hoursspent || 0), 0);
+            const totalHours = totalSeconds / 3600; // Convert seconds to hours
 
-            // Calculate monthly hours (simplified - last 30 days)
+            // Calculate monthly seconds (simplified - last 30 days)
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            const monthHours = userHours
+            const monthSeconds = userHours
                 .filter(h => new Date(h.createdat) >= thirtyDaysAgo)
-                .reduce((sum, h) => sum + h.hoursspent, 0);
+                .reduce((sum, h) => sum + (h.hoursspent || 0), 0);
+            const monthHours = monthSeconds / 3600;
+
+            // Last month = total - this month
+            const lastMonthSeconds = totalSeconds - monthSeconds;
+            const lastMonthHours = lastMonthSeconds / 3600;
 
             const userEnrollments = enrollments?.filter(e => e.userid === profile.id) || [];
             const uniqueCourses = new Set(userEnrollments.map(e => e.courseid)).size;
 
-            const engagement = totalHours > 100 ? 'High' : totalHours > 20 ? 'Medium' : 'Low';
+            // Engagement level based on actual hours
+            const engagement = totalHours >= 5 ? 'High' : totalHours >= 1 ? 'Medium' : 'Low';
+
+            // Average daily minutes = (total seconds / session count) / 60
+            const avgSessionSeconds = userHours.length > 0 ? totalSeconds / userHours.length : 0;
+            const avgSessionMinutes = Math.round(avgSessionSeconds / 60);
 
             return {
                 'Learner Name': profile.fullname || 'Unknown',
@@ -215,11 +229,13 @@ export const fetchLearningHoursAnalytics = async (): Promise<LearningHoursReport
                 'Department': profile.department || 'N/A',
                 'Total Hours': Math.round(totalHours * 10) / 10,
                 'This Month Hours': Math.round(monthHours * 10) / 10,
-                'Last Month Hours': Math.round((totalHours - monthHours) * 10) / 10,
+                'Last Month Hours': Math.round(lastMonthHours * 10) / 10,
                 'Courses Tracked': uniqueCourses,
-                'Average Daily Minutes': totalHours > 0 ? Math.round((totalHours * 60) / Math.max(userHours.length, 1)) : 0,
+                'Average Daily Minutes': avgSessionMinutes,
                 'Most Used Course': 'N/A',
-                'Engagement Level': engagement
+                'Engagement Level': engagement,
+                'Total Time Spent (Hours)': totalSeconds,
+                'Average Session Duration (Min)': avgSessionMinutes
             };
         });
 
@@ -332,7 +348,9 @@ export const fetchDepartmentAnalytics = async (): Promise<DepartmentAnalyticsRep
             const avgScore = data.assessments.length > 0
                 ? Math.round(data.assessments.reduce((sum: number, a: any) => sum + a.percentage, 0) / data.assessments.length)
                 : 0;
-            const totalHours = data.hours.reduce((sum: number, h: any) => sum + h.hoursspent, 0);
+            // hoursspent is stored in SECONDS - convert to hours
+            const totalSeconds = data.hours.reduce((sum: number, h: any) => sum + (h.hoursspent || 0), 0);
+            const totalHours = totalSeconds / 3600; // Convert seconds to hours
 
             return {
                 'Department': dept,
@@ -438,7 +456,7 @@ export const fetchCareerPathProgressAnalytics = async (): Promise<CareerPathProg
         const { data: profiles } = await supabase
             .from('profiles')
             .select('id, fullname, email');
-        
+
         if (!userCareerPaths || !careerPaths || !profiles) return [];
 
         const report: CareerPathProgressReport[] = userCareerPaths.map(ucp => {
@@ -480,34 +498,66 @@ export const fetchCourseAnalyticsDetail = async (): Promise<CourseAnalyticsDetai
     try {
         const { data: courses } = await supabase
             .from('courses')
-            .select('id, title, level, created_at');
+            .select('id, title, category, description, createdat');
 
         const { data: enrollments } = await supabase
             .from('enrollments')
-            .select('courseid, completed');
+            .select('courseid, completed, hoursspent');
+
+        const { data: assessments } = await supabase
+            .from('assessments')
+            .select('courseid, id');
+
+        const { data: assessmentResults } = await supabase
+            .from('assessment_results')
+            .select('assessmentid, score');
+
+        const { data: courseFeedback } = await supabase
+            .from('course_feedback')
+            .select('courseid, rating');
 
         if (!courses) return [];
 
         const report: CourseAnalyticsDetailReport[] = courses.map(course => {
             const courseEnrollments = enrollments?.filter(e => e.courseid === course.id) || [];
+            const courseAssessments = assessments?.filter(a => a.courseid === course.id) || [];
+            const courseRatings = courseFeedback?.filter(f => f.courseid === course.id) || [];
 
             const completedCount = courseEnrollments.filter(e => e.completed).length;
             const completionRate = courseEnrollments.length > 0
                 ? Math.round((completedCount / courseEnrollments.length) * 100)
                 : 0;
 
+            // Calculate average hours from enrollments
+            const totalHours = courseEnrollments.reduce((sum: number, e: any) => sum + (e.hoursspent || 0), 0);
+            const avgHours = courseEnrollments.length > 0 ? Math.round(totalHours / courseEnrollments.length / 3600) : 0;
+
+            // Calculate average assessment score
+            const assessmentScores = assessmentResults?.filter(ar =>
+                courseAssessments.some(a => a.id === ar.assessmentid)
+            ) || [];
+            const avgScore = assessmentScores.length > 0
+                ? Math.round(assessmentScores.reduce((sum: number, ar: any) => sum + (ar.score || 0), 0) / assessmentScores.length)
+                : 0;
+
+            // Calculate average rating from course_feedback table
+            const validRatings = courseRatings.filter(f => f.rating !== null && f.rating !== undefined);
+            const rating = validRatings.length > 0
+                ? Math.round((validRatings.reduce((sum: number, f: any) => sum + (Number(f.rating) || 0), 0) / validRatings.length) * 10) / 10
+                : 0;
+
             return {
                 'Course Title': course.title,
-                'Category': 'General',
+                'Category': course.category || 'Uncategorized',
                 'Total Enrolled': courseEnrollments.length,
                 'Completed': completedCount,
                 'Completion Rate %': completionRate,
-                'Average Score %': 75,
-                'Average Hours': 8,
-                'Difficulty Level': course.level || 'Intermediate',
-                'Rating': 4.5,
-                'Assessments': 0,
-                'Created Date': new Date(course.created_at).toLocaleDateString()
+                'Average Score %': avgScore,
+                'Average Hours': avgHours,
+                'Difficulty Level': 'Standard',
+                'Rating': rating,
+                'Assessments': courseAssessments.length,
+                'Created Date': course.createdat ? new Date(course.createdat).toLocaleDateString() : 'N/A'
             };
         });
 
@@ -542,7 +592,9 @@ export const fetchEngagementMetricsAnalytics = async (): Promise<EngagementMetri
             const userLessons = lessonProgress?.filter(lp => lp.userid === profile.id) || [];
             const userHours = learningHours?.filter(h => h.userid === profile.id) || [];
 
-            const totalHours = userHours.reduce((sum, h) => sum + h.hoursspent, 0);
+            // hoursspent is stored in SECONDS - convert to hours
+            const totalSeconds = userHours.reduce((sum, h) => sum + (h.hoursspent || 0), 0);
+            const totalHours = totalSeconds / 3600; // Convert seconds to hours
             const completedLessons = userLessons.filter(lp => lp.completed).length;
 
             // Calculate activity days (unique dates with activity)

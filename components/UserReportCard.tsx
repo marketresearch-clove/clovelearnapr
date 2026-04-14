@@ -69,11 +69,6 @@ const UserReportCard: React.FC<UserReportCardProps> = ({ userId, isOpen, onClose
                                     ⭐ {reportData.statistics.totalPoints} XP
                                 </p>
                             )}
-                            {reportData?.leaderboardRank && (
-                                <p className="text-xs sm:text-sm text-amber-600 dark:text-amber-400 mt-1">
-                                    🏆 Leaderboard Rank: #{reportData.leaderboardRank}
-                                </p>
-                            )}
                         </div>
                     </div>
                     <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
