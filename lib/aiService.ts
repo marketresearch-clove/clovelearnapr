@@ -9,6 +9,36 @@ const API_VERSION = "v1beta";
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 
 /**
+ * Extract JSON from text that may contain preamble or extra text
+ * Handles responses like "Okay, I'll...\n{json here}"
+ * Also attempts to fix malformed JSON
+ */
+const extractJSON = (text: string): string => {
+  // Try to find JSON object (starts with {)
+  const jsonObjectMatch = text.match(/\{[\s\S]*\}/);
+  if (jsonObjectMatch) {
+    let json = jsonObjectMatch[0];
+    // Try to fix common JSON issues
+    json = json.replace(/,\s*}/, '}'); // Remove trailing commas
+    json = json.replace(/,\s*]/, ']'); // Remove trailing commas in arrays
+    return json;
+  }
+
+  // Try to find JSON array (starts with [)
+  const jsonArrayMatch = text.match(/\[[\s\S]*\]/);
+  if (jsonArrayMatch) {
+    let json = jsonArrayMatch[0];
+    // Try to fix common JSON issues
+    json = json.replace(/,\s*}/, '}');
+    json = json.replace(/,\s*]/, ']');
+    return json;
+  }
+
+  // If no JSON found, return original text
+  return text;
+};
+
+/**
  * Utility function to retry API calls with exponential backoff
  * Handles temporary failures like 503 errors from high demand
  */
@@ -231,17 +261,19 @@ const generateCourseContentChunked = async (
   try {
     // STEP 1: Generate course outline ONLY (modules + lesson titles) - MINIMAL
     onStatusUpdate?.('Generating course structure...');
-    const outlinePrompt = `Create outline for "${title}" (${modulesCount} modules, ${lessonsPerModule} lessons each).
-    JSON only: {"modules": [{"title": "Module Title", "lessons": ["Lesson 1", "Lesson 2"]}]}`;
+    const outlinePrompt = `RESPOND WITH ONLY VALID JSON. NO PREAMBLE. Create outline for "${title}" (${modulesCount} modules, ${lessonsPerModule} lessons each).
+    Output format: {"modules": [{"title": "Module Title", "lessons": ["Lesson 1", "Lesson 2"]}]}`;
 
-    const outline = JSON.parse(await callOpenRouterAPI(outlinePrompt, modelName, 3, 2000, 600));
-    await delay(1500);
+    const outlineResponse = await callOpenRouterAPI(outlinePrompt, modelName, 4, 4000, 1200);
+    const outline = JSON.parse(extractJSON(outlineResponse));
+    await delay(5000);
 
     // STEP 2: Generate course description - MINIMAL
     onStatusUpdate?.('Creating description...');
-    const descPrompt = `1-sentence description of "${title}". JSON: {"description": "..."}`;
-    const descData = JSON.parse(await callOpenRouterAPI(descPrompt, modelName, 2, 2000, 300));
-    await delay(1500);
+    const descPrompt = `RESPOND WITH ONLY VALID JSON. NO PREAMBLE. 1-sentence description of "${title}". Output format: {"description": "..."}`;
+    const descResponse = await callOpenRouterAPI(descPrompt, modelName, 3, 3000, 500);
+    const descData = JSON.parse(extractJSON(descResponse));
+    await delay(4000);
 
     // STEP 3: Generate EACH LESSON individually - MINIMAL OUTPUT
     const modules = outline.modules.map((m: any) => ({
@@ -255,17 +287,18 @@ const generateCourseContentChunked = async (
         const lessonTitle = modules[mIdx].lessons[lIdx];
         onStatusUpdate?.(`Writing: ${lessonTitle}...`);
 
-        const lessonPrompt = `2-3 sentence explanation for "${lessonTitle}".
-        JSON: {"content": "explanation here", "duration": 10}`;
+        const lessonPrompt = `RESPOND WITH ONLY VALID JSON. NO PREAMBLE. 2-3 sentence explanation for "${lessonTitle}".
+        Output format: {"content": "explanation here", "duration": 10}`;
 
-        const lessonData = JSON.parse(await callOpenRouterAPI(lessonPrompt, modelName, 2, 2000, 500));
+        const lessonResponse = await callOpenRouterAPI(lessonPrompt, modelName, 3, 3000, 800);
+        const lessonData = JSON.parse(extractJSON(lessonResponse));
         modules[mIdx].lessons[lIdx] = {
           title: lessonTitle,
           type: 'text',
           content: lessonData.content || lessonTitle,
           duration: lessonData.duration || 10,
         };
-        await delay(1500);
+        await delay(4000);
       }
     }
 
@@ -273,26 +306,28 @@ const generateCourseContentChunked = async (
     for (let mIdx = 0; mIdx < modules.length; mIdx++) {
       onStatusUpdate?.(`Creating quiz: ${modules[mIdx].title}...`);
 
-      const quizPrompt = `${quizQuestionsCount} short quiz questions on "${modules[mIdx].title}".
-      Balance option lengths. JSON: [{"question": "Q?", "options": ["A", "B", "C", "D"], "correctAnswer": 0}]`;
+      const quizPrompt = `RESPOND WITH ONLY VALID JSON. NO PREAMBLE. ${quizQuestionsCount} short quiz questions on "${modules[mIdx].title}".
+      Balance option lengths. Output format: [{"question": "Q?", "options": ["A", "B", "C", "D"], "correctAnswer": 0}]`;
 
-      const quizData = JSON.parse(await callOpenRouterAPI(quizPrompt, modelName, 2, 2000, 600));
+      const quizResponse = await callOpenRouterAPI(quizPrompt, modelName, 3, 3000, 1000);
+      const quizData = JSON.parse(extractJSON(quizResponse));
       modules[mIdx].lessons.push({
         title: `${modules[mIdx].title} Quiz`,
         type: 'quiz',
         content: quizData || [],
         duration: quizQuestionsCount * 2,
       });
-      await delay(1500);
+      await delay(4000);
     }
 
     // STEP 5: Generate flashcards separately if needed - MINIMAL
     if (contentType.includes('flashcard')) {
       onStatusUpdate?.('Generating flashcards...');
-      const flashcardPrompt = `${flashcardLimit} flashcard pairs for "${title}". Short Q&A format.
-      JSON: [{"front": "Q?", "back": "A?"}]`;
+      const flashcardPrompt = `RESPOND WITH ONLY VALID JSON. NO PREAMBLE. ${flashcardLimit} flashcard pairs for "${title}". Short Q&A format.
+      Output format: [{"front": "Q?", "back": "A?"}]`;
 
-      const flashcards = JSON.parse(await callOpenRouterAPI(flashcardPrompt, modelName, 2, 2000, 600));
+      const flashcardResponse = await callOpenRouterAPI(flashcardPrompt, modelName, 3, 3000, 900);
+      const flashcards = JSON.parse(extractJSON(flashcardResponse));
       modules.push({
         title: 'Flashcards',
         description: 'Quick reference cards',
@@ -303,7 +338,7 @@ const generateCourseContentChunked = async (
           duration: flashcardLimit,
         }],
       });
-      await delay(1500);
+      await delay(4000);
     }
 
     // STEP 6: Compile final response
@@ -433,17 +468,20 @@ export const generateCourseContent = async (title: string, options: { modulesCou
     if (provider === 'openrouter') {
       text = await callOpenRouterAPI(prompt, modelName, 4, 3000);
     } else {
+      onStatusUpdate?.('📚 Generating course structure with Gemini...');
       const model = genAI.getGenerativeModel({ model: modelName }, { apiVersion: API_VERSION });
       const result = await retryWithBackoff(async () => {
         const response = await model.generateContent(prompt);
         return response;
       }, 4, 3000); // 4 retries, starting with 3 second delay for better 503 handling
 
+      onStatusUpdate?.('📖 Processing response...');
       const response = await result.response;
       text = await response.text();
     }
 
     // Clean the response to ensure it's valid JSON
+    onStatusUpdate?.('📝 Parsing and validating JSON...');
     let cleanedText = text.trim();
 
     // Remove markdown code blocks if present
@@ -468,8 +506,12 @@ export const generateCourseContent = async (title: string, options: { modulesCou
     const generated = JSON.parse(cleanedText);
 
     // Clean up any HTML tags in titles
+    onStatusUpdate?.('📄 Cleaning up content...');
     const cleanedGenerated = cleanAIGeneratedContent(generated);
 
+    const moduleCount = cleanedGenerated.modules?.length || 0;
+    const lessonCount = cleanedGenerated.modules?.reduce((sum: number, m: any) => sum + (m.lessons?.length || 0), 0) || 0;
+    onStatusUpdate?.(`✅ Course ready: ${moduleCount} modules, ${lessonCount} lessons`);
     return cleanedGenerated;
   } catch (error) {
     console.error("Error generating course content:", error);
