@@ -65,7 +65,7 @@ const callOpenRouterAPI = async (
   maxTokens: number = 600
 ): Promise<string> => {
   if (!openrouterApiKey) {
-    throw new Error('OpenRouter API key not configured. Set VITE_OPENROUTER_API_KEY in .env.local');
+    throw new Error('OpenRouter API key not configured. For local development, set VITE_OPENROUTER_API_KEY in .env.local. For production deployment (Netlify/Vercel), set the environment variable in your hosting platform dashboard.');
   }
 
   let lastTruncationError: string | null = null;
@@ -484,7 +484,7 @@ export const generateCourseContent = async (title: string, options: { modulesCou
 
     if (provider === 'openrouter') {
       if (isAuthError) {
-        message = "❌ OpenRouter authentication failed. Check your API key (VITE_OPENROUTER_API_KEY) in .env.local";
+        message = "❌ OpenRouter authentication failed. Check your API key configuration. For local development, set VITE_OPENROUTER_API_KEY in .env.local. For production deployment (Netlify/Vercel), set the environment variable in your hosting platform dashboard.";
       } else if (isModelError) {
         message = "❌ OpenRouter model not available. Try switching to a different model from the dropdown.";
       } else if (isRateLimit || is503) {
