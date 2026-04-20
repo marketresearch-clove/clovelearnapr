@@ -3,8 +3,9 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY;
 const openrouterApiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
 const genAI = new GoogleGenerativeAI(geminiApiKey);
-const DEFAULT_MODEL_NAME = "gemini-2.5-flash";
+const DEFAULT_MODEL_NAME = "gemini-1.5-flash";
 const DEFAULT_OPENROUTER_MODEL = "google/gemma-4-31b"; // More reliable than Nemotron
+const DEFAULT_OLLAMA_MODEL = "gemini-3-flash-preview";
 const API_VERSION = "v1beta";
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 
@@ -55,27 +56,39 @@ const retryWithBackoff = async <T>(
     } catch (error) {
       lastError = error as Error;
 
+      // Extract status code if available
+      const status = (error as any)?.status || (error as any)?.response?.status;
+      const errorMsg = lastError.message || String(lastError);
+
       // Check if it's a retryable error (503, 429, network errors, etc.)
-      const isRetryable = error instanceof Error && (
-        error.message.includes('503') ||
-        error.message.includes('429') ||
-        error.message.includes('502') ||
-        error.message.includes('500') ||
-        error.message.includes('fetch') ||
-        error.message.includes('network') ||
-        error.message.includes('timeout') ||
-        error.message.includes('high demand') ||
-        error.message.includes('temporarily unavailable') ||
-        error.message.includes('overloaded')
-      );
+      const isRetryable =
+        status === 429 ||
+        status === 503 ||
+        status === 502 ||
+        status === 500 ||
+        errorMsg.includes('503') ||
+        errorMsg.includes('429') ||
+        errorMsg.includes('502') ||
+        errorMsg.includes('500') ||
+        errorMsg.includes('fetch') ||
+        errorMsg.includes('network') ||
+        errorMsg.includes('timeout') ||
+        errorMsg.includes('high demand') ||
+        errorMsg.includes('temporarily unavailable') ||
+        errorMsg.includes('overloaded') ||
+        errorMsg.includes('TRUNCATED_RETRY') ||
+        errorMsg.includes('Too Many Requests');
 
       if (!isRetryable || attempt === maxRetries) {
         throw error;
       }
 
       // Exponential backoff with jitter
-      const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 1000;
-      console.warn(`AI API call failed (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${Math.round(delay)}ms:`, error.message);
+      // Increase delay significantly for 429 errors
+      const multiplier = (status === 429 || errorMsg.includes('429')) ? 4 : 2;
+      const delay = (baseDelay * Math.pow(multiplier, attempt)) + (Math.random() * 2000);
+
+      console.warn(`AI API call failed (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${Math.round(delay)}ms:`, errorMsg);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
@@ -87,12 +100,52 @@ const retryWithBackoff = async <T>(
  * Call OpenRouter API with retry logic
  * Uses smaller max_tokens and delays to avoid truncation
  */
+const normalizeOpenRouterContent = (content: any): string => {
+  if (typeof content === 'string') {
+    return content;
+  }
+
+  if (Array.isArray(content)) {
+    return content
+      .map((item) => {
+        if (typeof item === 'string') {
+          return item;
+        }
+        if (item?.text) {
+          return String(item.text);
+        }
+        if (typeof item?.content === 'string') {
+          return item.content;
+        }
+        if (Array.isArray(item?.content)) {
+          return normalizeOpenRouterContent(item.content);
+        }
+        return '';
+      })
+      .join('');
+  }
+
+  if (content && typeof content === 'object') {
+    if (typeof content.text === 'string') {
+      return content.text;
+    }
+    if (typeof content.content === 'string') {
+      return content.content;
+    }
+    if (Array.isArray(content.content)) {
+      return normalizeOpenRouterContent(content.content);
+    }
+  }
+
+  return String(content ?? '');
+};
+
 const callOpenRouterAPI = async (
   prompt: string,
   modelName: string = DEFAULT_OPENROUTER_MODEL,
   maxRetries: number = 3,
   baseDelay: number = 3000,
-  maxTokens: number = 600
+  maxTokens: number = 2000
 ): Promise<string> => {
   if (!openrouterApiKey) {
     throw new Error('OpenRouter API key not configured. For local development, set VITE_OPENROUTER_API_KEY in .env.local. For production deployment (Netlify/Vercel), set the environment variable in your hosting platform dashboard.');
@@ -182,30 +235,96 @@ const callOpenRouterAPI = async (
     }
 
     const choice = data.choices[0];
-    const content = choice?.message?.content;
+    const rawContent = normalizeOpenRouterContent(choice?.message?.content);
+    const content = rawContent?.trim();
 
     // Check if response was truncated (finish_reason: 'length')
     if (choice?.finish_reason === 'length') {
       console.warn('⚠️ OpenRouter response truncated (finish_reason: length)');
       lastTruncationError = 'Token limit reached';
 
-      // Retry with smaller token limit
-      if (currentMaxTokens > 300) {
-        currentMaxTokens = Math.max(300, Math.floor(currentMaxTokens * 0.7));
-        console.log(`Retrying with reduced maxTokens: ${currentMaxTokens}`);
+      // Retry with larger token limit to get full response
+      if (currentMaxTokens < 1500) {
+        currentMaxTokens = Math.min(1500, Math.floor(currentMaxTokens * 1.5));
+        console.log(`Retrying with increased maxTokens: ${currentMaxTokens}`);
         throw new Error('TRUNCATED_RETRY');
       } else {
-        // Already at minimum, give up
+        // Already at limit, give up
         throw new Error(`TRUNCATED_FAILED: Even with ${currentMaxTokens} tokens, response truncated. Prompt too complex.`);
       }
     }
 
-    if (!content || content.trim().length === 0) {
+    if (!content || content.length === 0) {
       console.error('No content in OpenRouter response:', choice);
       throw new Error('EMPTY_RESPONSE');
     }
 
     return content;
+  }, maxRetries, baseDelay);
+};
+
+/**
+ * Call Ollama API via Cloudflare Worker proxy to avoid CORS issues
+ * Uses Cloudflare Workers endpoint (https://ollama-proxy.clovetech.workers.dev)
+ */
+const callOllamaAPI = async (
+  prompt: string,
+  modelName: string = DEFAULT_OLLAMA_MODEL,
+  maxRetries: number = 3,
+  baseDelay: number = 1000,
+  maxTokens: number = 2000
+): Promise<string> => {
+  const CLOUDFLARE_WORKER_URL = 'https://skill-spire-ollama-proxy.subharam-v.workers.dev';
+
+  return retryWithBackoff(async () => {
+    console.log(`Calling Ollama via Cloudflare Worker - model: ${modelName}, maxTokens: ${maxTokens}`);
+
+    try {
+      const response = await fetch(CLOUDFLARE_WORKER_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt,
+          model: modelName,
+          maxTokens,
+          temperature: 0.7,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Ollama Worker error (${response.status}):`, errorText);
+        throw new Error(`Ollama Worker failed with status ${response.status}: ${errorText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.error) {
+        console.error('Ollama Worker returned error:', data.error);
+        throw new Error(data.error);
+      }
+
+      if (!data.response || data.response.trim().length === 0) {
+        console.error('No content in Ollama response:', data);
+        throw new Error('EMPTY_RESPONSE');
+      }
+
+      console.log('Ollama response received via Cloudflare Worker');
+      return data.response;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      if (errorMsg.includes('Failed to fetch') || errorMsg.includes('ERR_')) {
+        throw new Error(
+          `Cannot reach Ollama via Cloudflare Worker. Ensure: ` +
+          `1) Worker is deployed at ollama-proxy.clovetech.workers.dev, ` +
+          `2) OLLAMA_API_KEY is set in Cloudflare environment, ` +
+          `3) OLLAMA_API_URL is correct. Details: ${errorMsg}`
+        );
+      }
+      throw error;
+    }
   }, maxRetries, baseDelay);
 };
 
@@ -246,7 +365,7 @@ const cleanAIGeneratedContent = (content: any): any => {
 };
 
 /**
- * Generate course content in TRUE granular chunks - optimized for OpenRouter free tier
+ * Generate course content in TRUE granular chunks - optimized for OpenRouter and Ollama
  * ONE API CALL = ONE CONTENT TYPE ONLY
  * Avoids token limits and truncation issues
  */
@@ -254,7 +373,16 @@ const generateCourseContentChunked = async (
   title: string,
   options: any
 ): Promise<any> => {
-  const { modulesCount = 3, lessonsPerModule = 3, difficulty = 'beginner', contentType = 'text', additionalPrompt = '', quizQuestionsCount = 5, flashcardLimit = 15, modelName, onStatusUpdate } = options;
+  const { modulesCount = 3, lessonsPerModule = 3, difficulty = 'beginner', contentType = 'text', additionalPrompt = '', quizQuestionsCount = 5, flashcardLimit = 15, modelName, provider = 'openrouter', onStatusUpdate } = options;
+
+  // Helper function to call the right API based on provider
+  const callAI = async (prompt: string, maxRetries: number = 3, delayMs: number = 1000, maxTokens: number = 600) => {
+    if (provider === 'ollama') {
+      return callOllamaAPI(prompt, modelName || DEFAULT_OLLAMA_MODEL, maxRetries, delayMs, maxTokens);
+    } else {
+      return callOpenRouterAPI(prompt, modelName || DEFAULT_OPENROUTER_MODEL, maxRetries, delayMs, maxTokens);
+    }
+  };
 
   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -264,14 +392,14 @@ const generateCourseContentChunked = async (
     const outlinePrompt = `RESPOND WITH ONLY VALID JSON. NO PREAMBLE. Create outline for "${title}" (${modulesCount} modules, ${lessonsPerModule} lessons each).
     Output format: {"modules": [{"title": "Module Title", "lessons": ["Lesson 1", "Lesson 2"]}]}`;
 
-    const outlineResponse = await callOpenRouterAPI(outlinePrompt, modelName, 4, 4000, 1200);
+    const outlineResponse = await callAI(outlinePrompt, 4, 4000, 1200);
     const outline = JSON.parse(extractJSON(outlineResponse));
     await delay(5000);
 
     // STEP 2: Generate course description - MINIMAL
     onStatusUpdate?.('Creating description...');
     const descPrompt = `RESPOND WITH ONLY VALID JSON. NO PREAMBLE. 1-sentence description of "${title}". Output format: {"description": "..."}`;
-    const descResponse = await callOpenRouterAPI(descPrompt, modelName, 3, 3000, 500);
+    const descResponse = await callAI(descPrompt, 3, 3000, 800);
     const descData = JSON.parse(extractJSON(descResponse));
     await delay(4000);
 
@@ -290,7 +418,7 @@ const generateCourseContentChunked = async (
         const lessonPrompt = `RESPOND WITH ONLY VALID JSON. NO PREAMBLE. 2-3 sentence explanation for "${lessonTitle}".
         Output format: {"content": "explanation here", "duration": 10}`;
 
-        const lessonResponse = await callOpenRouterAPI(lessonPrompt, modelName, 3, 3000, 800);
+        const lessonResponse = await callAI(lessonPrompt, 3, 3000, 800);
         const lessonData = JSON.parse(extractJSON(lessonResponse));
         modules[mIdx].lessons[lIdx] = {
           title: lessonTitle,
@@ -306,16 +434,18 @@ const generateCourseContentChunked = async (
     for (let mIdx = 0; mIdx < modules.length; mIdx++) {
       onStatusUpdate?.(`Creating quiz: ${modules[mIdx].title}...`);
 
-      const quizPrompt = `RESPOND WITH ONLY VALID JSON. NO PREAMBLE. ${quizQuestionsCount} short quiz questions on "${modules[mIdx].title}".
-      Balance option lengths. Output format: [{"question": "Q?", "options": ["A", "B", "C", "D"], "correctAnswer": 0}]`;
+      // Reduce questions for smaller models to avoid content length errors
+      const questionsPerCall = Math.min(quizQuestionsCount, 3);
+      const quizPrompt = `RESPOND WITH ONLY VALID JSON. NO PREAMBLE. ${questionsPerCall} short quiz questions on "${modules[mIdx].title}".
+      Keep answers brief (1-3 words max). Output format: [{"question": "Q?", "options": ["A", "B", "C", "D"], "correctAnswer": 0}]`;
 
-      const quizResponse = await callOpenRouterAPI(quizPrompt, modelName, 3, 3000, 1000);
+      const quizResponse = await callAI(quizPrompt, 3, 3000, 1000);
       const quizData = JSON.parse(extractJSON(quizResponse));
       modules[mIdx].lessons.push({
         title: `${modules[mIdx].title} Quiz`,
         type: 'quiz',
         content: quizData || [],
-        duration: quizQuestionsCount * 2,
+        duration: questionsPerCall * 2,
       });
       await delay(4000);
     }
@@ -326,7 +456,7 @@ const generateCourseContentChunked = async (
       const flashcardPrompt = `RESPOND WITH ONLY VALID JSON. NO PREAMBLE. ${flashcardLimit} flashcard pairs for "${title}". Short Q&A format.
       Output format: [{"front": "Q?", "back": "A?"}]`;
 
-      const flashcardResponse = await callOpenRouterAPI(flashcardPrompt, modelName, 3, 3000, 900);
+      const flashcardResponse = await callAI(flashcardPrompt, 3, 3000, 900);
       const flashcards = JSON.parse(extractJSON(flashcardResponse));
       modules.push({
         title: 'Flashcards',
@@ -365,27 +495,28 @@ const generateCourseContentChunked = async (
   } catch (error) {
     console.error('Error in chunked generation:', error);
     const errorMsg = error instanceof Error ? error.message : String(error);
+    const providerName = provider === 'ollama' ? 'Ollama' : 'OpenRouter';
     if (errorMsg.includes('TRUNCATED')) {
-      throw new Error('OpenRouter: Content too long. Use Gemini or try shorter course.');
+      throw new Error(`${providerName}: Content too long. Use Gemini or try shorter course.`);
     }
     if (errorMsg.includes('EMPTY')) {
-      throw new Error('OpenRouter: Empty response. Try again or switch provider.');
+      throw new Error(`${providerName}: Empty response. Try again or switch provider.`);
     }
-    throw new Error(`OpenRouter generation failed: ${errorMsg}`);
+    throw new Error(`${providerName} generation failed: ${errorMsg}`);
   }
 };
 
 /**
- * Generate course content - optimized for both Gemini and OpenRouter
- * For OpenRouter (free tier with rate limits), breaks down into smaller API calls
+ * Generate course content - optimized for Gemini, OpenRouter, and Ollama
+ * For OpenRouter and Ollama (free tier/local with rate limits), breaks down into smaller API calls
  * For Gemini, uses single large call for efficiency
  */
 export const generateCourseContent = async (title: string, options: { modulesCount?: number, lessonsPerModule?: number, difficulty?: string, contentType?: string, additionalPrompt?: string, quizQuestionsCount?: number, flashcardLimit?: number, modelName?: string, provider?: string, onStatusUpdate?: (status: string) => void } = {}) => {
   const { modulesCount = 3, lessonsPerModule = 3, difficulty = 'beginner', contentType = 'text', additionalPrompt = '', quizQuestionsCount = 5, flashcardLimit = 15, modelName = DEFAULT_MODEL_NAME, provider = 'gemini', onStatusUpdate } = options;
 
-  // For OpenRouter free tier, use chunked generation to avoid rate limits
-  if (provider === 'openrouter') {
-    return generateCourseContentChunked(title, { modulesCount, lessonsPerModule, difficulty, contentType, additionalPrompt, quizQuestionsCount, flashcardLimit, modelName, onStatusUpdate });
+  // For OpenRouter and Ollama, use chunked generation to avoid rate limits
+  if (provider === 'openrouter' || provider === 'ollama') {
+    return generateCourseContentChunked(title, { modulesCount, lessonsPerModule, difficulty, contentType, additionalPrompt, quizQuestionsCount, flashcardLimit, modelName, provider, onStatusUpdate });
   }
 
   const includesFlashcards = contentType?.includes('flashcard');
@@ -1005,5 +1136,236 @@ export const generateFlashcardContent = async (
       ? "Google AI service is temporarily overloaded. Please try again in a few moments."
       : "Failed to generate flashcards from AI. Please try again.";
     throw new Error(message);
+  }
+};
+
+export interface SurveyGenerationOptions {
+  questionType?: 'text' | 'textarea' | 'radio' | 'checkbox' | 'likert' | 'matrix' | 'mixed';
+  count?: number;
+  modelName?: string;
+  provider?: 'gemini' | 'openrouter' | 'ollama';
+  onStatusUpdate?: (status: string) => void;
+}
+
+export const generateSurveyContent = async (
+  title: string,
+  description: string,
+  options: SurveyGenerationOptions = {}
+) => {
+  const {
+    questionType = 'radio',
+    count = 5,
+    modelName = DEFAULT_MODEL_NAME,
+    provider = 'gemini',
+    onStatusUpdate,
+  } = options;
+
+  // Allow more questions - chunked generation for smaller models
+  const maxQuestionsPerProvider = provider === 'gemini' ? 30 : 15;
+  const normalizedCount = Math.max(1, Math.min(count, maxQuestionsPerProvider));
+  const likertOptions = [
+    'Strongly disagree',
+    'Disagree',
+    'Neutral',
+    'Agree',
+    'Strongly agree',
+  ];
+
+  // Simplify prompt for smaller models - use only radio or text questions
+  const simplifiedType = (questionType === 'matrix' || questionType === 'mixed' || questionType === 'checkbox') ? 'radio' : questionType;
+
+  const prompt = `Survey title: "${title}"
+Description: "${description}"
+Generate exactly ${normalizedCount} ${simplifiedType} questions.
+Return ONLY valid JSON. NO PREAMBLE. NO MARKDOWN BLOCKS.
+Expected format:
+{"title": "${title}", "description": "${description}", "questions": [{"id": "q1", "label": "Question text?", "type": "${simplifiedType}", "options": ["Option A", "Option B", "Option C"]}]}
+Rules:
+1. Return ONLY the JSON object.
+2. 3-4 options per question.
+3. Keep labels short and concise.`;
+
+  const callAI = async (promptText: string) => {
+    if (provider === 'openrouter') {
+      onStatusUpdate?.('Calling OpenRouter AI...');
+      // Use generous token limit for JSON generation - truncation fix handles retries
+      return callOpenRouterAPI(promptText, modelName, 4, 3000, 1000);
+    }
+
+    if (provider === 'ollama') {
+      onStatusUpdate?.('Calling Ollama AI...');
+      return callOllamaAPI(promptText, modelName, 4, 3000, 1000);
+    }
+
+    onStatusUpdate?.('Calling Gemini AI...');
+    const model = genAI.getGenerativeModel({ model: modelName }, { apiVersion: API_VERSION });
+    const result = await retryWithBackoff(async () => {
+      const response = await model.generateContent(promptText);
+      return response;
+    }, 4, 3000);
+
+    const response = await result.response;
+    return response.text();
+  };
+
+  try {
+    onStatusUpdate?.('Generating survey content...');
+
+    // Use chunked generation for smaller models
+    let allQuestions: any[] = [];
+    if (provider !== 'gemini' && normalizedCount > 3) {
+      // Generate in chunks of 3 for smaller models
+      const questionsPerChunk = 3;
+      const chunks = Math.ceil(normalizedCount / questionsPerChunk);
+
+      for (let chunk = 0; chunk < chunks; chunk++) {
+        const chunkSize = Math.min(questionsPerChunk, normalizedCount - (chunk * questionsPerChunk));
+        onStatusUpdate?.(`Generating ${chunkSize} questions (${chunk + 1}/${chunks})...`);
+
+        const chunkPrompt = `Survey: "${title}"
+Description: "${description}"
+Generate exactly ${chunkSize} ${simplifiedType} questions for part ${chunk + 1}.
+Return ONLY valid JSON. NO PREAMBLE. NO MARKDOWN BLOCKS.
+Expected format:
+{"questions": [{"id": "q${chunk * 3 + 1}", "label": "Question?", "type": "${simplifiedType}", "options": ["A", "B", "C"]}]}`;
+
+        try {
+          const text = await callAI(chunkPrompt);
+          const jsonText = extractJSON(text);
+          const chunkData = JSON.parse(jsonText);
+          if (Array.isArray(chunkData.questions)) {
+            allQuestions = allQuestions.concat(chunkData.questions);
+          } else {
+            console.warn(`Chunk ${chunk + 1} did not return questions array:`, chunkData);
+          }
+        } catch (chunkError) {
+          console.warn(`Chunk ${chunk + 1} generation failed:`, chunkError);
+          // Continue to next chunk on error
+        }
+
+        if (chunk < chunks - 1) {
+          await new Promise(resolve => setTimeout(resolve, 2000)); // Delay between chunks
+        }
+      }
+
+      if (allQuestions.length === 0) {
+        onStatusUpdate?.('No valid chunked survey questions; retrying with a full request...');
+        try {
+          const text = await callAI(prompt);
+          const jsonText = extractJSON(text);
+          const generated = JSON.parse(jsonText);
+          if (Array.isArray(generated.questions)) {
+            allQuestions = generated.questions;
+          } else {
+            console.warn('Full request did not return questions array:', generated);
+          }
+        } catch (retryError) {
+          console.warn('Full request retry failed:', retryError);
+        }
+      }
+    } else {
+      // Single call for Gemini
+      let text = await callAI(prompt);
+      let jsonText = extractJSON(text);
+
+      if (!jsonText.trim().startsWith('{')) {
+        const first = jsonText.indexOf('{');
+        const last = jsonText.lastIndexOf('}');
+        if (first !== -1 && last > first) {
+          jsonText = jsonText.substring(first, last + 1);
+        }
+      }
+
+      const generated = JSON.parse(jsonText);
+      allQuestions = Array.isArray(generated.questions) ? generated.questions : [];
+    }
+
+    if (allQuestions.length === 0) {
+      throw new Error('No questions generated from AI');
+    }
+
+    const questions = allQuestions.slice(0, normalizedCount);
+    const normalizedQuestions = questions.map((question: any, index: number) => {
+      const id = question.id || `q${index + 1}`;
+      const rawType = String(question.type || '').trim().toLowerCase();
+      const isValidType = ['text', 'textarea', 'radio', 'checkbox', 'likert', 'matrix'].includes(rawType);
+      const type = isValidType
+        ? (rawType as 'text' | 'textarea' | 'radio' | 'checkbox' | 'likert' | 'matrix')
+        : questionType === 'mixed'
+          ? Array.isArray(question.rows) && question.rows.length && Array.isArray(question.columns) && question.columns.length
+            ? 'matrix'
+            : Array.isArray(question.options) && question.options.length
+              ? 'radio'
+              : 'text'
+          : questionType;
+      const label = String(question.label || question.prompt || `Question ${index + 1}`).trim();
+      const options = Array.isArray(question.options)
+        ? question.options.map((opt: any) => String(opt || '').trim()).filter(Boolean)
+        : type === 'likert'
+          ? likertOptions
+          : [];
+      const rows = Array.isArray(question.rows)
+        ? question.rows.map((row: any) => String(row || '').trim()).filter(Boolean)
+        : [];
+      const columns = Array.isArray(question.columns)
+        ? question.columns.map((column: any) => String(column || '').trim()).filter(Boolean)
+        : [];
+
+      return {
+        id,
+        label,
+        type,
+        options,
+        rows,
+        columns,
+      };
+    });
+
+    return {
+      title: title.trim(),
+      description: description.trim(),
+      questions: normalizedQuestions,
+    };
+  } catch (error) {
+    console.error('Error generating survey content:', error);
+    const message = error instanceof Error ? error.message : String(error);
+
+    // Fallback: Use pre-built template questions if AI generation fails or returns no valid output
+    if (
+      message.includes('TRUNCATED') ||
+      message.includes('too complex') ||
+      message.includes('No questions generated') ||
+      message.includes('Invalid response format') ||
+      message.includes('No valid') ||
+      message.includes('EMPTY_RESPONSE')
+    ) {
+      console.warn('AI generation failed, using fallback template...');
+      const templates: Record<string, any[]> = {
+        radio: [
+          { id: 'q1', label: `How satisfied are you with "${title}"?`, type: 'radio', options: ['Very Satisfied', 'Satisfied', 'Neutral', 'Dissatisfied'] },
+          { id: 'q2', label: 'Would you recommend this?', type: 'radio', options: ['Highly Likely', 'Likely', 'Unlikely', 'Very Unlikely'] },
+          { id: 'q3', label: 'How was your experience?', type: 'radio', options: ['Excellent', 'Good', 'Average', 'Poor'] },
+        ],
+        text: [
+          { id: 'q1', label: `What is your feedback on "${title}"?`, type: 'text', options: [] },
+          { id: 'q2', label: 'What could be improved?', type: 'text', options: [] },
+          { id: 'q3', label: 'Additional comments?', type: 'text', options: [] },
+        ],
+        likert: [
+          { id: 'q1', label: `I found "${title}" valuable.`, type: 'likert', options: likertOptions },
+          { id: 'q2', label: 'The content was clear and easy to understand.', type: 'likert', options: likertOptions },
+          { id: 'q3', label: 'I would use this again.', type: 'likert', options: likertOptions },
+        ],
+      };
+
+      const templateQuestions = templates[simplifiedType] || templates.radio;
+      return {
+        title: title.trim(),
+        description: description.trim(),
+        questions: templateQuestions.slice(0, normalizedCount),
+      };
+    }
+
+    throw new Error(`AI survey generation failed: ${message}`);
   }
 };

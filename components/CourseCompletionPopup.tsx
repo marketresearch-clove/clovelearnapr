@@ -1,4 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import { getCertificate } from '../lib/certificateService';
+import { renderCertificateToCanvas } from '../lib/certificateHTMLGenerator';
+import jsPDF from 'jspdf';
 
 type CompletionMeta = {
     courseName: string;
@@ -50,10 +53,64 @@ ${skillsText}
 
 const CourseCompletionPopup: React.FC<Props> = ({ meta, onClose }) => {
     const [postText, setPostText] = useState(() => buildSuggestedPost(meta));
+    const [certificateData, setCertificateData] = useState<any>(null);
+    const [loadingCertificate, setLoadingCertificate] = useState(false);
+    const [downloadingCertificate, setDownloadingCertificate] = useState(false);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+
     const certificatePageUrl = meta.certificateId
         ? `${window.location.origin}/certificate/${meta.certificateId}`
         : (meta.certificateUrl || '');
     const hasCertificate = Boolean(meta.certificateId);
+
+    useEffect(() => {
+        if (hasCertificate && meta.certificateId) {
+            loadCertificate();
+        }
+    }, [meta.certificateId, hasCertificate]);
+
+    const loadCertificate = async () => {
+        if (!meta.certificateId) return;
+        setLoadingCertificate(true);
+        try {
+            const data = await getCertificate(meta.certificateId);
+            if (data) {
+                setCertificateData(data);
+            }
+        } catch (error) {
+            console.error('Failed to load certificate:', error);
+        } finally {
+            setLoadingCertificate(false);
+        }
+    };
+
+    const renderCertificatePreview = async () => {
+        if (!canvasRef.current || !certificateData || !certificateData.template) return;
+        try {
+            await renderCertificateToCanvas(canvasRef.current, certificateData.template, {
+                userName: certificateData.profiles?.full_name || 'Certificate Recipient',
+                courseTitle: certificateData.courses?.title || 'Course',
+                issueDate: new Date(certificateData.issued_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                }),
+                certificateId: certificateData.id,
+                userEmail: certificateData.profiles?.email || '',
+                userDepartment: certificateData.profiles?.department || '',
+                grade: 'Qualified',
+                signatures: certificateData.signatures_data || []
+            });
+        } catch (error) {
+            console.error('Failed to render certificate:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (certificateData && canvasRef.current) {
+            renderCertificatePreview();
+        }
+    }, [certificateData]);
 
     useEffect(() => {
         setPostText(buildSuggestedPost(meta));
@@ -78,61 +135,38 @@ const CourseCompletionPopup: React.FC<Props> = ({ meta, onClose }) => {
     };
 
     const viewCertificate = () => {
-        if (hasCertificate && certificatePageUrl) {
-            window.location.href = certificatePageUrl;
-        } else {
+        if (!hasCertificate || !certificatePageUrl) {
             alert('Certificate is not available yet.');
+            return;
         }
+        window.open(certificatePageUrl, '_blank', 'noopener,noreferrer');
     };
 
     const downloadCertificate = async () => {
-        if (!hasCertificate) {
+        if (!hasCertificate || !canvasRef.current) {
             alert('Certificate is not available yet.');
             return;
         }
 
-        const safeFileName = `Certificate-${meta.courseName.replace(/\s+/g, '_')}-${meta.userName.replace(/\s+/g, '_')}.pdf`;
-        const certificateUrl = certificatePageUrl || meta.certificateUrl!;
-
-        if (meta.certificateId && certificatePageUrl) {
-            window.location.href = certificatePageUrl;
-            return;
-        }
-
-        if (certificateUrl.startsWith(window.location.origin) || certificateUrl.startsWith('/')) {
-            const link = document.createElement('a');
-            link.href = certificateUrl;
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            link.download = safeFileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            return;
-        }
-
+        setDownloadingCertificate(true);
         try {
-            if (meta.certificateId && certificatePageUrl) {
-                window.location.href = certificatePageUrl;
-                return;
-            }
+            const canvas = canvasRef.current;
+            const safeFileName = `Certificate-${meta.courseName.replace(/\s+/g, '_')}-${meta.userName.replace(/\s+/g, '_')}`;
 
-            const response = await fetch(certificateUrl, { credentials: 'include' });
-            if (!response.ok) {
-                throw new Error('Unable to download certificate');
-            }
-            const blob = await response.blob();
-            const blobUrl = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = safeFileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(blobUrl);
+            // Generate PDF
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'px',
+                format: [canvas.width, canvas.height]
+            });
+            pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+            pdf.save(`${safeFileName}.pdf`);
         } catch (error) {
             console.error('Certificate download failed:', error);
-            window.location.href = certificatePageUrl || certificateUrl;
+            alert('Failed to download certificate. Please try again.');
+        } finally {
+            setDownloadingCertificate(false);
         }
     };
 
@@ -171,20 +205,28 @@ const CourseCompletionPopup: React.FC<Props> = ({ meta, onClose }) => {
                     <div className="grid gap-5 lg:grid-cols-[360px_1fr]">
                         <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
                             <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-                                <img
-                                    src={(() => {
-                                        const url = meta.certificatePreviewUrl;
-                                        if (!url) return defaultPreview;
-                                        return /\.(jpe?g|png|gif|webp|svg|bmp)$/i.test(url)
-                                            ? url
-                                            : defaultPreview;
-                                    })()}
-                                    alt="Certificate preview"
-                                    className="h-56 w-full object-cover"
-                                    onError={(event) => {
-                                        (event.currentTarget as HTMLImageElement).src = defaultPreview;
-                                    }}
-                                />
+                                {hasCertificate && certificateData ? (
+                                    <div className="relative h-56 w-full bg-white overflow-auto flex items-center justify-center">
+                                        {loadingCertificate ? (
+                                            <div className="flex flex-col items-center justify-center h-full">
+                                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mb-2"></div>
+                                                <p className="text-xs text-gray-500">Rendering certificate...</p>
+                                            </div>
+                                        ) : (
+                                            <canvas
+                                                ref={canvasRef}
+                                                className="max-w-full h-auto"
+                                                style={{ maxHeight: '224px', width: 'auto' }}
+                                            />
+                                        )}
+                                    </div>
+                                ) : (
+                                    <img
+                                        src={defaultPreview}
+                                        alt="Certificate preview"
+                                        className="h-56 w-full object-cover"
+                                    />
+                                )}
                                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-4">
                                     <p className="text-sm font-semibold text-white">Certificate Preview</p>
                                 </div>
@@ -283,10 +325,20 @@ const CourseCompletionPopup: React.FC<Props> = ({ meta, onClose }) => {
                                     </button>
                                     <button
                                         onClick={downloadCertificate}
-                                        className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                                        disabled={downloadingCertificate || !hasCertificate}
+                                        className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        <span className="material-symbols-rounded">download</span>
-                                        Download Certificate
+                                        {downloadingCertificate ? (
+                                            <>
+                                                <div className="w-4 h-4 border-2 border-slate-700 border-t-transparent rounded-full animate-spin"></div>
+                                                Downloading...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span className="material-symbols-rounded">download</span>
+                                                Download Certificate
+                                            </>
+                                        )}
                                     </button>
                                 </div>
                             </div>

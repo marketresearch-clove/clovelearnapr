@@ -261,13 +261,29 @@ const LessonPlayerPage: React.FC = () => {
         day: 'numeric',
       });
 
+      let certificatePreviewUrl = undefined;
+      if (certificateId) {
+        try {
+          const { data: cert } = await supabase
+            .from('certificates')
+            .select('id')
+            .eq('id', certificateId)
+            .single();
+          if (cert) {
+            certificatePreviewUrl = `${window.location.origin}/certificate/${certificateId}`;
+          }
+        } catch (err) {
+          console.warn('Could not load certificate preview:', err);
+        }
+      }
+
       setCompletionMeta({
         courseName: courseData?.title || 'Course',
         userName: user?.fullname || user?.email || 'Learner',
         completionDate,
         certificateId,
         certificateUrl,
-        certificatePreviewUrl: courseData?.thumbnail || undefined,
+        certificatePreviewUrl,
         organization: courseData?.organization || 'SkillSpire LMS',
         issueYear: new Date().getFullYear().toString(),
         issueMonth: (new Date().getMonth() + 1).toString(),

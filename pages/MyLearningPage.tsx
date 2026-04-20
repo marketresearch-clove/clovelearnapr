@@ -1259,6 +1259,9 @@ const MyCertificatesTab: React.FC = () => {
   const [certificates, setCertificates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedLevel, setSelectedLevel] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   useEffect(() => {
     if (user?.id) {
@@ -1276,24 +1279,19 @@ const MyCertificatesTab: React.FC = () => {
             id,
             issued_at,
             course_id,
-            user_id
+            user_id,
+            courses(id, title, level, category)
             `)
         .eq('user_id', user!.id)
         .order('issued_at', { ascending: false });
 
       if (fetchError) throw fetchError;
 
-      const certificatesWithData = await Promise.all((data || []).map(async (cert) => {
-        const { data: course } = await supabase
-          .from('courses')
-          .select('id, title')
-          .eq('id', cert.course_id)
-          .single();
-
-        return {
-          ...cert,
-          course_title: course?.title || 'Unknown Course'
-        };
+      const certificatesWithData = (data || []).map((cert: any) => ({
+        ...cert,
+        course_title: cert.courses?.title || 'Unknown Course',
+        course_level: cert.courses?.level ? (cert.courses.level.charAt(0).toUpperCase() + cert.courses.level.slice(1).toLowerCase()) : 'Beginner',
+        course_category: cert.courses?.category || 'Other'
       }));
 
       setCertificates(certificatesWithData);
@@ -1317,11 +1315,90 @@ const MyCertificatesTab: React.FC = () => {
     return <div className="text-center p-8 text-red-500">{error}</div>;
   }
 
+  // Get unique levels and categories
+  const uniqueLevels = Array.from(new Set(certificates.map((c) => c.course_level))).sort();
+  const uniqueCategories = Array.from(new Set(
+    certificates
+      .map((c) => c.course_category)
+      .filter((cat): cat is string => Boolean(cat))
+  )).sort();
+
+  // Filter certificates
+  const filteredCertificates = certificates.filter((cert) => {
+    const matchesSearch = cert.course_title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesLevel = selectedLevel === 'all' || cert.course_level === selectedLevel;
+    const matchesCategory = selectedCategory === 'all' || cert.course_category === selectedCategory;
+    return matchesSearch && matchesLevel && matchesCategory;
+  });
+
   return (
     <div className="space-y-6">
-      {certificates.length > 0 ? (
+      {certificates.length > 0 && (
+        <section className="space-y-3">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-3">
+            {/* Title */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="material-symbols-rounded text-primary-600">workspace_premium</span>
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900 whitespace-nowrap">My Certificates</h2>
+            </div>
+
+            {/* Search Bar */}
+            <div className="relative flex-1 lg:max-w-xs">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                <span className="material-symbols-rounded text-sm">search</span>
+              </span>
+              <input
+                type="text"
+                placeholder="Search certificates..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-sm"
+              />
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row lg:flex-row gap-3">
+              <select
+                value={selectedLevel}
+                onChange={(e) => setSelectedLevel(e.target.value)}
+                className="px-3 py-2.5 pr-8 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-sm"
+              >
+                <option value="all">All Levels</option>
+                {uniqueLevels.map((level) => (
+                  <option key={level} value={level}>
+                    {level}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-3 py-2.5 pr-8 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-sm"
+              >
+                <option value="all">All Categories ({uniqueCategories.length})</option>
+                {uniqueCategories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Results Count */}
+          {(searchQuery || selectedLevel !== 'all' || selectedCategory !== 'all') && (
+            <div className="text-xs sm:text-sm text-slate-600 flex items-center gap-2 px-1">
+              <span className="material-symbols-rounded text-sm">filter_alt</span>
+              <span>Showing {filteredCertificates.length} certificate{filteredCertificates.length !== 1 ? 's' : ''}</span>
+            </div>
+          )}
+        </section>
+      )}
+
+      {filteredCertificates.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {certificates.map((cert) => (
+          {filteredCertificates.map((cert) => (
             <div
               key={cert.id}
               className="bg-gradient-to-br from-indigo-50 to-indigo-100 border-2 border-indigo-200 rounded-2xl overflow-hidden hover:shadow-lg transition-all hover:scale-105"
@@ -1374,13 +1451,19 @@ const MyCertificatesTab: React.FC = () => {
             </div>
           ))}
         </div>
-      ) : (
+      ) : certificates.length === 0 ? (
         <div className="text-center py-16 px-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
           <span className="material-symbols-rounded text-6xl text-slate-400 block mb-4">workspace_premium</span>
           <h3 className="font-semibold text-slate-800 mb-2 text-lg">No Certificates Yet</h3>
           <p className="text-sm text-slate-500 max-w-md mx-auto">
             Complete courses and pass their quizzes to earn certificates. Your certificates will appear here.
           </p>
+        </div>
+      ) : (
+        <div className="text-center py-12 px-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+          <span className="material-symbols-rounded text-5xl text-slate-400 block mb-3">search</span>
+          <h3 className="font-semibold text-slate-800 mb-1 text-base">No Certificates Found</h3>
+          <p className="text-sm text-slate-500">Try adjusting your search or filters</p>
         </div>
       )}
     </div>
@@ -1393,6 +1476,18 @@ const AcquiredSkillsTab: React.FC = () => {
   const [assignedSkills, setAssignedSkills] = useState<any[]>([]);
   const [badges, setBadges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedLevel, setSelectedLevel] = useState<string>('all');
+  const [selectedType, setSelectedType] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [expandedCourses, setExpandedCourses] = useState<Record<string, boolean>>({});
+
+  const toggleCourseExpanded = (courseName: string) => {
+    setExpandedCourses((prev) => ({
+      ...prev,
+      [courseName]: !prev[courseName],
+    }));
+  };
 
   useEffect(() => {
     if (user?.id) {
@@ -1409,10 +1504,10 @@ const AcquiredSkillsTab: React.FC = () => {
         await skillService.checkAndDeleteExpiredSkillAssignments(user.id);
       }
 
-      // Load Achievements
+      // Load Achievements with course category
       const { data: achievementsData, error: achError } = await supabase
         .from('user_skill_achievements')
-        .select('*')
+        .select('*, courses(id, category)')
         .eq('user_id', user!.id)
         .order('completed_at', { ascending: false });
 
@@ -1465,6 +1560,37 @@ const AcquiredSkillsTab: React.FC = () => {
     }
   };
 
+  // Get unique course categories
+  const courseCategories = Array.from(new Set(
+    achievements
+      .map((a) => a.courses?.category)
+      .filter((cat): cat is string => Boolean(cat))
+  )).sort();
+
+  // Filter achievements based on search, level, and category
+  const filteredAchievements = achievements.filter((achievement) => {
+    const matchesSearch = achievement.skill_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      achievement.course_title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesLevel = selectedLevel === 'all' || achievement.course_level === selectedLevel;
+    const matchesCategory = selectedCategory === 'all' || achievement.courses?.category === selectedCategory;
+    return matchesSearch && matchesLevel && matchesCategory;
+  });
+
+  // Group filtered achievements by course
+  const groupedByCourse = filteredAchievements.reduce((acc: Record<string, any[]>, achievement) => {
+    const course = achievement.course_title || 'Other';
+    if (!acc[course]) acc[course] = [];
+    acc[course].push(achievement);
+    return acc;
+  }, {});
+
+  // Filter assigned skills based on search
+  const filteredAssignedSkills = assignedSkills.filter((assignment) => {
+    const matchesSearch = (assignment.skills?.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (assignment.skills?.skill_course_mappings?.[0]?.courses?.title || '').toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSearch && (selectedType === 'all' || selectedType === 'assigned');
+  });
+
   if (loading) {
     return <Loader size="md" message="Loading skills..." containerPadding="py-8" />;
   }
@@ -1473,10 +1599,10 @@ const AcquiredSkillsTab: React.FC = () => {
 
   if (noSkills) {
     return (
-      <div className="flex items-center justify-center p-12 bg-gray-50 rounded-xl border border-gray-200">
+      <div className="flex items-center justify-center p-8 sm:p-12 bg-gray-50 rounded-xl border border-gray-200">
         <div className="text-center">
-          <span className="material-symbols-rounded text-6xl text-slate-400 block mb-4">school</span>
-          <h3 className="font-semibold text-slate-800 mb-2 text-lg">No Skills Yet</h3>
+          <span className="material-symbols-rounded text-5xl sm:text-6xl text-slate-400 block mb-4">school</span>
+          <h3 className="font-semibold text-slate-800 mb-2 text-base sm:text-lg">No Skills Yet</h3>
           <p className="text-sm text-slate-500">Complete courses to earn skills or have them assigned to you.</p>
         </div>
       </div>
@@ -1484,20 +1610,20 @@ const AcquiredSkillsTab: React.FC = () => {
   }
 
   return (
-    <div className="space-y-12 pb-12">
+    <div className="space-y-8 pb-12">
       {/* Skill Family Badges Section */}
       {badges.length > 0 && (
         <section>
           <div className="flex items-center gap-2 mb-6">
             <span className="material-symbols-rounded text-primary-600">workspace_premium</span>
-            <h2 className="text-xl font-bold text-slate-900">Skill Family Badges</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900">Skill Family Badges</h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-6">
             {badges.map((badge) => (
               <div key={badge.id} className="flex flex-col items-center text-center group">
-                <div className="relative mb-3">
+                <div className="relative mb-2 sm:mb-3">
                   <div
-                    className="w-20 h-20 rounded-full flex items-center justify-center shadow-sm border-2 group-hover:scale-110 transition-transform duration-300"
+                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center shadow-sm border-2 group-hover:scale-110 transition-transform duration-300"
                     style={{
                       backgroundColor: badge.isEFSET ? `${badge.color}15` : 'rgba(79, 70, 229, 0.05)',
                       borderColor: badge.isEFSET ? badge.color : 'rgb(79, 70, 229)',
@@ -1505,24 +1631,24 @@ const AcquiredSkillsTab: React.FC = () => {
                     }}
                   >
                     {badge.isEFSET ? (
-                      <span className="material-symbols-rounded text-4xl">{badge.icon}</span>
+                      <span className="material-symbols-rounded text-3xl sm:text-4xl">{badge.icon}</span>
                     ) : badge.icon && (FaIcons as any)[badge.icon] ? (
-                      React.createElement((FaIcons as any)[badge.icon], { size: 40 })
+                      React.createElement((FaIcons as any)[badge.icon], { size: 32 })
                     ) : badge.icon && (MdIcons as any)[badge.icon] ? (
-                      React.createElement((MdIcons as any)[badge.icon], { size: 40 })
+                      React.createElement((MdIcons as any)[badge.icon], { size: 32 })
                     ) : (
-                      <span className="material-symbols-rounded text-4xl">workspace_premium</span>
+                      <span className="material-symbols-rounded text-3xl sm:text-4xl">workspace_premium</span>
                     )}
                   </div>
-                  <div className={`absolute -bottom-1 -right-1 rounded-full p-1 border-2 border-white ${badge.isEFSET ? 'bg-blue-500' : 'bg-green-500'}`}>
-                    <span className="material-symbols-rounded text-white text-[10px]">
+                  <div className={`absolute -bottom-1 -right-1 rounded-full border-2 border-white flex items-center justify-center w-6 h-6 ${badge.isEFSET ? 'bg-blue-500' : 'bg-green-500'}`}>
+                    <span className="material-symbols-rounded text-white text-xs">
                       {badge.isEFSET ? 'verified' : 'check'}
                     </span>
                   </div>
                 </div>
-                <h3 className="font-bold text-sm text-slate-900 group-hover:text-primary-600 transition-colors">{badge.name}</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">
-                  {badge.isEFSET ? 'EFSET Verified' : 'Certified Master'}
+                <h3 className="font-bold text-xs sm:text-sm text-slate-900 group-hover:text-primary-600 transition-colors line-clamp-2">{badge.name}</h3>
+                <p className="text-[8px] sm:text-[10px] font-bold text-slate-400 uppercase mt-1">
+                  {badge.isEFSET ? 'EFSET' : 'Master'}
                 </p>
               </div>
             ))}
@@ -1530,96 +1656,200 @@ const AcquiredSkillsTab: React.FC = () => {
         </section>
       )}
 
-      {/* Achievements Section */}
+      {/* Skill Achievements Header with Search and Filters - Single Line on Desktop */}
       {achievements.length > 0 && (
-        <section>
-          <div className="flex items-center gap-2 mb-6">
-            <span className="material-symbols-rounded text-primary-600">verified</span>
-            <h2 className="text-xl font-bold text-slate-900">Skill Achievements</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {achievements.map((achievement) => (
-              <div key={achievement.id} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="font-bold text-lg text-slate-900">{achievement.skill_name}</h3>
-                    <div className="flex gap-2 mt-2">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${achievement.course_level === 'Advanced' ? 'bg-indigo-100 text-indigo-700' :
-                        achievement.course_level === 'Intermediate' ? 'bg-blue-100 text-blue-700' :
-                          'bg-green-100 text-green-700'
-                        }`}>
-                        {achievement.course_level}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+        <section className="space-y-3">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-3">
+            {/* Title */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="material-symbols-rounded text-primary-600">verified</span>
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900 whitespace-nowrap">Skill Achievements</h2>
+            </div>
 
-                <div className="border-t border-slate-50 pt-4 mt-4">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Earned from</p>
-                  <p className="text-sm font-semibold text-slate-700 line-clamp-1" title={achievement.course_title}>
-                    {achievement.course_title}
-                  </p>
-                  <div className="flex items-center justify-between mt-4">
-                    <span className="text-[10px] text-slate-400 font-medium">
-                      {new Date(achievement.completed_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+            {/* Search Bar */}
+            <div className="relative flex-1 lg:max-w-xs">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                <span className="material-symbols-rounded text-sm">search</span>
+              </span>
+              <input
+                type="text"
+                placeholder="Search skills or courses..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-sm"
+              />
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row lg:flex-row gap-3">
+              <select
+                value={selectedLevel}
+                onChange={(e) => setSelectedLevel(e.target.value)}
+                className="px-3 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-sm"
+              >
+                <option value="all">All Levels</option>
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-3 py-2.5 pr-8 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-sm"
+              >
+                <option value="all">All Categories ({courseCategories.length})</option>
+                {courseCategories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                className="px-3 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-sm"
+              >
+                <option value="all">All Types</option>
+                <option value="earned">Earned Skills</option>
+                <option value="assigned">Assigned Skills</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Results Count */}
+          {(searchQuery || selectedLevel !== 'all') && (
+            <div className="text-xs sm:text-sm text-slate-600 flex items-center gap-2 px-1">
+              <span className="material-symbols-rounded text-sm">filter_alt</span>
+              <span>Showing {filteredAchievements.length} skill{filteredAchievements.length !== 1 ? 's' : ''}</span>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Skill Achievements Grouped by Course */}
+      {achievements.length > 0 && filteredAchievements.length > 0 && (
+        <section>
+
+          <div className="space-y-3">
+            {Object.entries(groupedByCourse).map(([courseName, courseAchievements]) => {
+              const isExpanded = expandedCourses[courseName];
+              return (
+                <div key={courseName} className="space-y-2">
+                  {/* Collapsible Course Header */}
+                  <button
+                    onClick={() => toggleCourseExpanded(courseName)}
+                    className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-gradient-to-r from-primary-50 to-primary-50/50 rounded-lg border border-primary-100 hover:from-primary-100 hover:to-primary-100/50 transition-colors group"
+                  >
+                    <div className="flex items-center gap-3 flex-1 text-left">
+                      <span className="material-symbols-rounded text-primary-600 text-lg">school</span>
+                      <div>
+                        <h3 className="font-bold text-slate-900 text-sm sm:text-base">{courseName}</h3>
+                        <p className="text-xs text-slate-500">{courseAchievements.length} skill{courseAchievements.length !== 1 ? 's' : ''}</p>
+                      </div>
+                    </div>
+                    <span className={`material-symbols-rounded text-primary-600 text-lg flex-shrink-0 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
+                      expand_more
                     </span>
-                    <span className="material-symbols-rounded text-green-500 text-lg">check_circle</span>
-                  </div>
+                  </button>
+
+                  {/* Skills Grid - Collapsible */}
+                  {isExpanded && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 pl-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                      {courseAchievements.map((achievement) => (
+                        <div key={achievement.id} className="bg-white rounded-lg sm:rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-all group">
+                          <div className="flex justify-between items-start gap-3 mb-3">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-bold text-sm sm:text-base text-slate-900 truncate group-hover:text-primary-600 transition-colors">{achievement.skill_name}</h4>
+                              <div className="flex gap-2 mt-2 flex-wrap">
+                                <span className={`px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider whitespace-nowrap ${achievement.course_level === 'Advanced' ? 'bg-indigo-100 text-indigo-700' :
+                                  achievement.course_level === 'Intermediate' ? 'bg-blue-100 text-blue-700' :
+                                    'bg-green-100 text-green-700'
+                                  }`}>
+                                  {achievement.course_level}
+                                </span>
+                              </div>
+                            </div>
+                            <span className="material-symbols-rounded text-green-500 text-lg flex-shrink-0">check_circle</span>
+                          </div>
+
+                          <div className="border-t border-slate-50 pt-3 mt-3">
+                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase block mb-1">Earned on</span>
+                            <span className="text-xs sm:text-sm font-medium text-slate-700">
+                              {new Date(achievement.completed_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}
 
+      {/* No Results Message */}
+      {achievements.length > 0 && filteredAchievements.length === 0 && (
+        <div className="flex items-center justify-center p-8 bg-slate-50 rounded-lg border border-slate-200">
+          <div className="text-center">
+            <span className="material-symbols-rounded text-4xl text-slate-300 block mb-3">search_off</span>
+            <h3 className="font-semibold text-slate-700 mb-1">No skills found</h3>
+            <p className="text-sm text-slate-500">Try adjusting your search or filters</p>
+          </div>
+        </div>
+      )}
+
       {/* Assigned Skills Section */}
-      {assignedSkills.length > 0 && (
+      {(selectedType === 'all' || selectedType === 'assigned') && filteredAssignedSkills.length > 0 && (
         <section>
           <div className="flex items-center gap-2 mb-6">
             <span className="material-symbols-rounded text-primary-600">assignment_ind</span>
-            <h2 className="text-xl font-bold text-slate-900">Assigned Skills</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900">Assigned Skills</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {assignedSkills.map((assignment) => {
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {filteredAssignedSkills.map((assignment) => {
               const expiryDate = assignment.expiry_date ? new Date(assignment.expiry_date) : null;
               const isExpiringSoon = expiryDate ? (expiryDate.getTime() - new Date().getTime()) < (30 * 24 * 60 * 60 * 1000) : false;
               const daysLeft = expiryDate ? Math.ceil((expiryDate.getTime() - new Date().getTime()) / (24 * 60 * 60 * 1000)) : null;
 
               return (
-                <div key={assignment.id} className={`bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all border-l-4 ${isExpiringSoon ? 'border-l-amber-500' : 'border-l-blue-500'}`}>
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="font-bold text-lg text-slate-900">{assignment.skills?.name || 'Skill'}</h3>
+                <div key={assignment.id} className={`bg-white rounded-lg sm:rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-all border-l-4 ${isExpiringSoon ? 'border-l-amber-500' : 'border-l-blue-500'}`}>
+                  <div className="flex justify-between items-start gap-3 mb-3">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-sm sm:text-base text-slate-900 truncate">{assignment.skills?.name || 'Skill'}</h4>
                       <p className="text-xs text-slate-500 mt-1">{assignment.skills?.family || 'General'}</p>
                     </div>
-                    <span className={`material-symbols-rounded ${isExpiringSoon ? 'text-amber-500' : 'text-blue-500'}`}>
+                    <span className={`material-symbols-rounded text-lg flex-shrink-0 ${isExpiringSoon ? 'text-amber-500' : 'text-blue-500'}`}>
                       {isExpiringSoon ? 'running_with_errors' : 'push_pin'}
                     </span>
                   </div>
 
-                  <div className="border-t border-slate-50 pt-4 mt-4">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Source Course</p>
-                    <p className="text-sm font-semibold text-slate-700 line-clamp-1">
-                      {assignment.skills?.skill_course_mappings?.[0]?.courses?.title || 'Admin Assignment'}
-                    </p>
+                  <div className="border-t border-slate-50 pt-3 mt-3 space-y-3">
+                    <div>
+                      <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase mb-1">Course</p>
+                      <p className="text-xs sm:text-sm font-semibold text-slate-700 line-clamp-1">
+                        {assignment.skills?.skill_course_mappings?.[0]?.courses?.title || 'Admin Assignment'}
+                      </p>
+                    </div>
 
                     {expiryDate && (
-                      <div className={`mt-3 flex items-center gap-1.5 text-xs font-bold ${isExpiringSoon ? 'text-amber-600' : 'text-slate-500'}`}>
+                      <div className={`flex items-center gap-1.5 text-xs font-bold ${isExpiringSoon ? 'text-amber-600' : 'text-slate-500'}`}>
                         <span className="material-symbols-rounded text-sm">schedule</span>
-                        {daysLeft !== null && daysLeft > 0 ? (
-                          <span>Expires in {daysLeft} days</span>
-                        ) : (
-                          <span>Expires today</span>
-                        )}
-                        <span className="text-[10px] opacity-75">({expiryDate.toLocaleDateString()})</span>
+                        <span className="truncate">
+                          {daysLeft !== null && daysLeft > 0 ? (
+                            `Expires in ${daysLeft}d`
+                          ) : (
+                            'Expires today'
+                          )}
+                        </span>
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between mt-4">
-                      <span className="text-[10px] text-slate-400 font-medium italic">
-                        Assigned on {new Date(assignment.assignedat || assignment.createdat).toLocaleDateString()}
-                      </span>
-                      <span className={`material-symbols-rounded ${isExpiringSoon ? 'text-amber-500' : 'text-blue-500'} text-lg`}>verified_user</span>
+                    <div className="text-[9px] sm:text-[10px] text-slate-400 font-medium italic">
+                      Assigned {new Date(assignment.assignedat || assignment.createdat).toLocaleDateString()}
                     </div>
                   </div>
                 </div>

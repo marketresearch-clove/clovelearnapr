@@ -56,6 +56,8 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
   const [shuffledQuestions, setShuffledQuestions] = useState<QuizQuestion[]>(() =>
     questions && questions.length > 0 ? shuffleQuizQuestions(questions) : []
   );
+  const [showTabWarning, setShowTabWarning] = useState(false);
+  const [tabSwitchCount, setTabSwitchCount] = useState(0);
   const questionsFingerprintRef = useRef<string>(getQuestionsFingerprint(questions));
 
   useEffect(() => {
@@ -122,6 +124,30 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
 
     return () => clearInterval(timer);
   }, [submitted, showPreviousResult, isStarted]);
+
+  useEffect(() => {
+    if (!isStarted || submitted || showPreviousResult) return;
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setShowTabWarning(true);
+        setTabSwitchCount((prev) => prev + 1);
+      }
+    };
+
+    const handleBlur = () => {
+      setShowTabWarning(true);
+      setTabSwitchCount((prev) => prev + 1);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleBlur);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, [isStarted, submitted, showPreviousResult]);
 
   const handleOptionSelect = (optionIndex: number) => {
     setSelectedOption(optionIndex);
@@ -200,6 +226,14 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
 
   const handleStartQuiz = () => {
     setIsStarted(true);
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+  };
+
+  const handleCopyPaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
   };
 
   const minutes = Math.floor(timeLeft / 60);
@@ -361,6 +395,7 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
                     <li>You must achieve at least {passingScore}% to pass.</li>
                     <li>The timer will start as soon as you click the button below.</li>
                     <li>Do not refresh the page during the quiz.</li>
+                    <li>Do not switch tabs or minimize the browser during the quiz.</li>
                   </ul>
                 </div>
               </div>
@@ -377,7 +412,40 @@ const InlineQuizRenderer: React.FC<InlineQuizRendererProps> = ({
         </div>
       )}
 
-      <div className={`w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-500 ${!isStarted ? 'blur-lg scale-95 opacity-50 select-none pointer-events-none' : ''}`}>
+      {showTabWarning && isStarted && !submitted && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-red-200">
+            <div className="bg-red-600 px-6 py-4 text-white">
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-rounded text-3xl">warning</span>
+                <h2 className="text-xl font-bold">Tab Switch Detected</h2>
+              </div>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-800 mb-2">
+                You switched away from the quiz window. Please return to the quiz immediately.
+              </p>
+              <p className="text-gray-700 text-sm mb-6">
+                <span className="font-semibold">Warning #{tabSwitchCount}</span> — Multiple violations may result in quiz termination.
+              </p>
+              <button
+                onClick={() => setShowTabWarning(false)}
+                className="w-full py-2 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition-colors"
+              >
+                Return to Quiz
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div
+        className={`w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-500 ${!isStarted ? 'blur-lg scale-95 opacity-50 select-none pointer-events-none' : 'select-none'}`}
+        onContextMenu={handleContextMenu}
+        onCopy={handleCopyPaste}
+        onCut={handleCopyPaste}
+        onPaste={handleCopyPaste}
+      >
 
         {/* Header */}
         <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 px-8 py-6 text-white">

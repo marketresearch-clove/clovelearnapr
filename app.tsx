@@ -137,6 +137,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/admin/learning-journeys" element={<ProtectedRoute roles={['admin', 'instructor']}><ManageLearningJourneys /></ProtectedRoute>} />
         <Route path="/admin/analytics" element={<ProtectedRoute roles={['admin', 'instructor']}><AdminAnalyticsPage /></ProtectedRoute>} />
         <Route path="/admin/reports" element={<ProtectedRoute roles={['admin', 'instructor']}><AdminReportsPage /></ProtectedRoute>} />
+        <Route path="/admin/surveys-feedback" element={<ProtectedRoute roles={['admin', 'instructor']}><ConcernManagementPage /></ProtectedRoute>} />
         <Route path="/admin/concerns" element={<ProtectedRoute roles={['admin', 'instructor']}><ConcernManagementPage /></ProtectedRoute>} />
         <Route path="/admin/notifications" element={<ProtectedRoute roles={['admin', 'instructor']}><AdvancedNotificationsPage /></ProtectedRoute>} />
         <Route path="/admin/acknowledgements" element={<ProtectedRoute roles={['admin', 'instructor']}><AcknowledgementsPage /></ProtectedRoute>} />

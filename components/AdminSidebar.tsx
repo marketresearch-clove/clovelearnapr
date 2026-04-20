@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabaseClient';
 
 interface AdminSidebarProps {
   isOpen: boolean;
@@ -11,6 +12,38 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { signOut } = useAuth();
+  const [concernBadgeCount, setConcernBadgeCount] = useState(0);
+  const [ackBadgeCount, setAckBadgeCount] = useState(0);
+
+  const fetchSidebarBadges = async () => {
+    try {
+      const [concernCountRes, ackCountRes] = await Promise.all([
+        supabase
+          .from('concerns_tickets')
+          .select('id', { count: 'exact', head: true })
+          .eq('is_seen', false),
+        supabase
+          .from('course_acknowledgements')
+          .select('id', { count: 'exact', head: true })
+          .eq('is_new', true),
+      ]);
+
+      if (!concernCountRes.error) {
+        setConcernBadgeCount(concernCountRes.count || 0);
+      }
+      if (!ackCountRes.error) {
+        setAckBadgeCount(ackCountRes.count || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching sidebar badge counts:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSidebarBadges();
+    const interval = window.setInterval(fetchSidebarBadges, 60000);
+    return () => window.clearInterval(interval);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -50,7 +83,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) => {
     { path: '/admin/notifications', label: 'Notifications', icon: 'notifications' },
     { path: '/admin/acknowledgements', label: 'Acknowledgements', icon: 'verified' },
     { path: '/admin/certificate-signatures', label: 'Certificate Signatures', icon: 'signature' },
-    { path: '/admin/concerns', label: 'Concern Management', icon: 'support_agent' },
+    { path: '/admin/surveys-feedback', label: 'Surveys & Feedback', icon: 'support_agent' },
   ];
 
   return (
@@ -101,7 +134,21 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) => {
               title={item.label}
             >
               <span className="material-symbols-rounded text-base flex-shrink-0">{item.icon}</span>
-              {isOpen && <p className="text-sm font-medium leading-normal whitespace-nowrap">{item.label}</p>}
+              {isOpen && (
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium leading-normal whitespace-nowrap">{item.label}</p>
+                  {item.path === '/admin/surveys-feedback' && concernBadgeCount > 0 && (
+                    <span className="inline-flex items-center justify-center h-5 min-w-[1.25rem] rounded-full bg-red-600 text-white text-[10px] font-bold px-2">
+                      {concernBadgeCount}
+                    </span>
+                  )}
+                  {item.path === '/admin/acknowledgements' && ackBadgeCount > 0 && (
+                    <span className="inline-flex items-center justify-center h-5 min-w-[1.25rem] rounded-full bg-red-600 text-white text-[10px] font-bold px-2">
+                      {ackBadgeCount}
+                    </span>
+                  )}
+                </div>
+              )}
             </button>
           ))}
         </nav>

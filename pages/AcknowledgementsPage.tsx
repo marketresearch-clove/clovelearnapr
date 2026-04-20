@@ -17,6 +17,7 @@ interface AckRecord {
   user_department: string;
   course_title: string;
   course_type: string;
+  is_new?: boolean;
 }
 
 interface Template {
@@ -101,7 +102,7 @@ const AcknowledgementsPage: React.FC = () => {
         .from('course_acknowledgements')
         .select(`
           id, user_id, course_id, lesson_id, block_id,
-          policy_title, signature, acknowledged_at,
+          policy_title, signature, acknowledged_at, is_new,
           profiles:user_id (fullname, email, department),
           courses:course_id (title, course_type)
         `)
@@ -118,6 +119,7 @@ const AcknowledgementsPage: React.FC = () => {
         policy_title: r.policy_title || 'Policy Document',
         signature: r.signature,
         acknowledged_at: r.acknowledged_at,
+        is_new: r.is_new,
         user_name: r.profiles?.fullname || 'Unknown',
         user_email: r.profiles?.email || '',
         user_department: r.profiles?.department || 'N/A',
@@ -126,6 +128,14 @@ const AcknowledgementsPage: React.FC = () => {
       }));
 
       setRecords(flat);
+
+      const hasNewAcknowledgements = flat.some((record) => record.is_new);
+      if (hasNewAcknowledgements) {
+        await supabase
+          .from('course_acknowledgements')
+          .update({ is_new: false })
+          .eq('is_new', true);
+      }
     } catch (err) {
       console.error('Error fetching acknowledgements:', err);
     } finally {

@@ -25,7 +25,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
   const [generationStatus, setGenerationStatus] = useState<string>('');
   const [generationOutput, setGenerationOutput] = useState<string[]>([]);
   const [showAIModal, setShowAIModal] = useState(false);
-  const [aiProvider, setAIProvider] = useState<'gemini' | 'openrouter'>('gemini');
+  const [aiProvider, setAIProvider] = useState<'gemini' | 'openrouter' | 'ollama'>('gemini');
   const [selectedModel, setSelectedModel] = useState<string>('gemini-2.5-flash');
   const [aiOptions, setAIOptions] = useState({
     modulesCount: 3,
@@ -407,14 +407,22 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
             <select
               value={aiProvider}
               onChange={(e) => {
-                setAIProvider(e.target.value as 'gemini' | 'openrouter');
-                setSelectedModel(e.target.value === 'gemini' ? 'gemini-2.5-flash' : 'nvidia/nemotron-3-super-120b-a12b:free');
+                const newProvider = e.target.value as 'gemini' | 'openrouter' | 'ollama';
+                setAIProvider(newProvider);
+                if (newProvider === 'gemini') {
+                  setSelectedModel('gemini-2.5-flash');
+                } else if (newProvider === 'ollama') {
+                  setSelectedModel('gemini-3-flash-preview');
+                } else {
+                  setSelectedModel('nvidia/nemotron-3-super-120b-a12b:free');
+                }
               }}
               disabled={isGenerating}
               className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs text-gray-900 hover:border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none disabled:opacity-50"
             >
               <option value="gemini">Google Gemini</option>
               <option value="openrouter">OpenRouter</option>
+              <option value="ollama">Ollama (Local)</option>
             </select>
           </div>
 
@@ -434,6 +442,17 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
                   <option value="gemini-2.0-flash">⚠ Gemini 2.0 Flash (Legacy - Shutting Down 6/1/2026)</option>
                   <option value="gemini-2.0-flash-001">⚠ Gemini 2.0 Flash 001 (Legacy - Shutting Down 6/1/2026)</option>
                   <option value="gemini-2.0-flash-lite-001">⚠ Gemini 2.0 Flash Lite 001 (Legacy - Shutting Down 6/1/2026)</option>
+                </>
+              ) : aiProvider === 'ollama' ? (
+                <>
+                  <option value="gemini-3-flash-preview">★ Gemini 3 Flash Preview (Local - Recommended)</option>
+                  <option value="glm-5.1:cloud">GLM 5.1 Cloud</option>
+                  <option value="minimax-m2.7:cloud">MiniMax M2.7 Cloud</option>
+                  <option value="gemma4">Gemma 4 (Local)</option>
+                  <option value="nemotron-3-super">Nemotron 3 Super (Local)</option>
+                  <option value="ollama:llama2">Llama 2 (Local)</option>
+                  <option value="ollama:neural-chat">Neural Chat (Local)</option>
+                  <option value="ollama:mistral">Mistral (Local)</option>
                 </>
               ) : (
                 <>
