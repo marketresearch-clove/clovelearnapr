@@ -66,7 +66,7 @@ export const userSkillAchievementService = {
 
       const { data: achievements } = await supabase
         .from('user_skill_achievements')
-        .select('*')
+        .select('skill_id, skill_name, course_level, course_id, course_title, percentage_achieved, completed_at')
         .eq('user_id', userId)
         .in('skill_id', skillIds);
 
@@ -102,7 +102,7 @@ export const userSkillAchievementService = {
       const [achievementsRes, assignmentsRes] = await Promise.all([
         supabase
           .from('user_skill_achievements')
-          .select('*')
+          .select('skill_id, skill_name, course_level, percentage_achieved')
           .eq('user_id', userId), // Get ALL achievements for fallback matching
         skillIds.length > 0
           ? supabase
@@ -253,8 +253,8 @@ export const userSkillAchievementService = {
       const [achievementsRes, assignmentsRes] = await Promise.all([
         supabase
           .from('user_skill_achievements')
-          .select('*')
-          .eq('user_id', userId),  // Remove the skillId filter to get ALL achievements
+          .select('skill_id, skill_name, course_level, course_title, percentage_achieved, completed_at')
+          .eq('user_id', userId),
         supabase
           .from('skill_assignments')
           .select('skillid, assignedat, expiry_date, level')
@@ -405,7 +405,7 @@ export const userSkillAchievementService = {
       // 1. Fetch all skill families
       const { data: families } = await supabase
         .from('skill_families')
-        .select('*');
+        .select('id, name, description');
 
       if (!families || families.length === 0) return [];
 

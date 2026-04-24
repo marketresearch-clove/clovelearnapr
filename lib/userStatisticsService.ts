@@ -28,7 +28,7 @@ export const userStatisticsService = {
 
       const { data, error } = await supabase
         .from('user_statistics')
-        .select('*')
+        .select('id, userid, totalcoursesenrolled, coursescompleted, totallearninghours, currentstreak, totalpoints, leaderboardrank, lastactivityat, createdat, updatedat')
         .eq('userid', userId)
         .single();
 
@@ -63,7 +63,7 @@ export const userStatisticsService = {
             leaderboardrank: null,
           },
         ])
-        .select()
+        .select('id, userid, totalcoursesenrolled, coursescompleted, totallearninghours, currentstreak, totalpoints, leaderboardrank, lastactivityat, createdat, updatedat')
         .single();
 
       if (error) throw error;
@@ -90,7 +90,7 @@ export const userStatisticsService = {
           lastactivityat: new Date().toISOString(),
         })
         .eq('userid', userId)
-        .select()
+        .select('id, userid, totalcoursesenrolled, coursescompleted, totallearninghours, currentstreak, totalpoints, leaderboardrank, lastactivityat, createdat, updatedat')
         .single();
 
       if (error) throw error;
@@ -116,7 +116,7 @@ export const userStatisticsService = {
           lastactivityat: new Date().toISOString(),
         })
         .eq('userid', userId)
-        .select()
+        .select('id, userid, totalcoursesenrolled, coursescompleted, totallearninghours, currentstreak, totalpoints, leaderboardrank, lastactivityat, createdat, updatedat')
         .single();
 
       if (error) throw error;
@@ -152,7 +152,7 @@ export const userStatisticsService = {
           lastactivityat: new Date().toISOString(),
         })
         .eq('userid', userId)
-        .select()
+        .select('id, userid, totalcoursesenrolled, coursescompleted, totallearninghours, currentstreak, totalpoints, leaderboardrank, lastactivityat, createdat, updatedat')
         .single();
 
       if (error) throw error;
@@ -178,7 +178,7 @@ export const userStatisticsService = {
           lastactivityat: new Date().toISOString(),
         })
         .eq('userid', userId)
-        .select()
+        .select('id, userid, totalcoursesenrolled, coursescompleted, totallearninghours, currentstreak, totalpoints, leaderboardrank, lastactivityat, createdat, updatedat')
         .single();
 
       if (error) throw error;
@@ -203,7 +203,7 @@ export const userStatisticsService = {
           lastactivityat: new Date().toISOString(),
         })
         .eq('userid', userId)
-        .select()
+        .select('id, userid, totalcoursesenrolled, coursescompleted, totallearninghours, currentstreak, totalpoints, leaderboardrank, lastactivityat, createdat, updatedat')
         .single();
 
       if (error) throw error;
@@ -225,7 +225,7 @@ export const userStatisticsService = {
           lastactivityat: new Date().toISOString(),
         })
         .eq('userid', userId)
-        .select()
+        .select('id, userid, totalcoursesenrolled, coursescompleted, totallearninghours, currentstreak, totalpoints, leaderboardrank, lastactivityat, createdat, updatedat')
         .single();
 
       if (error) throw error;
@@ -242,7 +242,7 @@ export const userStatisticsService = {
     try {
       const { data, error } = await supabase
         .from('user_statistics')
-        .select('*')
+        .select('id, userid, totalcoursesenrolled, coursescompleted, totallearninghours, currentstreak, totalpoints, leaderboardrank, lastactivityat, createdat, updatedat')
         .order('totalpoints', { ascending: false });
 
       if (error) throw error;
@@ -257,7 +257,7 @@ export const userStatisticsService = {
     try {
       const { data, error } = await supabase
         .from('user_statistics')
-        .select('*')
+        .select('id, userid, totalcoursesenrolled, coursescompleted, totallearninghours, currentstreak, totalpoints, leaderboardrank, lastactivityat, createdat, updatedat')
         .order('totalpoints', { ascending: false })
         .limit(limit);
 

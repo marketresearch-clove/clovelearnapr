@@ -239,7 +239,7 @@ const UserManagementV2Page = () => {
         try {
             const { data, error: fetchError } = await supabase
                 .from('profiles')
-                .select('*')
+                .select('id, fullname, email, user_id, role, user_status, mobile_number, preferred_language, allowed_views, company, department, designation, employment_type, industry, leadership_role, LinkedInPartnerAccess, linkedin_profile_url, location, manager_name, persona, team, employee_grade, created_at')
                 .limit(100);
 
             if (fetchError) throw fetchError;
@@ -754,7 +754,7 @@ const UserManagementV2Page = () => {
         try {
             const { data, error: fetchError } = await supabase
                 .from('profiles')
-                .select('*');
+                .select('id, fullname, email, user_id, role, user_status, mobile_number, preferred_language, allowed_views, company, department, designation, employment_type, industry, leadership_role, LinkedInPartnerAccess, linkedin_profile_url, location, manager_name, persona, team, employee_grade, created_at');
 
             if (fetchError) throw fetchError;
 

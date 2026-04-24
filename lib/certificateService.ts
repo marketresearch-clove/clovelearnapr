@@ -136,7 +136,7 @@ export const getCertificate = async (certificateId: string) => {
   if (data.template_id) {
     const { data: templateData } = await supabase
       .from('certificate_templates')
-      .select('*')
+      .select('id, template_name, description, background_image_url, placeholder_config, is_active, display_order, width, height, created_at, updated_at, created_by')
       .eq('id', data.template_id)
       .single();
     template = templateData;
@@ -144,7 +144,7 @@ export const getCertificate = async (certificateId: string) => {
     // Fallback to active template if not found on certificate
     const { data: activeTemplate } = await supabase
       .from('certificate_templates')
-      .select('*')
+      .select('id, template_name, description, background_image_url, placeholder_config, is_active, display_order, width, height, created_at, updated_at, created_by')
       .eq('is_active', true)
       .order('display_order', { ascending: true })
       .limit(1)

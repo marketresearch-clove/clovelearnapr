@@ -108,7 +108,7 @@ serve(async (req) => {
             // Get enabled signatures
             const { data: enabledSignatures, error: sigError } = await supabaseClient
                 .from('certificate_signature_settings')
-                .select('*')
+                .select('id, name, designation, signature_text, signature_image_url, display_order')
                 .eq('is_enabled', true)
                 .order('display_order', { ascending: true })
 

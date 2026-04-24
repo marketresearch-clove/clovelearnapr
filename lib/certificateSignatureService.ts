@@ -38,7 +38,7 @@ export const getAllSignatures = async (): Promise<CertificateSignature[]> => {
     try {
         const { data, error } = await supabase
             .from('certificate_signature_settings')
-            .select('*')
+            .select('id, name, designation, signature_image_url, signature_text, is_enabled, display_order, created_at, updated_at, created_by')
             .order('display_order', { ascending: true });
 
         if (error) throw error;
@@ -56,7 +56,7 @@ export const getEnabledSignatures = async (): Promise<CertificateSignature[]> =>
     try {
         const { data, error } = await supabase
             .from('certificate_signature_settings')
-            .select('*')
+            .select('id, name, designation, signature_image_url, signature_text, is_enabled, display_order, created_at, updated_at, created_by')
             .eq('is_enabled', true)
             .order('display_order', { ascending: true });
 
@@ -77,7 +77,7 @@ export const getSignatureByDesignation = async (
     try {
         const { data, error } = await supabase
             .from('certificate_signature_settings')
-            .select('*')
+            .select('id, name, designation, signature_image_url, signature_text, is_enabled, display_order, created_at, updated_at, created_by')
             .eq('designation', designation)
             .single();
 
@@ -109,7 +109,7 @@ export const createSignature = async (
                 display_order: signature.display_order ?? 0,
                 created_by: user?.id,
             })
-            .select()
+            .select('id, name, designation, signature_image_url, signature_text, is_enabled, display_order, created_at, updated_at, created_by')
             .single();
 
         if (error) throw error;
@@ -136,7 +136,7 @@ export const updateSignature = async (
                 updated_at: new Date().toISOString(),
             })
             .eq('id', id)
-            .select()
+            .select('id, name, designation, signature_image_url, signature_text, is_enabled, display_order, created_at, updated_at, created_by')
             .single();
 
         if (error) throw error;
@@ -162,7 +162,7 @@ export const toggleSignatureStatus = async (
                 updated_at: new Date().toISOString(),
             })
             .eq('id', id)
-            .select()
+            .select('id, name, designation, signature_image_url, signature_text, is_enabled, display_order, created_at, updated_at, created_by')
             .single();
 
         if (error) throw error;

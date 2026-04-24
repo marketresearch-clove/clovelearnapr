@@ -344,40 +344,45 @@ const AdminDashboard: React.FC = () => {
 
       let topSkills: any[] = [];
       if (skillsData && skillsData.length > 0) {
-        // For each skill, get user achievements and calculate stats
-        const skillStats = await Promise.all(
-          skillsData.map(async (skill: any) => {
-            const { data: achievements, error: achievementError } = await supabase
-              .from('user_skill_achievements')
-              .select('user_id, percentage_achieved')
-              .eq('skill_id', skill.id);
+        const skillIds = skillsData.map((skill: any) => skill.id).filter(Boolean);
 
-            if (achievementError || !achievements) {
-              console.warn(`⚠️ Error fetching achievements for skill ${skill.name}:`, achievementError?.message);
-              return null;
-            }
+        const { data: allAchievements, error: achievementError } = skillIds.length > 0
+          ? await supabase
+            .from('user_skill_achievements')
+            .select('skill_id, user_id, percentage_achieved')
+            .in('skill_id', skillIds)
+          : { data: [], error: null };
 
-            // Use percentage_achieved directly (already a percentage 0-100)
-            const avgProficiency = achievements.length > 0
-              ? Math.round(
-                achievements.reduce((sum: number, a: any) => {
-                  const percentage = (a.percentage_achieved || 0);
-                  return sum + percentage;
-                }, 0) / achievements.length
-              )
-              : 0;
+        if (achievementError) {
+          console.warn('⚠️ Error fetching achievements for top skills:', achievementError.message);
+        }
 
-            return {
-              id: skill.id,
-              name: skill.name,
-              proficiency: avgProficiency,
-              usersCount: achievements.length
-            };
-          })
-        );
+        const achievementsBySkill = new Map<string, any[]>();
+        (allAchievements || []).forEach((achievement: any) => {
+          if (!achievement?.skill_id) return;
+          const list = achievementsBySkill.get(achievement.skill_id) || [];
+          list.push(achievement);
+          achievementsBySkill.set(achievement.skill_id, list);
+        });
+
+        const skillStats = skillsData.map((skill: any) => {
+          const skillAchievements = achievementsBySkill.get(skill.id) || [];
+          const avgProficiency = skillAchievements.length > 0
+            ? Math.round(
+              skillAchievements.reduce((sum: number, a: any) => sum + (a.percentage_achieved || 0), 0)
+              / skillAchievements.length
+            )
+            : 0;
+
+          return {
+            id: skill.id,
+            name: skill.name,
+            proficiency: avgProficiency,
+            usersCount: skillAchievements.length
+          };
+        });
 
         topSkills = skillStats
-          .filter((s: any) => s !== null)
           .sort((a: any, b: any) => b.proficiency - a.proficiency)
           .slice(0, 10);
 

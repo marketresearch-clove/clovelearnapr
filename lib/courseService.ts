@@ -95,7 +95,7 @@ export const courseService = {
       // Fetch courses
       const { data: courses, error: coursesError } = await supabase
         .from('courses')
-        .select('*');
+        .select('id, title, instructorid, instructorname, category, status, thumbnail, description, createdat, updatedat, level, duration, completionrate, is_mandatory, certificate_enabled, is_hidden');
 
       if (coursesError) {
         console.error('❌ Courses query error:', coursesError.message, coursesError.code);
@@ -223,7 +223,7 @@ export const courseService = {
       // Try to fetch with is_hidden filter first
       const { data: courses, error } = await supabase
         .from('courses')
-        .select('*')
+        .select('id, title, instructorid, instructorname, category, status, thumbnail, description, createdat, updatedat, level, duration, completionrate, is_mandatory, certificate_enabled, is_hidden')
         .eq('status', 'published')
         .neq('is_hidden', true) // Exclude courses that are explicitly hidden (handles NULL as not-hidden)
         .order('createdat', { ascending: false });
@@ -260,7 +260,7 @@ export const courseService = {
     try {
       const { data: courses, error } = await supabase
         .from('courses')
-        .select('*')
+        .select('id, title, instructorid, instructorname, category, status, thumbnail, description, createdat, updatedat, level, duration, completionrate, is_mandatory, certificate_enabled, is_hidden')
         .eq('status', 'published')
         .order('createdat', { ascending: false });
 
@@ -379,7 +379,7 @@ export const courseService = {
 
       const { data, error } = await supabase
         .from('courses')
-        .select('*')
+        .select('id, title, instructorid, instructorname, category, status, thumbnail, description, createdat, updatedat, level, duration, completionrate, is_mandatory, certificate_enabled, is_hidden')
         .eq('id', id)
         .single();
 
@@ -474,7 +474,7 @@ export const courseService = {
     try {
       const { data, error } = await supabase
         .from('courses')
-        .select('*')
+        .select('id, title, instructorid, instructorname, category, status, thumbnail, description, createdat, updatedat, level, duration, completionrate, is_mandatory, certificate_enabled, is_hidden')
         .or(`title.ilike.%${query}%,description.ilike.%${query}%`);
 
       if (error) throw error;
@@ -554,7 +554,7 @@ export const courseService = {
     try {
       const { data, error } = await supabase
         .from('courses')
-        .select('*')
+        .select('id, title, instructorid, instructorname, category, status, thumbnail, description, createdat, updatedat, level, duration, completionrate, is_mandatory, certificate_enabled, is_hidden')
         .eq('status', status)
         .order('createdat', { ascending: false });
 

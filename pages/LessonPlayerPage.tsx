@@ -615,7 +615,7 @@ const LessonPlayerPage: React.FC = () => {
     try {
       const { data: existingAssessments, error: readError } = await supabase
         .from('assessments')
-        .select('*')
+        .select('id, title, passingscore, questions, type, courseid, lessonid')
         .eq('lessonid', lessonId);
 
       if (readError) {

@@ -21,7 +21,7 @@ export const userService = {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, email, fullname, role, avatarurl, bio, createdat, department, mobile_number, user_id, designation, linkedin_profile_url, user_status')
         .eq('id', userId)
         .single();
 
@@ -52,13 +52,13 @@ export const userService = {
 
   async getUsers(role?: string) {
     try {
-      let query = supabase.from('profiles').select('*');
+      let query = supabase.from('profiles').select('id, email, fullname, role, avatarurl, bio, createdat, department, mobile_number, user_id, designation, linkedin_profile_url, user_status');
 
       if (role) {
         query = query.eq('role', role);
       }
 
-      const { data, error } = await query.order('createdAt', { ascending: false });
+      const { data, error } = await query.order('createdat', { ascending: false });
 
       if (error) throw error;
       return data || [];
@@ -72,8 +72,8 @@ export const userService = {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
-        .or(`fullName.ilike.%${query}%,email.ilike.%${query}%`);
+        .select('id, email, fullname, role, avatarurl, bio, createdat, department, mobile_number, user_id, designation, linkedin_profile_url, user_status')
+        .or(`fullname.ilike.%${query}%,email.ilike.%${query}%`);
 
       if (error) throw error;
       return data || [];

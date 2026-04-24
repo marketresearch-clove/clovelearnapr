@@ -19,7 +19,7 @@ const CourseDetailModal: React.FC<{ onClose: () => void; courseId?: string }> = 
       setLoading(true);
       const { data, error } = await supabase
         .from('courses')
-        .select('*')
+        .select('id, title, category, duration, description, thumbnail')
         .eq('id', courseId)
         .single();
 

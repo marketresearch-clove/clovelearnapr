@@ -474,12 +474,12 @@ const CourseDetailPage: React.FC = () => {
           description: courseData.description || 'No description available',
           instructor: {
             name: courseData.instructorname,
-            role: `${courseData.level} Course`,
+            role: `${courseData.level ? (courseData.level.charAt(0).toUpperCase() + courseData.level.slice(1).toLowerCase()) : ''} Course`,
             avatar: instructorProfile?.avatarurl || `https://i.pravatar.cc/150?u=${courseData.instructorname}`,
           },
           thumbnail: courseData.thumbnail || 'https://picsum.photos/800/450',
           rating: courseData.averagerating || 0,
-          students: courseData.totalstudents || 0,
+          learners: enrollmentCount > 0 ? enrollmentCount : courseData.totalstudents || 0,
           lastUpdated: courseData.createdat ? new Date(courseData.createdat).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : 'Recently',
           language: 'English',
           syllabus: syllabus.length > 0 ? syllabus : [],
@@ -507,7 +507,7 @@ const CourseDetailPage: React.FC = () => {
                   <div className="flex items-center text-yellow-500 gap-1 text-sm font-bold">
                     <span className="material-symbols-rounded text-base">star</span> {course.rating}
                   </div>
-                  <span className="text-black/50 text-sm">({course.students.toLocaleString()} students)</span>
+                  <span className="text-black/50 text-sm">({course.learners.toLocaleString()} learners)</span>
                   {isCompleted && (
                     <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
                       <span className="material-symbols-rounded text-sm">check_circle</span>

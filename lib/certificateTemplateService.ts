@@ -69,7 +69,7 @@ export const getAllTemplates = async (): Promise<CertificateTemplate[]> => {
   try {
     const { data, error } = await supabase
       .from('certificate_templates')
-      .select('*')
+      .select('id, template_name, description, background_image_url, placeholder_config, is_active, display_order, width, height, created_at, updated_at, created_by')
       .order('display_order', { ascending: true });
 
     if (error) throw error;
@@ -87,7 +87,7 @@ export const getActiveTemplates = async (): Promise<CertificateTemplate[]> => {
   try {
     const { data, error } = await supabase
       .from('certificate_templates')
-      .select('*')
+      .select('id, template_name, description, background_image_url, placeholder_config, is_active, display_order, width, height, created_at, updated_at, created_by')
       .eq('is_active', true)
       .order('display_order', { ascending: true });
 
@@ -106,7 +106,7 @@ export const getDefaultTemplate = async (): Promise<CertificateTemplate | null> 
   try {
     const { data, error } = await supabase
       .from('certificate_templates')
-      .select('*')
+      .select('id, template_name, description, background_image_url, placeholder_config, is_active, display_order, width, height, created_at, updated_at, created_by')
       .eq('is_active', true)
       .order('display_order', { ascending: true })
       .limit(1)
@@ -127,7 +127,7 @@ export const getTemplateById = async (id: string): Promise<CertificateTemplate |
   try {
     const { data, error } = await supabase
       .from('certificate_templates')
-      .select('*')
+      .select('id, template_name, description, background_image_url, placeholder_config, is_active, display_order, width, height, created_at, updated_at, created_by')
       .eq('id', id)
       .single();
 
@@ -156,7 +156,7 @@ export const createTemplate = async (
         ...template,
         created_by: user?.id,
       })
-      .select()
+      .select('id, template_name, description, background_image_url, placeholder_config, is_active, display_order, width, height, created_at, updated_at, created_by')
       .single();
 
     if (error) throw error;
@@ -183,7 +183,7 @@ export const updateTemplate = async (
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
-      .select()
+      .select('id, template_name, description, background_image_url, placeholder_config, is_active, display_order, width, height, created_at, updated_at, created_by')
       .single();
 
     if (error) throw error;
@@ -265,7 +265,7 @@ export const setActivateTemplate = async (id: string): Promise<CertificateTempla
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
-      .select()
+      .select('id, template_name, description, background_image_url, placeholder_config, is_active, display_order, width, height, created_at, updated_at, created_by')
       .single();
 
     if (activateError) throw activateError;

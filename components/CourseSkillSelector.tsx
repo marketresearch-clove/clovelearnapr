@@ -84,8 +84,12 @@ const CourseSkillSelector: React.FC<CourseSkillSelectorProps> = ({
             setLoading(true);
             console.log('CourseSkillSelector: Fetching skills and families...');
 
-            const { data: skillsData, error: skillsError } = await supabase.from('skills').select('*');
-            const { data: familiesData, error: familiesError } = await supabase.from('skill_families').select('*');
+            const { data: skillsData, error: skillsError } = await supabase
+                .from('skills')
+                .select('id, name, family, description, type');
+            const { data: familiesData, error: familiesError } = await supabase
+                .from('skill_families')
+                .select('id, name, description, icon');
 
             if (skillsError) {
                 console.error('Error fetching skills:', skillsError);

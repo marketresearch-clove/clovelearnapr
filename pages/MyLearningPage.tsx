@@ -1507,7 +1507,7 @@ const AcquiredSkillsTab: React.FC = () => {
       // Load Achievements with course category
       const { data: achievementsData, error: achError } = await supabase
         .from('user_skill_achievements')
-        .select('*, courses(id, category)')
+        .select('id, user_id, skill_id, skill_name, course_level, course_id, course_title, percentage_achieved, completed_at, courses(id, category)')
         .eq('user_id', user!.id)
         .order('completed_at', { ascending: false });
 

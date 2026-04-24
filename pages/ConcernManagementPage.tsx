@@ -134,8 +134,9 @@ const ConcernManagementPage = () => {
         try {
             const { data, error } = await supabase
                 .from('concerns_tickets')
-                .select('*')
-                .order('created_at', { ascending: false });
+                .select('id, user_id, full_name, user_email, category, subject, description, status, priority, created_at, updated_at, admin_notes, resolved_at, is_seen')
+                .order('created_at', { ascending: false })
+                .range(0, 49);
 
             if (error) throw error;
             const fetchedConcerns = data || [];
@@ -158,8 +159,9 @@ const ConcernManagementPage = () => {
             setFeedbackLoading(true);
             const { data, error } = await supabase
                 .from('feedback_submissions')
-                .select('*')
-                .order('created_at', { ascending: false });
+                .select('id, user_id, full_name, user_email, subject, description, status, is_seen, created_at, updated_at')
+                .order('created_at', { ascending: false })
+                .range(0, 49);
 
             if (error) throw error;
             setFeedbacks(data || []);
@@ -174,8 +176,14 @@ const ConcernManagementPage = () => {
         try {
             setSurveyLoading(true);
             const [surveyRes, responseRes] = await Promise.all([
-                supabase.from('surveys').select('*').order('created_at', { ascending: false }),
-                supabase.from('survey_responses').select('*'),
+                supabase.from('surveys')
+                    .select('id, title, description, is_active, expires_at, created_at, questions')
+                    .order('created_at', { ascending: false })
+                    .range(0, 49),
+                supabase.from('survey_responses')
+                    .select('id, survey_id, user_id, full_name, user_email, answers, created_at')
+                    .order('created_at', { ascending: false })
+                    .range(0, 199),
             ]);
 
             if (surveyRes.error) throw surveyRes.error;

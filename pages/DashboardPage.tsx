@@ -3,13 +3,11 @@ import { Course } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
-import { courseService } from '../lib/courseService';
 import { durationService } from '../lib/durationService';
 import { lessonProgressService } from '../lib/lessonProgressService';
-import { userStatisticsService } from '../lib/userStatisticsService';
 import { leaderboardService } from '../lib/leaderboardService';
 import { enrollmentService } from '../lib/enrollmentService';
-import { timeTrackingService } from '../lib/timeTrackingService'; // ADD THIS IMPORT
+import { timeTrackingService } from '../lib/timeTrackingService';
 import PlatformTutorial from '../components/PlatformTutorial';
 import Loader from '../components/Loader';
 import UserReportCard from '../components/UserReportCard';
@@ -163,29 +161,53 @@ const DashboardPage: React.FC = () => {
 
         if (courseIds.length > 0) {
           try {
-            console.log('⏳ Fetching course details with courseService...', { courseIds: courseIds.length });
-            // Use courseService to get all published courses with calculated totalstudents
-            const allPublishedCourses = await withTimeout(
-              courseService.getPublishedCourses(),
+            console.log('⏳ Fetching course details for enrolled courses...', { courseIds: courseIds.length });
+
+            const coursesDataRes = await withTimeout(
+              supabase
+                .from('courses')
+                .select('id, title, instructorname, thumbnail, category, duration')
+                .in('id', courseIds),
               15000,
-              'courseService.getPublishedCourses()'
+              'courses.select(enrolled course IDs)'
             );
 
-            // Filter to only the courses in the user's enrollments
-            const coursesData = allPublishedCourses.filter((c: any) => courseIds.includes(c.id));
+            if (coursesDataRes.error) {
+              throw coursesDataRes.error;
+            }
 
+            const coursesData = coursesDataRes.data || [];
             console.log('🖼️ Courses fetched:', {
-              count: coursesData?.length || 0,
-              took: 'see timestamp above'
+              count: coursesData.length,
+            });
+
+            const enrollmentCountRes = await withTimeout(
+              supabase
+                .from('enrollments')
+                .select('courseid')
+                .in('courseid', courseIds),
+              10000,
+              'enrollments.select(courseid for counts)'
+            );
+
+            if (enrollmentCountRes.error) {
+              throw enrollmentCountRes.error;
+            }
+
+            const enrollmentCountsByCourseId: Record<string, number> = {};
+            (enrollmentCountRes.data || []).forEach((row: any) => {
+              if (!row.courseid) return;
+              enrollmentCountsByCourseId[row.courseid] = (enrollmentCountsByCourseId[row.courseid] || 0) + 1;
             });
 
             const courseMap = new Map();
-            if (coursesData) {
-              coursesData.forEach((course: any) => {
-                courseMap.set(course.id, course);
+            coursesData.forEach((course: any) => {
+              courseMap.set(course.id, {
+                ...course,
+                totalstudents: enrollmentCountsByCourseId[course.id] || 0,
               });
-              console.log('📍 CourseMap built with', courseMap.size, 'courses');
-            }
+            });
+            console.log('📍 CourseMap built with', courseMap.size, 'courses');
 
             console.log('🔀 Before merge - allEnrollments:', allEnrollments.length);
             console.log('📌 Enrollment sample:', allEnrollments.slice(0, 2).map((e: any) => ({
@@ -194,7 +216,6 @@ const DashboardPage: React.FC = () => {
               completed: e.completed
             })));
 
-            // Merge courses into enrollments
             allEnrollments = allEnrollments
               .map((e: any) => ({
                 ...e,
@@ -214,7 +235,6 @@ const DashboardPage: React.FC = () => {
               message: coursesErr?.message,
               code: coursesErr?.code
             });
-            // Still continue with empty course list
           }
         } else {
           console.log('⚠️ No course IDs found');
