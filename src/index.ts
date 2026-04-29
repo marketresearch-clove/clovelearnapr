@@ -76,11 +76,11 @@ export default {
 
       console.log(`[OLLAMA] API Key present: ${!!apiKey}, URL: ${apiUrl}`);
 
-      if (!apiKey) {
+      if (!apiKey || apiKey.trim().length === 0) {
         console.error('[OLLAMA] API key not configured in Cloudflare environment');
         return new Response(
-          JSON.stringify({ error: 'Ollama API key not configured on server' }),
-          { status: 500, headers: { 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: 'Ollama Worker error: OLLAMA_API_KEY is missing or empty. Configure it in your Cloudflare Worker variables.' }),
+          { status: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
         );
       }
 

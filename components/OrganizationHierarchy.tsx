@@ -5,21 +5,23 @@ import '../styles/OrganizationHierarchy.css';
 
 interface UserProfile {
     id: string;
-    first_name: string;
-    last_name: string;
     fullname: string;
     email: string;
-    job_title: string;
     designation: string;
     employee_grade: string;
     department: string;
-    office_location: string;
-    avatar_url?: string;
+    location?: string;
     avatarurl?: string;
     role: string;
     manager_id: string | null;
     manager_name?: string;
     linkedin_profile_url?: string;
+    // These columns don't exist in DB; kept optional so UI fallbacks still compile
+    first_name?: string;
+    last_name?: string;
+    job_title?: string;
+    office_location?: string;
+    avatar_url?: string;
 }
 
 interface HierarchyNode {
@@ -1077,7 +1079,7 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
 
             const { data: currentUser, error: userError } = await supabase
                 .from('profiles')
-                .select('id, first_name, last_name, fullname, email, job_title, designation, employee_grade, department, office_location, avatar_url, avatarurl, role, manager_id, manager_name, linkedin_profile_url')
+                .select('id, fullname, email, designation, employee_grade, department, location, avatarurl, role, manager_id, manager_name, linkedin_profile_url')
                 .eq('id', userId)
                 .single();
 
@@ -1093,7 +1095,7 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                 try {
                     const { data: managerData } = await supabase
                         .from('profiles')
-                        .select('id, first_name, last_name, fullname, email, job_title, designation, employee_grade, department, office_location, avatar_url, avatarurl, role, manager_id, manager_name, linkedin_profile_url')
+                        .select('id, fullname, email, designation, employee_grade, department, location, avatarurl, role, manager_id, manager_name, linkedin_profile_url')
                         .eq('id', currentUser.manager_id)
                         .single();
                     if (managerData) manager = managerData;
@@ -1105,7 +1107,7 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
                 try {
                     const { data: allPeersData } = await supabase
                         .from('profiles')
-                        .select('id, first_name, last_name, fullname, email, job_title, designation, employee_grade, department, office_location, avatar_url, avatarurl, role, manager_id, manager_name, linkedin_profile_url')
+                        .select('id, fullname, email, designation, employee_grade, department, location, avatarurl, role, manager_id, manager_name, linkedin_profile_url')
                         .eq('manager_id', currentUser.manager_id)
                         .neq('id', userId)
                         .order('department', { ascending: true })
@@ -1124,7 +1126,7 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
             try {
                 const { data: reportsData } = await supabase
                     .from('profiles')
-                    .select('id, first_name, last_name, fullname, email, job_title, designation, employee_grade, department, office_location, avatar_url, avatarurl, role, manager_id, manager_name, linkedin_profile_url')
+                    .select('id, fullname, email, designation, employee_grade, department, location, avatarurl, role, manager_id, manager_name, linkedin_profile_url')
                     .eq('manager_id', currentUser.id)
                     .order('employee_grade', { ascending: true })
                     .order('fullname', { ascending: true });
@@ -1136,7 +1138,7 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
             // Fetch all unique departments from entire database
             const { data: allProfilesData } = await supabase
                 .from('profiles')
-                .select('id, first_name, last_name, fullname, email, job_title, designation, employee_grade, department, office_location, avatar_url, avatarurl, role, manager_id, manager_name, linkedin_profile_url');
+                .select('id, fullname, email, designation, employee_grade, department, location, avatarurl, role, manager_id, manager_name, linkedin_profile_url');
 
             const departments = Array.from(new Set(allProfilesData?.map(p => p.department).filter(Boolean) as string[])).sort();
             const allGrades = Array.from(new Set(allProfilesData?.map(p => p.employee_grade).filter(Boolean) as string[])).sort();
@@ -1146,7 +1148,7 @@ const OrganizationHierarchy: React.FC<{ userId: string }> = ({ userId }) => {
             try {
                 const { data: otherDeptData } = await supabase
                     .from('profiles')
-                    .select('id, first_name, last_name, fullname, email, job_title, designation, employee_grade, department, office_location, avatar_url, avatarurl, role, manager_id, manager_name, linkedin_profile_url')
+                    .select('id, fullname, email, designation, employee_grade, department, location, avatarurl, role, manager_id, manager_name, linkedin_profile_url')
                     .neq('department', currentUser.department)
                     .order('department', { ascending: true })
                     .order('fullname', { ascending: true });

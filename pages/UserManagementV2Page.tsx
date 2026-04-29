@@ -32,6 +32,7 @@ interface User {
     persona?: string;
     team?: string;
     employee_grade?: string;
+    createdat?: string;
     created_at?: string;
     [key: string]: any;
 }
@@ -239,11 +240,14 @@ const UserManagementV2Page = () => {
         try {
             const { data, error: fetchError } = await supabase
                 .from('profiles')
-                .select('id, fullname, email, user_id, role, user_status, mobile_number, preferred_language, allowed_views, company, department, designation, employment_type, industry, leadership_role, LinkedInPartnerAccess, linkedin_profile_url, location, manager_name, persona, team, employee_grade, created_at')
+                .select('id, fullname, email, user_id, role, user_status, mobile_number, preferred_language, allowed_views, company, department, designation, employment_type, industry, leadership_role, LinkedInPartnerAccess, linkedin_profile_url, location, manager_name, persona, team, employee_grade, createdat')
                 .limit(100);
 
             if (fetchError) throw fetchError;
-            setUsers(data || []);
+            setUsers((data || []).map((user: any) => ({
+                ...user,
+                created_at: user.createdat ?? user.created_at
+            })));
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -754,7 +758,7 @@ const UserManagementV2Page = () => {
         try {
             const { data, error: fetchError } = await supabase
                 .from('profiles')
-                .select('id, fullname, email, user_id, role, user_status, mobile_number, preferred_language, allowed_views, company, department, designation, employment_type, industry, leadership_role, LinkedInPartnerAccess, linkedin_profile_url, location, manager_name, persona, team, employee_grade, created_at');
+                .select('id, fullname, email, user_id, role, user_status, mobile_number, preferred_language, allowed_views, company, department, designation, employment_type, industry, leadership_role, LinkedInPartnerAccess, linkedin_profile_url, location, manager_name, persona, team, employee_grade, createdat');
 
             if (fetchError) throw fetchError;
 
@@ -762,7 +766,12 @@ const UserManagementV2Page = () => {
                 throw new Error('No users found to export');
             }
 
-            const csv = convertToCSV(data);
+            const normalizedData = data.map((user: any) => ({
+                ...user,
+                created_at: user.createdat ?? user.created_at
+            }));
+
+            const csv = convertToCSV(normalizedData);
             downloadCSV(csv, `user-dump-${new Date().toISOString().split('T')[0]}.csv`);
             setSuccess('User dump extracted successfully!');
         } catch (err: any) {

@@ -20,14 +20,23 @@ export default async function handler(
       return res.status(400).json({ error: 'Missing required fields: prompt, model' });
     }
 
-    const apiUrl = process.env.VITE_OLLAMA_API_URL || 'https://api.ollama.ai';
+    const apiUrl = process.env.VITE_OLLAMA_API_URL?.trim() || 'http://localhost:11434';
     const apiKey = process.env.VITE_OLLAMA_API_KEY;
+    const isLocalOllama = apiUrl.startsWith('http://localhost') || apiUrl.startsWith('http://127.0.0.1') || apiUrl.startsWith('http://[::1]');
 
-    if (!apiKey) {
-      return res.status(500).json({ error: 'Ollama API key not configured on server' });
+    if (!isLocalOllama && !apiKey) {
+      return res.status(500).json({ error: 'Ollama API key not configured on server. Set VITE_OLLAMA_API_KEY for remote Ollama/OpenRouter endpoints.' });
     }
 
     console.log(`[OLLAMA PROXY] Calling model: ${model}, url: ${apiUrl}`);
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (apiKey) {
+      headers['Authorization'] = `Bearer ${apiKey}`;
+    }
 
     const response = await fetch(`${apiUrl}/api/generate`, {
       method: 'POST',

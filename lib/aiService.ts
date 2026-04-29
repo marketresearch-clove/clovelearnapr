@@ -5,38 +5,185 @@ const openrouterApiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
 const genAI = new GoogleGenerativeAI(geminiApiKey);
 const DEFAULT_MODEL_NAME = "gemini-1.5-flash";
 const DEFAULT_OPENROUTER_MODEL = "google/gemma-4-31b"; // More reliable than Nemotron
-const DEFAULT_OLLAMA_MODEL = "gemini-3-flash-preview";
+const DEFAULT_OLLAMA_MODEL = "qwen2.5:3b";
 const API_VERSION = "v1beta";
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 
 /**
  * Extract JSON from text that may contain preamble or extra text
  * Handles responses like "Okay, I'll...\n{json here}"
- * Also attempts to fix malformed JSON
+ * Also attempts to fix truncated or malformed JSON
  */
 const extractJSON = (text: string): string => {
-  // Try to find JSON object (starts with {)
-  const jsonObjectMatch = text.match(/\{[\s\S]*\}/);
-  if (jsonObjectMatch) {
-    let json = jsonObjectMatch[0];
-    // Try to fix common JSON issues
-    json = json.replace(/,\s*}/, '}'); // Remove trailing commas
-    json = json.replace(/,\s*]/, ']'); // Remove trailing commas in arrays
-    return json;
+  let cleaned = text.trim();
+
+  // 1) Remove markdown code blocks if present
+  if (cleaned.includes('```json')) {
+    cleaned = cleaned.split('```json')[1]?.split('```')[0]?.trim() || cleaned;
+  } else if (cleaned.includes('```')) {
+    cleaned = cleaned.split('```')[1]?.split('```')[0]?.trim() || cleaned;
   }
 
-  // Try to find JSON array (starts with [)
-  const jsonArrayMatch = text.match(/\[[\s\S]*\]/);
-  if (jsonArrayMatch) {
-    let json = jsonArrayMatch[0];
-    // Try to fix common JSON issues
-    json = json.replace(/,\s*}/, '}');
-    json = json.replace(/,\s*]/, ']');
-    return json;
+  // 2) Find the first occurrence of { or [
+  const firstBracket = cleaned.search(/[\[{]/);
+  if (firstBracket === -1) {
+    return cleaned;
   }
 
-  // If no JSON found, return original text
-  return text;
+  const opening = cleaned[firstBracket];
+  const closing = opening === '{' ? '}' : ']';
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+  let lastValidJsonIndex = -1;
+
+  // 3) Try to find a complete JSON structure
+  for (let i = firstBracket; i < cleaned.length; i++) {
+    const char = cleaned[i];
+    if (escape) {
+      escape = false;
+      continue;
+    }
+    if (char === '\\') {
+      escape = true;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (!inString) {
+      if (char === opening) {
+        depth += 1;
+      } else if (char === closing) {
+        depth -= 1;
+        if (depth === 0) {
+          lastValidJsonIndex = i;
+          // Don't break here, keep searching for the largest possible valid JSON block
+          // (though usually the first one is what we want)
+        }
+      }
+    }
+  }
+
+  // 4) If we found a complete structure, return it
+  if (lastValidJsonIndex !== -1) {
+    cleaned = cleaned.slice(firstBracket, lastValidJsonIndex + 1);
+  } else {
+    // 5) If NOT complete (truncated), we need to repair it
+    cleaned = repairTruncatedJSON(cleaned.slice(firstBracket));
+  }
+
+  // Final cleanup for common AI JSON output issues
+  
+  // 1) Remove numbered list markers inside JSON arrays (e.g., [ 1. { "a": 1 }, 2. { "b": 2 } ])
+  cleaned = cleaned.replace(/(\[|\,)\s*\d+\.\s*/g, '$1 ');
+
+  // 2) Missing commas between adjacent objects in arrays (e.g., } { )
+  cleaned = cleaned.replace(/}\s*\{/g, '}, {');
+
+  // 3) Missing commas between adjacent strings in arrays (e.g., "a" "b" )
+  cleaned = cleaned.replace(/"\s*"/g, '", "');
+
+  // 4) Remove trailing commas before closing braces/brackets
+  cleaned = cleaned.replace(/,\s*([}\]])/g, '$1');
+
+  // 5) Fix double commas
+  cleaned = cleaned.replace(/,\s*,/g, ',');
+
+  return cleaned;
+};
+
+/**
+ * Robust JSON repair for truncated responses
+ * Closes unclosed strings, objects, and arrays
+ */
+const repairTruncatedJSON = (json: string): string => {
+  let depth = [];
+  let inString = false;
+  let escape = false;
+  let result = "";
+
+  for (let i = 0; i < json.length; i++) {
+    const char = json[i];
+    
+    if (escape) {
+      result += char;
+      escape = false;
+      continue;
+    }
+    
+    if (char === '\\') {
+      result += char;
+      escape = true;
+      continue;
+    }
+    
+    if (char === '"') {
+      inString = !inString;
+      result += char;
+      continue;
+    }
+    
+    if (inString) {
+      result += char;
+      continue;
+    }
+
+    if (char === '{' || char === '[') {
+      depth.push(char === '{' ? '}' : ']');
+      result += char;
+    } else if (char === '}' || char === ']') {
+      if (depth.length > 0 && depth[depth.length - 1] === char) {
+        depth.pop();
+        result += char;
+      }
+    } else {
+      result += char;
+    }
+  }
+
+  // If we're inside a string, close it
+  if (inString) {
+    result += '"';
+  }
+
+  // If it's an array and the last character is a comma, remove it
+  result = result.trim();
+  if (result.endsWith(',')) {
+    result = result.slice(0, -1);
+  }
+
+  // Close all unclosed objects and arrays in reverse order
+  while (depth.length > 0) {
+    const closing = depth.pop();
+    result += closing;
+  }
+
+  // One more pass: if we have an incomplete property/value in an object, it might still fail
+  // But this handles the most common truncation issues where it stops mid-way
+  try {
+    JSON.parse(result);
+    return result;
+  } catch (e) {
+    // If it still fails, try to remove the last comma-separated item in an array/object
+    // This is useful for truncated quiz arrays like [{"q1"...}, {"q2"...}, {"q3" (truncated)
+    const lastComma = result.lastIndexOf(',');
+    if (lastComma !== -1) {
+      const parentOpening = result.lastIndexOf('[', lastComma);
+      const parentClosing = result.includes(']') ? result.lastIndexOf(']') : -1;
+      
+      // If it looks like an array element was truncated
+      if (parentOpening !== -1 && (parentClosing === -1 || parentClosing < lastComma)) {
+        let repaired = result.slice(0, lastComma) + ']';
+        try {
+          JSON.parse(repaired);
+          return repaired;
+        } catch (e2) {}
+      }
+    }
+    return result;
+  }
 };
 
 /**
@@ -267,6 +414,94 @@ const callOpenRouterAPI = async (
  * Call Ollama API via Cloudflare Worker proxy to avoid CORS issues
  * Uses Cloudflare Workers endpoint (https://ollama-proxy.clovetech.workers.dev)
  */
+const LOCAL_OLLAMA_API_URL = import.meta.env.VITE_OLLAMA_API_URL || 'http://localhost:11434';
+const LOCAL_OLLAMA_API_KEY = import.meta.env.VITE_OLLAMA_API_KEY || '';
+const CLOUDFLARE_WORKER_URL = 'https://skill-spire-ollama-proxy.subharam-v.workers.dev';
+
+const isLocalOllamaUrl = (url: string) => {
+  const normalized = url.trim().toLowerCase();
+  if (!normalized) return false;
+  if (normalized.includes('skill-spire-ollama-proxy.subharam-v.workers.dev')) return false;
+  if (normalized.includes('ollama-proxy.clovetech.workers.dev')) return false;
+  return normalized.startsWith('http://') || normalized.startsWith('https://');
+};
+
+/**
+ * Fetch available models from local Ollama instance
+ */
+export const fetchAvailableOllamaModels = async (): Promise<{ value: string, label: string }[]> => {
+  const baseUrl = LOCAL_OLLAMA_API_URL.replace(/\/$/, '');
+  const endpoint = `${baseUrl}/api/tags`;
+
+  try {
+    console.log(`Fetching Ollama models from: ${endpoint}`);
+    const response = await fetch(endpoint, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch Ollama models: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (data.models && Array.isArray(data.models)) {
+      return data.models.map((m: any) => ({
+        value: m.name,
+        label: `${m.name} (Local)`
+      }));
+    }
+    return [];
+  } catch (error) {
+    console.error('Error fetching Ollama models:', error);
+    return [];
+  }
+};
+
+const callLocalOllamaAPI = async (
+  prompt: string,
+  modelName: string,
+  maxRetries: number,
+  baseDelay: number,
+  maxTokens: number
+): Promise<string> => {
+  const baseUrl = LOCAL_OLLAMA_API_URL.replace(/\/$/, '');
+  const endpoint = `${baseUrl}/api/generate`;
+
+  console.log(`Calling local Ollama directly - url: ${endpoint}, model: ${modelName}, maxTokens: ${maxTokens}`);
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(LOCAL_OLLAMA_API_KEY ? { Authorization: `Bearer ${LOCAL_OLLAMA_API_KEY}` } : {}),
+    },
+    body: JSON.stringify({
+      model: modelName,
+      prompt,
+      temperature: 0.7,
+      num_predict: maxTokens,
+      stream: false,
+    }),
+  });
+
+  const text = await response.text();
+  if (!response.ok) {
+    console.error(`Local Ollama API error (${response.status}):`, text);
+    throw new Error(`Local Ollama API failed with status ${response.status}: ${text}`);
+  }
+
+  const data = JSON.parse(text);
+  if (!data.response || typeof data.response !== 'string' || data.response.trim().length === 0) {
+    console.error('Local Ollama returned invalid response:', data);
+    throw new Error('EMPTY_RESPONSE');
+  }
+
+  return data.response;
+};
+
 const callOllamaAPI = async (
   prompt: string,
   modelName: string = DEFAULT_OLLAMA_MODEL,
@@ -274,9 +509,19 @@ const callOllamaAPI = async (
   baseDelay: number = 1000,
   maxTokens: number = 2000
 ): Promise<string> => {
-  const CLOUDFLARE_WORKER_URL = 'https://skill-spire-ollama-proxy.subharam-v.workers.dev';
+  const useLocal = LOCAL_OLLAMA_API_URL.trim().length > 0 && LOCAL_OLLAMA_API_URL !== CLOUDFLARE_WORKER_URL && isLocalOllamaUrl(LOCAL_OLLAMA_API_URL);
 
   return retryWithBackoff(async () => {
+    if (useLocal) {
+      try {
+        return await callLocalOllamaAPI(prompt, modelName, maxRetries, baseDelay, maxTokens);
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        console.error('Local Ollama API error:', errorMsg);
+        throw new Error(`Local Ollama failed: ${errorMsg}`);
+      }
+    }
+
     console.log(`Calling Ollama via Cloudflare Worker - model: ${modelName}, maxTokens: ${maxTokens}`);
 
     try {
@@ -296,6 +541,11 @@ const callOllamaAPI = async (
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`Ollama Worker error (${response.status}):`, errorText);
+        if (response.status === 401 || errorText.includes('Missing Authentication header')) {
+          throw new Error(
+            `Ollama Worker unauthorized. Check your Cloudflare Worker environment variables: OLLAMA_API_KEY and OLLAMA_API_URL. Details: ${errorText}`
+          );
+        }
         throw new Error(`Ollama Worker failed with status ${response.status}: ${errorText}`);
       }
 
@@ -434,38 +684,95 @@ const generateCourseContentChunked = async (
     for (let mIdx = 0; mIdx < modules.length; mIdx++) {
       onStatusUpdate?.(`Creating quiz: ${modules[mIdx].title}...`);
 
-      // Reduce questions for smaller models to avoid content length errors
-      const questionsPerCall = Math.min(quizQuestionsCount, 3);
-      const quizPrompt = `RESPOND WITH ONLY VALID JSON. NO PREAMBLE. ${questionsPerCall} short quiz questions on "${modules[mIdx].title}".
-      Keep answers brief (1-3 words max). Output format: [{"question": "Q?", "options": ["A", "B", "C", "D"], "correctAnswer": 0}]`;
+      const questions: any[] = [];
+      const questionsPerCall = Math.min(quizQuestionsCount, provider === 'ollama' ? 1 : 3);
+      
+      if (provider === 'ollama') {
+        // For Ollama, generate questions one by one for maximum reliability
+        for (let qIdx = 0; qIdx < quizQuestionsCount; qIdx++) {
+          onStatusUpdate?.(`Creating quiz question ${qIdx + 1}/${quizQuestionsCount} for ${modules[mIdx].title}...`);
+          
+          const quizPrompt = `RESPOND WITH ONLY VALID JSON. NO PREAMBLE. Generate 1 multiple-choice quiz question on "${modules[mIdx].title}".
+          Output format: {"question": "Q?", "options": ["A", "B", "C", "D"], "correctAnswer": 0}`;
 
-      const quizResponse = await callAI(quizPrompt, 3, 3000, 1000);
-      const quizData = JSON.parse(extractJSON(quizResponse));
+          try {
+            const quizResponse = await callAI(quizPrompt, 2, 2000, 600);
+            const questionData = JSON.parse(extractJSON(quizResponse));
+            if (questionData && questionData.question) {
+              questions.push(questionData);
+            }
+          } catch (e) {
+            console.error(`Failed to generate quiz question ${qIdx + 1}:`, e);
+          }
+          await delay(2000);
+        }
+      } else {
+        // For OpenRouter, batch a few together
+        const quizPrompt = `RESPOND WITH ONLY VALID JSON. NO PREAMBLE. ${questionsPerCall} short quiz questions on "${modules[mIdx].title}".
+        Keep answers brief (1-3 words max). Output format: [{"question": "Q?", "options": ["A", "B", "C", "D"], "correctAnswer": 0}]`;
+
+        const quizResponse = await callAI(quizPrompt, 3, 3000, 1000);
+        const quizData = JSON.parse(extractJSON(quizResponse));
+        if (Array.isArray(quizData)) {
+          questions.push(...quizData);
+        } else if (quizData && typeof quizData === 'object') {
+          questions.push(quizData);
+        }
+      }
+
       modules[mIdx].lessons.push({
         title: `${modules[mIdx].title} Quiz`,
         type: 'quiz',
-        content: quizData || [],
-        duration: questionsPerCall * 2,
+        content: questions,
+        duration: questions.length * 2,
       });
-      await delay(4000);
+      await delay(3000);
     }
 
     // STEP 5: Generate flashcards separately if needed - MINIMAL
     if (contentType.includes('flashcard')) {
       onStatusUpdate?.('Generating flashcards...');
-      const flashcardPrompt = `RESPOND WITH ONLY VALID JSON. NO PREAMBLE. ${flashcardLimit} flashcard pairs for "${title}". Short Q&A format.
-      Output format: [{"front": "Q?", "back": "A?"}]`;
+      
+      const flashcards: any[] = [];
+      
+      if (provider === 'ollama') {
+        // Generate flashcards one by one for Ollama
+        const count = Math.min(flashcardLimit, 10); // Keep it reasonable
+        for (let i = 0; i < count; i++) {
+          onStatusUpdate?.(`Creating flashcard ${i + 1}/${count} for ${title}...`);
+          const flashcardPrompt = `RESPOND WITH ONLY VALID JSON. NO PREAMBLE. Generate 1 flashcard (Q&A pair) for "${title}".
+          Output format: {"front": "Question?", "back": "Answer"}`;
 
-      const flashcardResponse = await callAI(flashcardPrompt, 3, 3000, 900);
-      const flashcards = JSON.parse(extractJSON(flashcardResponse));
+          try {
+            const flashcardResponse = await callAI(flashcardPrompt, 2, 2000, 500);
+            const cardData = JSON.parse(extractJSON(flashcardResponse));
+            if (cardData && cardData.front) {
+              flashcards.push(cardData);
+            }
+          } catch (e) {
+            console.error(`Failed to generate flashcard ${i + 1}:`, e);
+          }
+          await delay(2000);
+        }
+      } else {
+        const flashcardPrompt = `RESPOND WITH ONLY VALID JSON. NO PREAMBLE. ${flashcardLimit} flashcard pairs for "${title}". Short Q&A format.
+        Output format: [{"front": "Q?", "back": "A?"}]`;
+
+        const flashcardResponse = await callAI(flashcardPrompt, 3, 3000, 900);
+        const flashcardData = JSON.parse(extractJSON(flashcardResponse));
+        if (Array.isArray(flashcardData)) {
+          flashcards.push(...flashcardData);
+        }
+      }
+
       modules.push({
         title: 'Flashcards',
         description: 'Quick reference cards',
         lessons: [{
           title: 'Key Terms',
           type: 'flashcard',
-          content: flashcards || [],
-          duration: flashcardLimit,
+          content: flashcards,
+          duration: flashcards.length,
         }],
       });
       await delay(4000);

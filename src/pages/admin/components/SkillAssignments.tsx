@@ -238,8 +238,8 @@ const SkillAssignments: React.FC = () => {
           id,
           user_id,
           skill_id,
-          proficiency_level,
-          achieved_at,
+          percentage_achieved,
+          completed_at,
           skills (
             name,
             family,
@@ -248,7 +248,7 @@ const SkillAssignments: React.FC = () => {
             )
           )
         `)
-        .order('achieved_at', { ascending: false });
+        .order('completed_at', { ascending: false });
 
       if (achieveError) throw achieveError;
 
@@ -293,9 +293,9 @@ const SkillAssignments: React.FC = () => {
         skillid: achievement.skill_id,
         visible: true,
         hidden: false,
-        assignedat: achievement.achieved_at,
+        assignedat: achievement.completed_at,
         expiry_date: null,
-        createdat: achievement.achieved_at,
+        createdat: achievement.completed_at,
         profiles: profilesMap[achievement.user_id] || { fullname: 'Unknown User', email: '' },
         skills: achievement.skills || { name: 'Unknown Skill', family: '' },
         source: 'course_acquired',

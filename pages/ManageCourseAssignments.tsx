@@ -189,67 +189,90 @@ const ManageCourseAssignments: React.FC<ManageCourseAssignmentsProps> = ({ hideL
       }
       console.log('✅ [ManageCourseAssignments] Diagnostic passed:', diagnosticResult.message);
 
+      const [coursesResult, usersResult] = await Promise.allSettled([
+        courseService.getCourses(),
+        courseAssignmentService.getAllUsers(),
+      ]);
+
       // Load courses
-      let coursesData = [];
+      let coursesData: any[] = [];
       let courseLoadError = '';
-      try {
-        console.log('📚 [ManageCourseAssignments] Fetching courses...');
-        coursesData = await courseService.getCourses();
+      if (coursesResult.status === 'fulfilled') {
+        coursesData = coursesResult.value;
         console.log(`✅ [ManageCourseAssignments] Successfully loaded ${coursesData.length} courses`);
 
-        // Log hidden courses separately for debugging
         const hiddenCourses = coursesData.filter((c: any) => c.is_hidden === true);
         console.log(`👁️ [ManageCourseAssignments] Hidden courses: ${hiddenCourses.length}`);
         if (hiddenCourses.length > 0) {
           console.log('🔒 [ManageCourseAssignments] Hidden course list:', hiddenCourses.map((c: any) => c.title));
         }
 
-        // Ensure all courses have is_hidden property (default to false if missing)
         const normalizedCourses = coursesData.map((course: any) => ({
           ...course,
           is_hidden: course.is_hidden === true
         }));
 
         setCourses(normalizedCourses);
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : String(err);
-        console.error('❌ [ManageCourseAssignments] Error loading courses:', errorMsg);
-        courseLoadError = errorMsg;
+      } else {
+        courseLoadError = coursesResult.reason instanceof Error ? coursesResult.reason.message : String(coursesResult.reason);
+        console.error('❌ [ManageCourseAssignments] Error loading courses:', courseLoadError);
         hasError = true;
         setCourses([]);
       }
 
       // Load users
-      let usersData = [];
+      let usersData: any[] = [];
       let userLoadError = '';
-      try {
-        console.log('👥 [ManageCourseAssignments] Fetching users...');
-        usersData = await courseAssignmentService.getAllUsers();
+      if (usersResult.status === 'fulfilled') {
+        usersData = usersResult.value;
         console.log(`✅ [ManageCourseAssignments] Successfully loaded ${usersData.length} users`);
         if (!usersData || usersData.length === 0) {
           console.warn('⚠️ [ManageCourseAssignments] No users found in database');
         }
         setUsers(usersData);
         setFilteredUsers(usersData);
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : String(err);
-        console.error('❌ [ManageCourseAssignments] Error loading users:', errorMsg);
-        userLoadError = errorMsg;
+
+        const uniqueValues = {
+          departments: new Set<string>(),
+          companies: new Set<string>(),
+          designations: new Set<string>(),
+          employmentTypes: new Set<string>(),
+          industries: new Set<string>(),
+          leadershipRoles: new Set<string>(),
+          locations: new Set<string>(),
+          personas: new Set<string>(),
+          teams: new Set<string>(),
+        };
+
+        usersData.forEach((user: any) => {
+          if (user.department) uniqueValues.departments.add(user.department);
+          if (user.company) uniqueValues.companies.add(user.company);
+          if (user.designation) uniqueValues.designations.add(user.designation);
+          if (user.employment_type) uniqueValues.employmentTypes.add(user.employment_type);
+          if (user.industry) uniqueValues.industries.add(user.industry);
+          if (user.leadership_role) uniqueValues.leadershipRoles.add(user.leadership_role);
+          if (user.location) uniqueValues.locations.add(user.location);
+          if (user.persona) uniqueValues.personas.add(user.persona);
+          if (user.team) uniqueValues.teams.add(user.team);
+        });
+
+        setFilterOptions({
+          departments: Array.from(uniqueValues.departments).sort(),
+          companies: Array.from(uniqueValues.companies).sort(),
+          designations: Array.from(uniqueValues.designations).sort(),
+          employmentTypes: Array.from(uniqueValues.employmentTypes).sort(),
+          industries: Array.from(uniqueValues.industries).sort(),
+          leadershipRoles: Array.from(uniqueValues.leadershipRoles).sort(),
+          locations: Array.from(uniqueValues.locations).sort(),
+          personas: Array.from(uniqueValues.personas).sort(),
+          teams: Array.from(uniqueValues.teams).sort(),
+        });
+      } else {
+        userLoadError = usersResult.reason instanceof Error ? usersResult.reason.message : String(usersResult.reason);
+        console.error('❌ [ManageCourseAssignments] Error loading users:', userLoadError);
         hasError = true;
         setUsers([]);
         setFilteredUsers([]);
-      }
-
-      // Load filter options
-      try {
-        console.log('🔍 [ManageCourseAssignments] Fetching filter values...');
-        const filterValues = await courseAssignmentService.getUniqueFilterValues();
-        console.log('✅ [ManageCourseAssignments] Loaded filter values');
-        setFilterOptions(filterValues);
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : String(err);
-        console.warn('⚠️ [ManageCourseAssignments] Error loading filter values (not critical):', errorMsg);
-        // Don't fail if filters don't load, just proceed without them
       }
 
       if (hasError) {

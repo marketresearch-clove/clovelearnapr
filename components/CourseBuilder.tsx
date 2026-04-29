@@ -5,7 +5,7 @@ import CourseReview from './CourseReview';
 import { lessonService, Lesson } from '../lib/lessonService';
 import { Course } from '../lib/courseService';
 import { durationService } from '../lib/durationService';
-import { generateCourseContent, generateSkillsForCourse } from '../lib/aiService';
+import { generateCourseContent, generateSkillsForCourse, fetchAvailableOllamaModels } from '../lib/aiService';
 import { courseAssignmentService } from '../lib/courseAssignmentService';
 import { skillService } from '../lib/skillService';
 import { supabase } from '../lib/supabaseClient';
@@ -27,6 +27,8 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
   const [showAIModal, setShowAIModal] = useState(false);
   const [aiProvider, setAIProvider] = useState<'gemini' | 'openrouter' | 'ollama'>('gemini');
   const [selectedModel, setSelectedModel] = useState<string>('gemini-2.5-flash');
+  const [ollamaModels, setOllamaModels] = useState<{ value: string, label: string }[]>([]);
+  const [isFetchingModels, setIsFetchingModels] = useState(false);
   const [aiOptions, setAIOptions] = useState({
     modulesCount: 3,
     lessonsPerModule: 3,
@@ -56,6 +58,58 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
     selectedSkillIds: [],
     aiGeneratedSkillIds: [],
   });
+
+  const GEMINI_MODEL_OPTIONS = [
+    { value: 'gemini-2.5-flash', label: '★ Gemini 2.5 Flash (Recommended - High Rate Limits)' },
+    { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (Advanced Reasoning - Limited Free)' },
+    { value: 'gemini-2.0-flash', label: '⚠ Gemini 2.0 Flash (Legacy - Shutting Down 6/1/2026)' },
+    { value: 'gemini-2.0-flash-001', label: '⚠ Gemini 2.0 Flash 001 (Legacy - Shutting Down 6/1/2026)' },
+    { value: 'gemini-2.0-flash-lite-001', label: '⚠ Gemini 2.0 Flash Lite 001 (Legacy - Shutting Down 6/1/2026)' },
+  ];
+
+  const OPENROUTER_MODEL_OPTIONS = [
+    { value: 'nvidia/nemotron-3-super-120b-a12b:free', label: 'Nvidia Nemotron 3 Super 120B (Free)' },
+    { value: 'nvidia/nemotron-3-nano-30b-a3b:free', label: 'Nvidia Nemotron 3 Nano 30B (Free)' },
+    { value: 'qwen/qwen3-next-80b-a3b-instruct:free', label: 'Qwen 3 Next 80B Instruct (Free)' },
+    { value: 'google/gemma-4-26b-a4b-it:free', label: 'Google Gemma 4 26B IT (Free)' },
+    { value: 'google/gemma-4-31b-it:free', label: 'Google Gemma 4 31B IT (Free)' },
+  ];
+
+  const setAiModelSelectionFromProvider = (provider: 'gemini' | 'openrouter' | 'ollama', availableOllamaModels?: { value: string, label: string }[]) => {
+    if (provider === 'gemini') {
+      setSelectedModel('gemini-2.5-flash');
+    } else if (provider === 'ollama') {
+      const models = availableOllamaModels || ollamaModels;
+      if (models.length > 0) {
+        setSelectedModel(models[0].value);
+      } else {
+        setSelectedModel('qwen2.5:3b'); // Fallback
+      }
+    } else {
+      setSelectedModel('nvidia/nemotron-3-super-120b-a12b:free');
+    }
+  };
+
+  useEffect(() => {
+    if (aiProvider === 'ollama') {
+      const loadOllamaModels = async () => {
+        setIsFetchingModels(true);
+        try {
+          const models = await fetchAvailableOllamaModels();
+          setOllamaModels(models);
+          // If we just switched to Ollama and have models, select the first one
+          if (models.length > 0 && (selectedModel.includes('gemini') || selectedModel.includes('nvidia') || selectedModel.includes('qwen'))) {
+            setSelectedModel(models[0].value);
+          }
+        } catch (error) {
+          console.error('Failed to load Ollama models:', error);
+        } finally {
+          setIsFetchingModels(false);
+        }
+      };
+      loadOllamaModels();
+    }
+  }, [aiProvider]);
 
   useEffect(() => {
     if (editingCourse?.id) {
@@ -409,13 +463,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
               onChange={(e) => {
                 const newProvider = e.target.value as 'gemini' | 'openrouter' | 'ollama';
                 setAIProvider(newProvider);
-                if (newProvider === 'gemini') {
-                  setSelectedModel('gemini-2.5-flash');
-                } else if (newProvider === 'ollama') {
-                  setSelectedModel('gemini-3-flash-preview');
-                } else {
-                  setSelectedModel('nvidia/nemotron-3-super-120b-a12b:free');
-                }
+                setAiModelSelectionFromProvider(newProvider);
               }}
               disabled={isGenerating}
               className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs text-gray-900 hover:border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none disabled:opacity-50"
@@ -436,32 +484,21 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
               className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs text-gray-900 hover:border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none disabled:opacity-50"
             >
               {aiProvider === 'gemini' ? (
-                <>
-                  <option value="gemini-2.5-flash">★ Gemini 2.5 Flash (Recommended - High Rate Limits)</option>
-                  <option value="gemini-2.5-pro">Gemini 2.5 Pro (Advanced Reasoning - Limited Free)</option>
-                  <option value="gemini-2.0-flash">⚠ Gemini 2.0 Flash (Legacy - Shutting Down 6/1/2026)</option>
-                  <option value="gemini-2.0-flash-001">⚠ Gemini 2.0 Flash 001 (Legacy - Shutting Down 6/1/2026)</option>
-                  <option value="gemini-2.0-flash-lite-001">⚠ Gemini 2.0 Flash Lite 001 (Legacy - Shutting Down 6/1/2026)</option>
-                </>
+                GEMINI_MODEL_OPTIONS.map((model) => (
+                  <option key={model.value} value={model.value}>{model.label}</option>
+                ))
               ) : aiProvider === 'ollama' ? (
-                <>
-                  <option value="gemini-3-flash-preview">★ Gemini 3 Flash Preview (Local - Recommended)</option>
-                  <option value="glm-5.1:cloud">GLM 5.1 Cloud</option>
-                  <option value="minimax-m2.7:cloud">MiniMax M2.7 Cloud</option>
-                  <option value="gemma4">Gemma 4 (Local)</option>
-                  <option value="nemotron-3-super">Nemotron 3 Super (Local)</option>
-                  <option value="ollama:llama2">Llama 2 (Local)</option>
-                  <option value="ollama:neural-chat">Neural Chat (Local)</option>
-                  <option value="ollama:mistral">Mistral (Local)</option>
-                </>
+                ollamaModels.length > 0 ? (
+                  ollamaModels.map((model) => (
+                    <option key={model.value} value={model.value}>{model.label}</option>
+                  ))
+                ) : (
+                  <option value="qwen2.5:3b">Qwen 2.5 3B (Local)</option>
+                )
               ) : (
-                <>
-                  <option value="nvidia/nemotron-3-super-120b-a12b:free">Nvidia Nemotron 3 Super 120B (Free)</option>
-                  <option value="nvidia/nemotron-3-nano-30b-a3b:free">Nvidia Nemotron 3 Nano 30B (Free)</option>
-                  <option value="qwen/qwen3-next-80b-a3b-instruct:free">Qwen 3 Next 80B Instruct (Free)</option>
-                  <option value="google/gemma-4-26b-a4b-it:free">Google Gemma 4 26B IT (Free)</option>
-                  <option value="google/gemma-4-31b-it:free">Google Gemma 4 31B IT (Free)</option>
-                </>
+                OPENROUTER_MODEL_OPTIONS.map((model) => (
+                  <option key={model.value} value={model.value}>{model.label}</option>
+                ))
               )}
             </select>
             <p className="text-xs text-gray-500 mt-1">Switch if you hit rate limits</p>
@@ -493,12 +530,11 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onCancel, onSave, onNavig
                 <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg max-h-40 overflow-y-auto">
                   <div className="text-xs text-gray-600 font-mono space-y-1">
                     {generationOutput.map((line, idx) => (
-                      <div key={idx} className={`leading-relaxed ${
-                        line.startsWith('✓') ? 'text-green-600' :
+                      <div key={idx} className={`leading-relaxed ${line.startsWith('✓') ? 'text-green-600' :
                         line.startsWith('📚') || line.startsWith('📖') || line.startsWith('📝') || line.startsWith('📄') ? 'text-blue-600' :
-                        line === '=== GENERATION COMPLETE ===' ? 'text-indigo-600 font-semibold' :
-                        'text-gray-600'
-                      }`}>
+                          line === '=== GENERATION COMPLETE ===' ? 'text-indigo-600 font-semibold' :
+                            'text-gray-600'
+                        }`}>
                         {line}
                       </div>
                     ))}

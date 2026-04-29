@@ -464,19 +464,33 @@ const AdminAnalyticsPage: React.FC = () => {
             // Get assessment data for avg score calculation
             const { data: allAssessments } = await supabase
               .from('assessment_results')
-              .select('courseid, score');
+              .select('assessmentid, score');
+
+            const { data: allAssessmentsMeta } = await supabase
+              .from('assessments')
+              .select('id, courseid');
+
+            const assessmentCourseMap: any = {};
+            (allAssessmentsMeta || []).forEach((assessment: any) => {
+              if (assessment?.id) {
+                assessmentCourseMap[assessment.id] = assessment.courseid;
+              }
+            });
 
             // Group assessments by course
             const assessmentsByRepo: any = {};
             (allAssessments || []).forEach((a: any) => {
-              if (!assessmentsByRepo[a.courseid]) {
-                assessmentsByRepo[a.courseid] = [];
+              const courseId = assessmentCourseMap[a.assessmentid];
+              if (!courseId) return;
+
+              if (!assessmentsByRepo[courseId]) {
+                assessmentsByRepo[courseId] = [];
               }
-              assessmentsByRepo[a.courseid].push(a.score);
+              assessmentsByRepo[courseId].push(a.score);
             });
 
             const coursePerformance = courses
-              .filter((c: any) => c.status === 'published') // Only published courses
+              .filter((c: any) => c.status === 'published')
               .map((course: any) => {
                 // Calculate average score from stored assessment data
                 const courseScores = assessmentsByRepo[course.id] || [];
@@ -1541,54 +1555,104 @@ const SkillsDashboard = ({ skillMatrix }: any) => {
   const [skillFilter, setSkillFilter] = useState('All');
   const [userSearch, setUserSearch] = useState('');
 
+  useEffect(() => {
+    if (userSearch === '' && rowType === 'user') {
+      setRowType('department');
+    }
+  }, [userSearch, rowType]);
+
+  const normalizeValue = (value: any) =>
+    value?.toString().trim().toLowerCase().replace(/[\s_-]+/g, ' ').replace(/[^a-z0-9 ]+/g, '') || '';
+
+  const normalizeDisplay = (value: any) =>
+    value?.toString().trim().replace(/[\s_-]+/g, ' ') || '';
+
   // Dropdown lists always populated from full dataset - "All" always first
-  const departments = ['All', ...new Set(skillMatrix?.map((s: any) => s.department) || [])].sort((a: any, b: any) => a === 'All' ? -1 : b === 'All' ? 1 : a.localeCompare(b));
-  const families = ['All', ...new Set(skillMatrix?.map((s: any) => s.skill_family) || [])].sort((a: any, b: any) => a === 'All' ? -1 : b === 'All' ? 1 : a.localeCompare(b));
-  const skillsList = ['All', ...new Set(skillMatrix?.map((s: any) => s.skill_name) || [])].sort((a: any, b: any) => a === 'All' ? -1 : b === 'All' ? 1 : a.localeCompare(b));
+  const departmentMap = new Map<string, string>();
+  const familyMap = new Map<string, string>();
+  const skillMap = new Map<string, string>();
+
+  (skillMatrix || []).forEach((s: any) => {
+    const deptKey = normalizeValue(s.department);
+    const deptLabel = normalizeDisplay(s.department);
+    if (deptKey && !departmentMap.has(deptKey)) departmentMap.set(deptKey, deptLabel);
+
+    const familyKey = normalizeValue(s.skill_family);
+    const familyLabel = normalizeDisplay(s.skill_family);
+    if (familyKey && !familyMap.has(familyKey)) familyMap.set(familyKey, familyLabel);
+
+    const skillKey = normalizeValue(s.skill_name);
+    const skillLabel = normalizeDisplay(s.skill_name);
+    if (skillKey && !skillMap.has(skillKey)) skillMap.set(skillKey, skillLabel);
+  });
+
+  const departments = ['All', ...Array.from(departmentMap.values())].sort((a: any, b: any) => a === 'All' ? -1 : b === 'All' ? 1 : a.localeCompare(b));
+  const families = ['All', ...Array.from(familyMap.values())].sort((a: any, b: any) => a === 'All' ? -1 : b === 'All' ? 1 : a.localeCompare(b));
+  const skillsList = ['All', ...Array.from(skillMap.values())].sort((a: any, b: any) => a === 'All' ? -1 : b === 'All' ? 1 : a.localeCompare(b));
 
   const filteredMatrix = skillMatrix?.filter((s: any) => {
-    const matchDept = deptFilter === 'All' || (s?.department === deptFilter);
-    const matchFamily = familyFilter === 'All' || (s?.skill_family === familyFilter);
-    const matchSkill = skillFilter === 'All' || (s?.skill_name === skillFilter);
-    const matchUser = userSearch === '' || ((s?.fullname || '').toLowerCase().includes(userSearch.toLowerCase()));
+    const matchDept = deptFilter === 'All' || normalizeValue(s?.department) === normalizeValue(deptFilter);
+    const matchFamily = familyFilter === 'All' || normalizeValue(s?.skill_family) === normalizeValue(familyFilter);
+    const matchSkill = skillFilter === 'All' || normalizeValue(s?.skill_name) === normalizeValue(skillFilter);
+    const matchUser = userSearch === '' || normalizeValue(s?.fullname).includes(normalizeValue(userSearch));
     return matchDept && matchFamily && matchSkill && matchUser;
   }) || [];
 
   // Display logic: Columns are determined by the colType toggle and pruned by category filters (Family/Skill)
   // but are NOT hidden by entity filters (Dept/User) to keep the matrix stable.
   const displayCols = (colType === 'family'
-    ? [...new Set(skillMatrix?.filter((s: any) => familyFilter === 'All' || s.skill_family === familyFilter).map((s: any) => s.skill_family) || [])]
+    ? [...new Set(skillMatrix?.filter((s: any) => familyFilter === 'All' || normalizeValue(s.skill_family) === normalizeValue(familyFilter)).map((s: any) => normalizeDisplay(s.skill_family)) || [])]
     : [...new Set(skillMatrix?.filter((s: any) =>
-      (familyFilter === 'All' || s.skill_family === familyFilter) &&
-      (skillFilter === 'All' || s.skill_name === skillFilter)
-    ).map((s: any) => s.skill_name) || [])]).sort();
+      (familyFilter === 'All' || normalizeValue(s.skill_family) === normalizeValue(familyFilter)) &&
+      (skillFilter === 'All' || normalizeValue(s.skill_name) === normalizeValue(skillFilter))
+    ).map((s: any) => normalizeDisplay(s.skill_name)) || [])]).sort();
 
   // Rows are determined by the rowType toggle and pruned by ALL filters.
-  const displayRows = (rowType === 'user'
-    ? [...new Set(filteredMatrix.map((s: any) => s.fullname))]
-    : rowType === 'skill'
-      ? [...new Set(filteredMatrix.map((s: any) => s.skill_name))]
+  const displayRows = (() => {
+    if (rowType === 'user') {
+      const rows = new Map<string, { id: string; label: string }>();
+      filteredMatrix.forEach((s: any) => {
+        const userId = s.user_id || s.userid;
+        if (!userId) return;
+        const key = normalizeValue(userId.toString());
+        if (!rows.has(key)) {
+          rows.set(key, { id: userId.toString(), label: normalizeDisplay(s.fullname) });
+        }
+      });
+      return Array.from(rows.values()).sort((a, b) => a.label.localeCompare(b.label));
+    }
+
+    const rows = rowType === 'skill'
+      ? [...new Set(filteredMatrix.map((s: any) => normalizeDisplay(s.skill_name)))]
       : rowType === 'family'
-        ? [...new Set(filteredMatrix.map((s: any) => s.skill_family))]
-        : [...new Set(filteredMatrix.map((s: any) => s.department))]).sort();
+        ? [...new Set(filteredMatrix.map((s: any) => normalizeDisplay(s.skill_family)))]
+        : [...new Set(filteredMatrix.map((s: any) => normalizeDisplay(s.department)))];
+
+    return rows.sort();
+  })();
 
   const handleExport = (format: 'pdf' | 'excel') => {
     const filename = `Skill_Matrix_${rowType}_vs_${colType}_${matrixMetric}_${new Date().toISOString().split('T')[0]}`;
     const title = `Organization Skill Matrix (${matrixMetric}) - Rows: ${rowType}, Cols: ${colType}`;
 
     const exportData = displayRows.map((rowLabel: any) => {
+      const labelText = typeof rowLabel === 'string' ? rowLabel : rowLabel.label;
       const row: any = {
-        [rowType.charAt(0).toUpperCase() + rowType.slice(1)]: rowLabel
+        [rowType.charAt(0).toUpperCase() + rowType.slice(1)]: labelText
       };
 
       displayCols.forEach((colLabel: any) => {
         const dataPoints = filteredMatrix.filter((s: any) => {
-          const rowMatch = rowType === 'user' ? s.fullname === rowLabel :
-            rowType === 'skill' ? s.skill_name === rowLabel :
-              rowType === 'family' ? s.skill_family === rowLabel :
-                s.department === rowLabel;
-
-          const colMatch = colType === 'family' ? s.skill_family === colLabel : s.skill_name === colLabel;
+          const rowMatch = rowType === 'user'
+            ? normalizeValue(s.user_id || s.userid) === normalizeValue(rowLabel.id)
+            : rowType === 'skill'
+              ? normalizeValue(s.skill_name) === normalizeValue(labelText)
+              : rowType === 'family'
+                ? normalizeValue(s.skill_family) === normalizeValue(labelText)
+                : normalizeValue(s.department) === normalizeValue(labelText);
+          const colMatch = colType === 'family'
+            ? normalizeValue(s.skill_family) === normalizeValue(colLabel)
+            : normalizeValue(s.skill_name) === normalizeValue(colLabel);
 
           return rowMatch && colMatch;
         });
@@ -1761,7 +1825,7 @@ const SkillsDashboard = ({ skillMatrix }: any) => {
               </th>
               {displayCols.map(col => {
                 const family = colType === 'skill'
-                  ? skillMatrix?.find((s: any) => s.skill_name === col)?.skill_family
+                  ? skillMatrix?.find((s: any) => normalizeValue(s.skill_name) === normalizeValue(col))?.skill_family
                   : '';
                 return (
                   <th key={col as string} className="py-4 px-4 text-center min-w-[120px] border-b border-gray-100">
@@ -1773,58 +1837,67 @@ const SkillsDashboard = ({ skillMatrix }: any) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {displayRows.map((rowLabel: any) => (
-              <tr key={rowLabel} className="group hover:bg-gray-50/50 transition-colors">
-                <td className="py-4 px-6 text-sm font-black text-gray-900 sticky left-0 bg-white z-10 border-b border-gray-100 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
-                  {rowLabel}
-                </td>
-                {displayCols.map((colLabel: any) => {
-                  const dataPoints = filteredMatrix.filter((s: any) => {
-                    const rowMatch = rowType === 'user' ? s.fullname === rowLabel :
-                      rowType === 'skill' ? s.skill_name === rowLabel :
-                        rowType === 'family' ? s.skill_family === rowLabel :
-                          s.department === rowLabel;
+            {displayRows.map((rowLabel: any) => {
+              const rowText = typeof rowLabel === 'string' ? rowLabel : rowLabel.label;
+              const rowKey = typeof rowLabel === 'string' ? rowLabel : rowLabel.id;
+              return (
+                <tr key={rowKey} className="group hover:bg-gray-50/50 transition-colors">
+                  <td className="py-4 px-6 text-sm font-black text-gray-900 sticky left-0 bg-white z-10 border-b border-gray-100 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
+                    {rowText}
+                  </td>
+                  {displayCols.map((colLabel: any) => {
+                    const dataPoints = filteredMatrix.filter((s: any) => {
+                      const rowMatch = rowType === 'user'
+                        ? normalizeValue(s.user_id || s.userid) === normalizeValue(rowLabel.id)
+                        : rowType === 'skill'
+                          ? normalizeValue(s.skill_name) === normalizeValue(rowText)
+                          : rowType === 'family'
+                            ? normalizeValue(s.skill_family) === normalizeValue(rowText)
+                            : normalizeValue(s.department) === normalizeValue(rowText);
 
-                    const colMatch = colType === 'family' ? s.skill_family === colLabel : s.skill_name === colLabel;
+                      const colMatch = colType === 'family'
+                        ? normalizeValue(s.skill_family) === normalizeValue(colLabel)
+                        : normalizeValue(s.skill_name) === normalizeValue(colLabel);
 
-                    return rowMatch && colMatch;
-                  });
+                      return rowMatch && colMatch;
+                    });
 
-                  const avg = dataPoints.length > 0
-                    ? dataPoints.reduce((acc: number, curr: any) => {
-                      const val = matrixMetric === 'proficiency' ? curr.proficiency_avg : (curr.is_assigned ? 100 : 0);
-                      return acc + Number(val);
-                    }, 0) / dataPoints.length
-                    : 0;
+                    const avg = dataPoints.length > 0
+                      ? dataPoints.reduce((acc: number, curr: any) => {
+                        const val = matrixMetric === 'proficiency' ? curr.proficiency_avg : (curr.is_assigned ? 100 : 0);
+                        return acc + Number(val);
+                      }, 0) / dataPoints.length
+                      : 0;
 
-                  const val = Math.round(avg);
-                  const color = matrixMetric === 'assignment' ? (
-                    val > 90 ? 'bg-indigo-100 text-indigo-700' :
-                      val > 50 ? 'bg-blue-100 text-blue-700' :
-                        val > 0 ? 'bg-orange-100 text-orange-700' : 'bg-gray-50 text-gray-400'
-                  ) : (
-                    val > 80 ? 'bg-green-100 text-green-700' :
-                      val > 60 ? 'bg-blue-100 text-blue-700' :
-                        val > 40 ? 'bg-yellow-100 text-yellow-700' :
-                          val > 0 ? 'bg-red-100 text-red-700' : 'bg-gray-50 text-gray-400'
-                  );
-                  const level = dataPoints.find((d: any) => d.course_level)?.course_level;
+                    const val = Math.round(avg);
+                    const color = matrixMetric === 'assignment' ? (
+                      val > 90 ? 'bg-indigo-100 text-indigo-700' :
+                        val > 50 ? 'bg-blue-100 text-blue-700' :
+                          val > 0 ? 'bg-orange-100 text-orange-700' : 'bg-gray-50 text-gray-400'
+                    ) : (
+                      val > 80 ? 'bg-green-100 text-green-700' :
+                        val > 60 ? 'bg-blue-100 text-blue-700' :
+                          val > 40 ? 'bg-yellow-100 text-yellow-700' :
+                            val > 0 ? 'bg-red-100 text-red-700' : 'bg-gray-50 text-gray-400'
+                    );
+                    const level = dataPoints.find((d: any) => d.course_level)?.course_level;
 
-                  return (
-                    <td key={colLabel} className="py-4 px-2 border-b border-gray-100">
-                      <div className="flex flex-col items-center gap-1">
-                        <div className={`w-16 h-9 rounded-lg flex items-center justify-center text-[11px] font-black shadow-sm ${color}`}>
-                          {dataPoints.length > 0 ? `${val}%` : '-'}
+                    return (
+                      <td key={colLabel} className="py-4 px-2 border-b border-gray-100">
+                        <div className="flex flex-col items-center gap-1">
+                          <div className={`w-16 h-9 rounded-lg flex items-center justify-center text-[11px] font-black shadow-sm ${color}`}>
+                            {dataPoints.length > 0 ? `${val}%` : '-'}
+                          </div>
+                          {matrixMetric === 'proficiency' && level && (
+                            <span className="text-[8px] font-bold text-gray-500 uppercase">{level}</span>
+                          )}
                         </div>
-                        {matrixMetric === 'proficiency' && level && (
-                          <span className="text-[8px] font-bold text-gray-500 uppercase">{level}</span>
-                        )}
-                      </div>
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
             {displayRows.length === 0 && (
               <tr>
                 <td colSpan={displayCols.length + 1} className="py-12 text-center text-gray-400 italic bg-gray-50/30">

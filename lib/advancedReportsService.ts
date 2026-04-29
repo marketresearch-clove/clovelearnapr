@@ -582,7 +582,7 @@ export const fetchEngagementMetricsAnalytics = async (): Promise<EngagementMetri
 
         const { data: lessonProgress } = await supabase
             .from('lesson_progress')
-            .select('userid, completed_at, completed');
+            .select('userid, completedat, completed');
 
         const { data: learningHours } = await supabase
             .from('learning_hours')
